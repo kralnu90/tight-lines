@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1c19">
+<meta name="description" content="Tight Lines: a survival fishing adventure prototype by Kralnu Games.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Tight Lines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: one-screen game. Conditions strip, river canvas, angler's control panel underneath. Single committed riverbank look. */
+:root{
+  --ink:#0e1c19;
+  --panel:#15302a;
+  --panel-2:#1d3d35;
+  --rule:#2e5a4e;
+  --cream:#f0e7d0;
+  --muted:#a7bbad;
+  --brass:#dcaa48;
+  --brass-deep:#9c6d24;
+  --danger:#e3593c;
+  --safe:#86b56f;
+  --slack:#6f8a84;
+  --display:"Alegreya SC", Georgia, "Times New Roman", serif;
+  --body:"Alegreya Sans", "Trebuchet MS", Verdana, sans-serif;
+  color-scheme: dark;
+}
+html{height:100%;box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+body{height:100%;background:var(--ink);color:var(--cream);font-family:var(--body);font-size:15px;overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.app{height:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:8px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:8px}
+.top{display:flex;align-items:center;gap:10px}
+.brand{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.02em;color:var(--brass);line-height:1}
+.brand small{display:block;font-family:var(--body);font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.lvl{margin-left:auto;white-space:nowrap;text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:0}
+.lvl b{color:var(--cream);font-weight:700}
+.xpbar{height:4px;background:var(--panel-2);border-radius:2px;margin-top:3px;overflow:hidden;width:110px;margin-left:auto}
+.xpbar i{display:block;height:100%;background:var(--brass);width:0}
+.iconbtn{background:var(--panel);color:var(--cream);border:1px solid var(--rule);border-radius:10px;height:36px;padding:0 12px;font:600 13px var(--body);cursor:pointer}
+.iconbtn:focus-visible,.big:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.conds{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:6px;align-items:end}
+.cond.info b{line-height:1.2;font-size:12px;padding:4px 6px}
+.cond{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cond label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cond select{width:100%;background:var(--panel);color:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:6px 6px;font:600 13px var(--body)}
+.cond select:disabled{opacity:.55}
+.cond .lab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cond.info b{display:block;background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:6px;font:600 13px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.needs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.need{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.need .nb{height:6px;border-radius:3px;background:var(--panel-2);overflow:hidden;margin-top:3px}
+.need .nb i{display:block;height:100%;background:var(--safe);width:100%}
+.need.low{color:#ffb8a8}.need.low .nb i{background:var(--danger)}
+.need.mid .nb i{background:#c9a34a}
+.acts{display:flex;flex-direction:column;gap:6px}
+.act{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel-2);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;color:var(--cream);font:600 15px var(--body);text-align:left;cursor:pointer;width:100%}
+.act small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.act em{font-style:normal;color:var(--brass);font-size:12px;white-space:nowrap}
+.act:disabled{opacity:.45;cursor:default}
+.slot{background:var(--panel-2);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.slot b{font-size:16px}.slot small{color:var(--muted)}
+.slot .controls .big{padding:10px;font-size:14px}
+.hc{color:#ffb8a8;font-weight:700}
+.mem{border-left:3px solid var(--brass-deep);padding:6px 10px;background:var(--panel-2);border-radius:0 8px 8px 0}
+.mem b{display:block}.mem small{color:var(--muted)}
+input[type=text]{width:100%;background:var(--panel-2);color:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:10px;font:600 15px var(--body)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mode{background:var(--panel-2);border:1px solid var(--rule);border-radius:10px;padding:10px;color:var(--cream);text-align:left;font:600 15px var(--body);cursor:pointer}
+.mode small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:3px}
+.mode.on{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)}
+.mode.hard.on{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger)}
+.stage{position:relative;flex:1;min-height:200px;border-radius:14px;overflow:hidden;border:1px solid var(--rule);background:#22413f}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.toast{position:absolute;left:50%;top:14%;transform:translate(-50%,0);background:rgba(14,28,25,.82);border:1px solid var(--brass-deep);
+  color:var(--cream);padding:8px 14px;border-radius:10px;font:700 16px var(--body);text-align:center;max-width:86%;pointer-events:none;
+  opacity:0;transition:opacity .25s}
+.toast.on{opacity:1}
+.toast.warn{border-color:var(--danger);color:#ffd9cf}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.hint{color:var(--muted);font-size:14px;line-height:1.35}
+.hint b{color:var(--cream)}
+.odds{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--panel-2);border-radius:999px;padding:3px 10px;font-size:12px;font-variant-numeric:tabular-nums;color:var(--cream)}
+.chip em{font-style:normal;color:var(--muted)}
+.meter{display:grid;grid-template-columns:64px 1fr 56px;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meter span:last-child{text-align:right;color:var(--cream)}
+.bar{position:relative;height:12px;border-radius:6px;background:var(--panel-2);overflow:hidden}
+.bar.tension{background:linear-gradient(90deg,var(--slack) 0 10%,var(--safe) 10% 82%,#c9a34a 82% 90%,var(--danger) 90%)}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--brass);width:0}
+.bar .needle{position:absolute;top:-2px;bottom:-2px;width:4px;margin-left:-2px;background:var(--cream);border-radius:2px;box-shadow:0 0 0 2px var(--ink);left:0}
+.controls{display:flex;gap:8px}
+.big{flex:1;border:0;border-radius:12px;padding:14px 10px;font:800 18px var(--body);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;touch-action:none}
+.big.reel{background:var(--brass);color:#2a1d07;flex:1.4}
+.big.reel.on{background:#f2c463;box-shadow:inset 0 3px 0 rgba(0,0,0,.25)}
+.big.net{background:var(--panel-2);color:var(--muted);border:1px solid var(--rule)}
+.big.net.ready{background:var(--safe);color:#10230c;border-color:var(--safe)}
+.big.strike{background:var(--brass);color:#2a1d07}
+.big.ghost{background:var(--panel-2);color:var(--cream);border:1px solid var(--rule);flex:0 0 auto;padding:14px 16px}
+.overlay{position:fixed;inset:0;z-index:20;background:rgba(9,18,16,.78);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
+.card{background:var(--panel);border:1px solid var(--brass-deep);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
+.card h2{margin:0;font-family:var(--display);font-size:26px;color:var(--brass);line-height:1.1;text-wrap:balance}
+.card p{margin:0;color:var(--cream);line-height:1.4}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;font-variant-numeric:tabular-nums}
+.stats div{background:var(--panel-2);border-radius:8px;padding:6px 8px}
+.stats small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.stats b{font-size:16px}
+.stars{color:var(--brass);font-size:20px;letter-spacing:2px}
+.stars i{font-style:normal;color:var(--rule)}
+.tag{display:inline-block;background:var(--brass);color:#2a1d07;border-radius:6px;padding:2px 8px;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.log{display:flex;flex-direction:column;gap:6px}
+.logrow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;background:var(--panel-2);border-radius:8px;padding:8px 10px;font-variant-numeric:tabular-nums}
+.logrow b{font-size:15px}
+.logrow small{color:var(--muted);font-size:12px}
+.logrow .stars{font-size:14px;text-align:right}
+.pbs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pbs div{background:var(--panel-2);border-radius:8px;padding:6px 8px;font-size:12px;color:var(--muted)}
+.pbs b{display:block;color:var(--cream);font-size:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row label{color:var(--cream)}
+input[type=range]{width:55%;accent-color:var(--brass)}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--brass)}
+.note{font-size:12px;color:var(--muted);line-height:1.4}
+.danger-btn{background:transparent;color:#ffb8a8;border:1px solid var(--danger);border-radius:10px;padding:8px 12px;font:700 13px var(--body);cursor:pointer}
+h3{margin:4px 0 0;font:700 12px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+@media (max-height:640px){.brand{font-size:19px}.big{padding:11px 8px;font-size:16px}.panel{padding:8px;gap:6px}}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">Tight Lines<small id="who">Survival prototype</small></div>
+    <div class="lvl"><div>Fishing <b id="lvl">Lv 1</b></div><div id="xptext">0 / 50 XP</div><div class="xpbar"><i id="xpfill"></i></div></div>
+    <button class="iconbtn" id="btnLog" type="button">Log</button>
+    <button class="iconbtn" id="btnSet" type="button" aria-label="Settings">⚙</button>
+  </header>
+
+  <div class="conds">
+    <div class="cond info"><span class="lab">Conditions</span><b><span id="cDay">Spring · Day 1</span><br><span id="cTime">06:00 Dawn</span> · <span id="cWeather">Clear</span></b></div>
+    <div class="cond"><label for="selBait">Bait</label><select id="selBait"><option selected>Maggots</option><option>Bread</option><option>Worm</option><option>Pellets</option><option>Spinner</option><option>Fly</option></select></div>
+    <div class="cond"><label for="selLine">Line</label><select id="selLine"><option value="Light">Light 4 lb</option><option value="Medium" selected>Medium 6 lb</option><option value="Heavy">Heavy 10 lb</option></select></div>
+  </div>
+
+  <div class="needs" id="needs" aria-label="Survival needs"></div>
+
+  <div class="stage" id="stage">
+    <canvas id="river" aria-label="River scene. Drag down on the water to cast; during a fight drag left and right to move the rod."></canvas>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="overlay" id="overlay" hidden></div>
+  </div>
+
+  <div class="panel" id="panel"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rand=(a,b)=>a+Math.random()*(b-a);
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* ---------- Data (matches Tight_Lines_Game_Data.xlsx) ---------- */
+const RARITY={Common:100,Uncommon:30,Rare:8,"Very rare":2};
+const FISH=[
+  {id:"dace",name:"Dace",rarity:"Common",seasons:["Spring","Summer","Autumn","Winter"],times:["Day"],baits:["Maggots"],
+   min:0.1,max:0.5,lenK:31,pull:0.55,stam:0.9,speed:1.15,switchy:0.75,jump:0,strikeWin:0.7,nibbles:[1,3],
+   fights:"Quick little darts, easy"},
+  {id:"chub",name:"Chub",rarity:"Common",seasons:["Summer"],times:["Day","Dusk"],baits:["Bread"],
+   min:1,max:5,lenK:31,pull:0.88,stam:1.6,speed:0.95,switchy:0.3,jump:0,dash:true,strikeWin:1.1,nibbles:[0,2],
+   fights:"One hard dash for the snags, then tires"},
+  {id:"trout",name:"Brown trout",rarity:"Uncommon",seasons:["Spring","Summer"],times:["Dawn","Dusk"],baits:["Spinner","Fly"],
+   min:0.5,max:4,lenK:32,pull:0.82,stam:1.8,speed:1.25,switchy:0.5,jump:0.28,strikeWin:0.9,nibbles:[0,1],spooky:true,
+   fights:"Darting runs and the odd jump"},
+  {id:"grayling",name:"Grayling",rarity:"Uncommon",seasons:["Autumn","Winter"],times:["Day"],weather:["Clear"],baits:["Fly","Worm"],
+   min:0.5,max:2,lenK:33,pull:0.72,stam:1.2,speed:1.0,switchy:0.85,jump:0,twist:true,strikeWin:0.6,nibbles:[0,2],spooky:true,
+   fights:"Twists and uses its big fin against the current"},
+  {id:"eel",name:"European eel",rarity:"Uncommon",seasons:["Summer"],times:["Night"],baits:["Worm"],
+   min:1,max:4,lenK:58,pull:0.75,stam:1.7,speed:0.6,switchy:0.6,jump:0,roll:true,strikeWin:1.4,nibbles:[1,3],
+   fights:"Rolls and twists, tangles the line"},
+  {id:"barbel",name:"Barbel",rarity:"Uncommon",seasons:["Summer","Autumn"],times:["Night"],weather:["Rain"],baits:["Pellets"],
+   min:2,max:12,lenK:33,pull:1.0,stam:2.6,speed:0.8,switchy:0.25,jump:0,stubborn:true,strikeWin:1.0,nibbles:[0,1],
+   fights:"Powerful runs along the bottom, won't give up"},
+  {id:"salmon",name:"Atlantic salmon",rarity:"Rare",seasons:["Autumn"],times:["Dawn","Day"],weather:["Rain"],baits:["Fly","Spinner"],
+   min:5,max:25,lenK:31,pull:1.05,stam:3.0,speed:1.3,switchy:0.35,jump:0.4,longRuns:true,strikeWin:0.9,nibbles:[0,1],
+   fights:"Long runs and leaps; drop the rod tip"}
+];
+const LINE={Light:1.18,Medium:1.0,Heavy:0.82};
+const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
+
+/* ---------- Save (per-browser, optional) ---------- */
+const KEY="tightlines-proto-v1";
+let save={settings:{sens:1,debug:false,strict:1}};
+try{const raw=localStorage.getItem(KEY); if(raw){const s=JSON.parse(raw); save=Object.assign(save,s); save.settings=Object.assign({sens:1,debug:false,strict:1},s.settings||{});if(save.tuneV!==2){save.settings.strict=1;save.tuneV=2;}}}catch(e){}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(save));}catch(e){}}
+
+function levelInfo(xp){let L=1,acc=0;while(L<50&&xp>=acc+xpToNext(L)){acc+=xpToNext(L);L++;}
+  return {L,into:xp-acc,need:L<50?xpToNext(L):0};}
+function renderLevel(){const i=levelInfo(run?run.xp:0);$("#lvl").textContent="Lv "+i.L;
+  $("#xptext").textContent=i.need?`${i.into} / ${i.need} XP`:"Max level";
+  $("#xpfill").style.width=(i.need?i.into/i.need*100:100)+"%";}
+
+/* ---------- Conditions & bite odds ---------- */
+const SEASONS=["Spring","Summer","Autumn","Winter"];
+function tod(min){const h=min/60;return h>=5&&h<8?"Dawn":h>=8&&h<18?"Day":h>=18&&h<21?"Dusk":"Night";}
+let run=null;
+function conds(){const r=run||{day:1,min:600,weather:"Clear"};
+  return {season:SEASONS[Math.floor((r.day-1)/10)%4],time:tod(r.min),weather:r.weather,bait:$("#selBait").value,line:$("#selLine").value};}
+function biteWeights(c,q){return FISH.map(f=>{let w=RARITY[f.rarity];
+  w*=f.seasons.includes(c.season)?2:0.1;
+  if(f.times.includes(c.time))w*=1.5;
+  w*=f.baits.includes(c.bait)?2:0.3;
+  if(f.weather&&f.weather.includes(c.weather))w*=1.5;
+  if(f.spooky&&c.line==="Heavy")w*=0.6;
+  if(q!==undefined&&f.rarity!=="Common")w*=1+0.5*q;
+  return {f,w};});}
+function pickFish(c,q){const ws=biteWeights(c,q);const tot=ws.reduce((a,b)=>a+b.w,0);let r=Math.random()*tot;
+  for(const x of ws){if((r-=x.w)<=0)return x.f;}return ws[0].f;}
+
+/* ---------- Canvas & scenery ---------- */
+const cv=$("#river"),ctx=cv.getContext("2d");
+let W=300,H=400,DPR=1,scen=null;
+const PALETTES={
+  Dawn:{sky:["#d79c9a","#f6d3b3"],far:"#4b5a5e",trees:"#3a4a4c",water:["#86a2a3","#2f4c51"],streak:"rgba(255,235,220,.22)",bank:["#3d5a3a","#26391f"],mist:0.28},
+  Day:{sky:["#7fb7d8","#d6ecf1"],far:"#4d6e4a",trees:"#335331",water:["#5f9897","#1c4044"],streak:"rgba(230,250,250,.22)",bank:["#4f7a3c","#2e4a22"],mist:0.05},
+  Night:{sky:["#0b1430","#24365a"],far:"#121a29",trees:"#090e18",water:["#2b3c58","#0a111d"],streak:"rgba(190,210,255,.16)",bank:["#1b2619","#0b110a"],mist:0.06},
+  Dusk:{sky:["#3d2f5d","#e48a5a"],far:"#2f2f43",trees:"#232234",water:["#6b5878","#1b2131"],streak:"rgba(255,200,170,.2)",bank:["#33402e","#1b2418"],mist:0.12}
+};
+function geom(){return {waterTop:H*0.2,nearY:H*0.88};}
+function buildScenery(){
+  const g=geom(),pts=[],reeds=[],streaks=[];
+  let y=g.waterTop-10;
+  for(let x=-10;x<=W+10;x+=8){y=clamp(y+rand(-6,6),g.waterTop-H*0.12,g.waterTop-H*0.03);pts.push([x,y]);}
+  for(let i=0;i<Math.floor(W/7);i++)reeds.push([rand(0,W),rand(0,1),rand(8,18)]);
+  for(let i=0;i<70;i++)streaks.push({x:rand(0,W),t:Math.random(),l:rand(10,34)});
+  scen={pts,reeds,streaks};
+}
+function resize(){const r=cv.getBoundingClientRect();DPR=Math.min(2,window.devicePixelRatio||1);
+  W=Math.max(200,r.width);H=Math.max(200,r.height);cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);buildScenery();}
+new ResizeObserver(resize).observe(cv);
+
+const MAXD=40;
+function toScreen(D,X){const g=geom();const t=clamp(D/MAXD,0,1);
+  const y=lerp(g.nearY-20,g.waterTop+16,Math.pow(t,0.85));
+  const spread=W*(0.44-0.18*t);
+  return {x:W/2+X*spread,y,scale:1-0.55*t};}
+function rodBase(){return {x:W/2,y:H+12};}
+function rodTip(){return {x:W/2+G.R*W*0.24,y:H*0.7};}
+
+/* ---------- Game state ---------- */
+const G={state:"ready",R:0,reeling:false,aim:null,cast:null,float:null,fish:null,t:0,ripples:[],keys:{},lastNibble:-9,resultLock:false};
+
+/* ---------- UI helpers ---------- */
+let toastTimer=0;
+function toast(msg,warn,ms){const el=$("#toast");el.textContent=msg;el.className="toast on"+(warn?" warn":"");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast"+(warn?" warn":""),ms||1600);}
+function setCondsEnabled(on){["#selBait","#selLine"].forEach(s=>$(s).disabled=!on);}
+function stars(n){return "★".repeat(n)+"<i>"+"★".repeat(5-n)+"</i>";}
+function lbOz(w){let lb=Math.floor(w),oz=Math.round((w-lb)*16);if(oz===16){lb++;oz=0;}return lb?`${lb} lb ${oz} oz`:`${oz} oz`;}
+
+function panelReady(){
+  const c=conds();const ws=biteWeights(c);const tot=ws.reduce((a,b)=>a+b.w,0);
+  const odds=ws.map(x=>`<span class="chip">${x.f.name} <em>${Math.round(x.w/tot*100)}%</em></span>`).join("");
+  $("#panel").innerHTML=`<div class="hint"><b>Drag down on the water</b> to swing the rod back. Sideways aims the cast. <b>Release at the end of the swing</b> for a clean cast.</div>
+  <div class="odds" aria-label="Bite odds for these conditions">${odds}</div>
+  <div class="controls"><button class="big ghost" id="btnCamp" type="button" style="flex:1">Camp${run&&run.fire>0?" · fire lit":""}</button><button class="big ghost" id="btnKeep" type="button" style="flex:1">Keep net · ${run?run.keep.length:0}</button></div>`;
+  $("#btnCamp").addEventListener("click",campMenu);$("#btnKeep").addEventListener("click",campMenu);
+  oddsKey=condKey();
+}
+function panelWaiting(){
+  $("#panel").innerHTML=`<div class="hint">Watch the float. Little dips are <b>nibbles</b>; wait for it to <b>go under</b>, then strike.</div>
+  <div class="controls"><button class="big strike" id="btnStrike" type="button">Strike</button></div>`;
+  $("#btnStrike").addEventListener("pointerdown",e=>{e.preventDefault();strike();});
+}
+function panelFight(){
+  $("#panel").innerHTML=`
+  <div class="meter"><span>Tension</span><div class="bar tension"><div class="needle" id="mT"></div></div><span id="mTv">0%</span></div>
+  <div class="meter"><span>Fish</span><div class="bar"><div class="fill" id="mS"></div></div><span id="mSv">100%</span></div>
+  <div class="meter"><span>Line out</span><div class="bar"><div class="fill" id="mD" style="background:var(--muted)"></div></div><span id="mDv">0 m</span></div>
+  <div class="controls"><button class="big ghost" id="btnCut" type="button" aria-label="Cut the line and recast">✂</button><button class="big net" id="btnNet" type="button">Net</button><button class="big reel" id="btnReel" type="button">Hold to reel</button></div>
+  <div class="hint" style="font-size:12px">Drag left and right on the river to move the rod. Move <b>with</b> a run to ease tension, <b>against</b> it to tire the fish.</div>`;
+  const rb=$("#btnReel");
+  const down=e=>{e.preventDefault();G.reeling=true;rb.classList.add("on");try{rb.setPointerCapture(e.pointerId);}catch(_){}};
+  const up=()=>{G.reeling=false;rb.classList.remove("on");};
+  rb.addEventListener("pointerdown",down);rb.addEventListener("pointerup",up);rb.addEventListener("pointercancel",up);rb.addEventListener("lostpointercapture",up);
+  $("#btnNet").addEventListener("pointerdown",e=>{e.preventDefault();tryNet();});
+  $("#btnCut").addEventListener("click",()=>{if(G.state==="fight")toReady("Line cut. Recast when ready.");});
+}
+
+/* ---------- State transitions ---------- */
+function toReady(msg,warn){
+  loopFail=false;hideOverlay();
+  G.state="ready";G.fish=null;G.cast=null;G.float=null;G.reeling=false;G.R=0;G.aim=null;
+  setCondsEnabled(true);panelReady();if(msg)toast(msg,warn,2200);
+}
+function startCast(q,power,aim){
+  if(run){run.needs.stam=Math.max(0,run.needs.stam-1.5);if(run.needs.stam<20)power*=0.75;}
+  const D=6+power*26;
+  G.cast={q,D,aim,t:0,from:rodTip()};
+  G.state="flight";setCondsEnabled(false);
+  $("#panel").innerHTML=`<div class="hint">Casting…</div>`;
+  const pct=Math.round(q*100);
+  if(pct>=99)toast("PERFECT CAST · 100%",false,1800);
+  else if(q<0.35)toast(`Messy cast · ${pct}%. The splash spooks the swim.`,true,2000);
+  else toast(`Cast · ${pct}%`,false,1200);
+}
+function landFloat(){
+  const c=G.cast;const s=toScreen(c.D,c.aim);
+  G.ripples.push({x:s.x,y:s.y,r:2,a:0.9,sc:s.scale});
+  const q=c.q;const wait=rand(2.5,7)*(1.35-0.6*q)*(q<0.35?1.5:1);
+  const cond=conds();const f=pickFish(cond,q);
+  const n=Math.floor(rand(f.nibbles[0],f.nibbles[1]+0.999));
+  const nib=[];let t=wait;for(let i=0;i<n;i++){nib.push(t);t+=rand(0.7,1.5);}
+  G.float={D:c.D,X:c.aim,t:0,nibbles:nib,take:t,fish:f,dip:0,under:false};G.lastNibble=-9;
+  G.state="waiting";panelWaiting();
+}
+function strike(){
+  if(G.state!=="waiting")return;
+  const fl=G.float;
+  if(fl.under){const since=fl.t-fl.take;
+    if(since<=fl.fish.strikeWin){hook(fl.fish);return;}}
+  if(fl.t-G.lastNibble<0.5){toReady("Struck too early. You spooked it.",true);return;}
+  toReady("Nothing on. Recast.");
+}
+function hook(f){
+  const r=Math.random();const w=f.min+(f.max-f.min)*Math.pow(r,2);const s=(w-f.min)/(f.max-f.min);
+  const fl=G.float;
+  G.fish={f,w,s,D:fl.D,X:fl.X,S:1,T:0.3,dir:Math.random()<0.5?-1:1,mode:"rest",modeT:0.4,modePull:0.3,
+    pullScale:f.pull*(0.75+0.5*s),stamPool:f.stam*(0.75+0.6*s),snapT:0,slackT:0,tangle:0,air:0,t:0,with:0,ang:0,vx:0,vd:0};
+  if(f.dash){Object.assign(G.fish,{mode:"dash",dir:-1,modeT:2.1,modePull:1.25});}
+  G.state="fight";G.float=null;G.R=0;panelFight();
+  G.ripples.push({x:toScreen(fl.D,fl.X).x,y:toScreen(fl.D,fl.X).y,r:4,a:1,sc:1});
+  toast(f.dash?"Fish on! It's running for the snags!":"Fish on!",f.dash,1500);
+}
+function nextMode(F){
+  const f=F.f;
+  if(f.jump&&Math.random()<f.jump*(0.4+F.S)){F.mode="jump";F.modeT=1.1;F.modePull=0.65;toast("It's jumping! Ease off!",true,1100);return;}
+  if(f.twist&&Math.random()<0.35){F.mode="twist";F.modeT=rand(1,1.8);F.modePull=0.8;toast("It's turning side-on in the current!",true,1100);return;}
+  if(f.roll&&Math.random()<0.35){F.mode="roll";F.modeT=rand(1.2,2);F.modePull=0.7;toast("It's rolling! Keep the line tight",true,1100);return;}
+  if(Math.random()<0.55*(0.35+0.65*F.S)){F.mode="run";F.modeT=rand(0.8,2.4);F.modePull=rand(0.7,1.05);
+    if(Math.random()<f.switchy)F.dir=-F.dir;return;}
+  if(Math.random()<0.35){F.mode="shake";F.modeT=rand(0.5,1);F.modePull=0.6;return;}
+  F.mode="rest";F.modeT=rand(0.6,1.6);F.modePull=0.25;
+}
+function lose(msg){
+  const f=G.fish&&G.fish.f;if(run)run.xp+=3;renderLevel();
+  const bt=conds().bait;const lure=(bt==="Spinner"||bt==="Fly")&&/snap|Snag|spool|tangle/i.test(msg)?` Your ${bt.toLowerCase()} went with it.`:"";
+  G.state="result";G.reeling=false;
+  showOverlay(`<h2>${msg}</h2><p>${f?"Something heavy-ish. You never saw it properly.":""}${lure}</p>
+  <p class="note">+3 XP for the experience.</p>
+  <div class="controls"><button class="big strike" id="again" type="button">Cast again</button></div>`);
+  $("#again").addEventListener("click",()=>{hideOverlay();toReady();});
+}
+function tryNet(){
+  const F=G.fish;if(!F||G.state!=="fight")return;
+  if(F.D>3.2){toast("Too far out to net.",true,900);return;}
+  const p=clamp(1-F.S*1.7,0.05,0.97);
+  if(Math.random()<p){landed();return;}
+  if(F.S>0.45){lose("It thrashed free at the net");return;}
+  F.D+=4;F.mode="run";F.modeT=1.6;F.modePull=1;F.dir=-F.dir;F.T=Math.min(1,F.T+0.25);
+  toast("It bolted from the net! Tire it more.",true,1500);
+}
+function landed(){
+  const F=G.fish,f=F.f,c=conds();G.state="result";G.reeling=false;
+  const len=Math.round(f.lenK*Math.pow(F.w,1/3));
+  const st=F.s<0.1?1:F.s<0.25?2:F.s<0.45?3:F.s<0.8?4:5;
+  const first=!run.log.some(e=>e.id===f.id);
+  const prevPB=run.log.filter(e=>e.id===f.id).reduce((m,e)=>Math.max(m,e.w),0);
+  let xp=Math.round(({Common:10,Uncommon:30,Rare:60})[f.rarity]+10*F.s);if(first)xp+=25;
+  const before=levelInfo(run.xp).L;run.xp+=xp;const after=levelInfo(run.xp).L;
+  run.log.unshift({id:f.id,name:f.name,w:+F.w.toFixed(3),len,stars:st,season:c.season,time:c.time,bait:c.bait,day:run.day});
+  run.log=run.log.slice(0,200);run.keep.push({id:f.id,name:f.name,w:+F.w.toFixed(3),stars:st,caught:absMin()});renderLevel();
+  const pb=!first&&F.w>prevPB;
+  showOverlay(`${first?'<span class="tag">New species</span>':pb?'<span class="tag">Personal best</span>':""}
+  <h2>${f.name}</h2>
+  <div class="stars" aria-label="${st} of 5 stars">${stars(st)}</div>
+  <div class="stats"><div><small>Weight</small><b>${lbOz(F.w)}</b></div><div><small>Length</small><b>${len} cm</b></div><div><small>XP</small><b>+${xp}</b></div></div>
+  <p class="note">${f.fights}. Caught on ${c.bait.toLowerCase()} at ${c.time.toLowerCase()}, ${c.season.toLowerCase()}.${after>before?` <b style="color:var(--brass)">Fishing level ${after}!</b>`:""} Added to your keep net.</p>
+  <div class="controls"><button class="big strike" id="again" type="button">Cast again</button></div>`);
+  $("#again").addEventListener("click",()=>{hideOverlay();toReady();});
+}
+function showOverlay(html){const o=$("#overlay");o.innerHTML=`<div class="card">${html}</div>`;o.hidden=false;
+  const b=o.querySelector("button");if(b)setTimeout(()=>b.focus(),50);}
+function hideOverlay(){$("#overlay").hidden=true;$("#overlay").innerHTML="";}
+
+/* ---------- Simulation ---------- */
+function update(dt){
+  G.t+=dt;
+  if(run&&["ready","flight","waiting","fight"].includes(G.state)&&$("#overlay").hidden){
+    advance(dt*TIME_RATE);if(checkDeath())return;
+    if(G.state==="ready"&&condKey()!==oddsKey)panelReady();}
+  if(G.t-hudT>0.25){hudT=G.t;renderHud();}
+  // keyboard rod
+  const kx=(G.keys.right?1:0)-(G.keys.left?1:0);
+  if(kx&&G.state==="fight")G.R=clamp(G.R+kx*dt*2.2,-1,1);
+  for(const s of scen.streaks){s.t+=dt*0.05;if(s.t>1)s.t-=1;}
+  G.ripples.forEach(r=>{r.r+=dt*28;r.a-=dt*0.7;});G.ripples=G.ripples.filter(r=>r.a>0);
+
+  if(G.state==="flight"){G.cast.t+=dt/0.7;if(G.cast.t>=1)landFloat();return;}
+  if(G.state==="waiting"){const fl=G.float;fl.t+=dt;
+    fl.dip=Math.max(0,fl.dip-dt*3);
+    while(fl.nibbles.length&&fl.t>=fl.nibbles[0]){fl.nibbles.shift();fl.dip=1;G.lastNibble=fl.t;
+      const s=toScreen(fl.D,fl.X);G.ripples.push({x:s.x,y:s.y,r:1,a:0.5,sc:s.scale});}
+    if(!fl.under&&fl.t>=fl.take){fl.under=true;const s=toScreen(fl.D,fl.X);G.ripples.push({x:s.x,y:s.y,r:2,a:1,sc:s.scale});}
+    if(fl.under&&fl.t-fl.take>fl.fish.strikeWin)toReady("Too slow. It stole your bait.",true);
+    return;}
+  if(G.state!=="fight")return;
+
+  const F=G.fish,f=F.f;F.t+=dt;
+  F.modeT-=dt;if(F.modeT<=0){if(F.mode==="dash")toast("It's tiring",false,900);nextMode(F);}
+  let modePull=F.modePull;if(F.mode==="shake"){modePull*=0.6+0.4*Math.abs(Math.sin(F.t*22));if(Math.random()<dt*3)F.dir=-F.dir;}
+  if(F.mode==="twist"){if(Math.random()<dt*4)F.dir=-F.dir;if(F.dir>0)modePull+=0.25;}
+  if(F.mode==="roll"){if(Math.random()<dt*5)F.dir=-F.dir;F.tangle+=dt*(F.T<0.4?0.75:-0.25);}else F.tangle=Math.max(0,F.tangle-dt*0.3);
+  if(F.tangle>1){lose("The eel rolled and tangled your line");return;}
+  if(F.tangle>0.6&&G.t-lastWarn>1.2){toast("Line's tangling! More tension",true,900);lastWarn=G.t;}
+  const P=modePull*F.pullScale*(0.35+0.65*F.S)*(F.S<=0.01&&F.D<3.2?0.2:1);
+  const w=clamp(G.R*F.dir,-1,1);F.with=w;
+  // jumps
+  F.air=0;if(F.mode==="jump"){const k=1-F.modeT/1.1;if(k>0.25&&k<0.8)F.air=Math.sin((k-0.25)/0.55*Math.PI);}
+  // lateral
+  let lat=F.dir*0.45*f.speed*F.modePull*(0.4+0.6*F.S)*(1+0.75*Math.min(w,0));
+  if(F.mode==="rest")lat*=0.3;
+  F.X+=lat*dt;
+  if(F.mode==="dash"){
+    if(w<-0.35){F.modeT-=dt*1.4;}
+    if(F.X<-0.9&&F.t>0.6){lose("Snagged in the tree roots");return;}
+  }
+  if(F.X>1){F.X=1;F.dir=-1;}if(F.X<-1){F.X=-1;F.dir=1;}
+  // tension
+  let pullT=P*0.92*(1-0.37*Math.max(w,0))*(1+0.42*Math.max(-w,0));
+  if(F.air>0.05)pullT+=G.reeling?0.95*F.air:-0.2;
+  const target=(pullT+(G.reeling?0.5:0))*LINE[conds().line]*save.settings.strict;
+  const dragLim=0.86;
+  const capped=target>dragLim?dragLim+(target-dragLim)*0.54:target;
+  F.T+=(Math.max(0,capped)-F.T)*Math.min(1,dt*9);
+  // line in/out
+  const runOut=P*2.4*(0.4+0.6*F.S)*(F.mode==="rest"?0.2:1)*(f.longRuns&&F.mode==="run"?1.6:1);
+  const reelIn=G.reeling?2.1*(1-Math.min(1,P)*0.55)*(run&&run.needs.stam<20?0.65:1):0;
+  if(run)run.needs.stam=Math.max(0,run.needs.stam-dt*(G.reeling?0.1:0.05));
+  const dragOut=target>dragLim?(target-dragLim)*3:0;
+  const prevD=F.D;F.D=clamp(F.D+(runOut*0.5+dragOut-reelIn)*dt,0.6,45);F.vd=(F.D-prevD)/dt;F.vx=lat;
+  if(F.D>=44){lose("Spooled. It ran off all your line");return;}
+  // stamina
+  const drain=(0.018+F.T*0.07+Math.max(-w,0)*P*0.09+(G.reeling?0.01:0))/F.stamPool;
+  F.S=clamp(F.S-drain*dt+(F.T<0.15?0.01*dt:0)+(f.stubborn&&F.mode==="rest"&&F.S>0.08?0.035*dt:0),0,1);
+  // failure checks
+  if(F.T>1){F.snapT+=dt;if(F.snapT>0.24){lose("Snap! The line broke");return;}}else F.snapT=Math.max(0,F.snapT-dt*1.5);
+  if(F.air>0.5&&G.reeling&&Math.random()<dt*0.9){lose("It threw the hook mid-jump");return;}
+  if(F.T<0.14&&F.D>1.2){F.slackT+=dt;if(F.slackT>1.6){lose("Too much slack. The hook slipped out");return;}}else F.slackT=Math.max(0,F.slackT-dt);
+  if(Math.random()<dt*0.8&&F.mode!=="rest"){const s=toScreen(F.D,F.X);G.ripples.push({x:s.x,y:s.y,r:2,a:0.5,sc:s.scale});}
+  updateMeters();
+}
+let lastWarn=0;
+function updateMeters(){
+  const F=G.fish;if(!F)return;const mT=$("#mT");if(!mT)return;
+  mT.style.left=clamp(F.T,0,1.1)/1.1*100+"%";$("#mTv").textContent=Math.round(F.T*100)+"%";
+  $("#mS").style.width=F.S*100+"%";$("#mSv").textContent=Math.round(F.S*100)+"%";
+  $("#mD").style.width=clamp(F.D/MAXD,0,1)*100+"%";$("#mDv").textContent=F.D.toFixed(1)+" m";
+  const net=$("#btnNet");const ready=F.D<=3.2;net.classList.toggle("ready",ready&&F.S<0.3);
+  net.textContent=ready?(F.S<0.3?"Net it!":"Net (lively)"):"Net";
+  if(G.t-lastWarn>1.2){
+    if(F.T>0.9){toast("Line's about to go! Ease off",true,900);lastWarn=G.t;}
+    else if(F.slackT>1.1){toast("Slack line! Keep some pressure on",true,900);lastWarn=G.t;}
+  }
+}
+
+/* ---------- Drawing ---------- */
+function draw(){
+  const g=geom(),pal=PALETTES[conds().time];
+  // sky
+  let gr=ctx.createLinearGradient(0,0,0,g.waterTop);gr.addColorStop(0,pal.sky[0]);gr.addColorStop(1,pal.sky[1]);
+  ctx.fillStyle=gr;ctx.fillRect(0,0,W,g.waterTop+2);
+  if(conds().time==="Dusk"){ctx.fillStyle="rgba(255,190,120,.85)";ctx.beginPath();ctx.arc(W*0.78,g.waterTop-H*0.04,H*0.035,0,Math.PI*2);ctx.fill();}
+  if(conds().time==="Night"){ctx.fillStyle="rgba(240,240,225,.9)";ctx.beginPath();ctx.arc(W*0.7,g.waterTop-H*0.09,H*0.025,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.7)";for(let i=0;i<24;i++){ctx.fillRect((i*97.3)%W,((i*53.7)%1)*0+((i*37)%(g.waterTop*0.8)),1.2,1.2);}}
+  if(conds().weather!=="Clear"){ctx.fillStyle=conds().weather==="Rain"?"rgba(70,80,90,.45)":"rgba(120,125,130,.35)";ctx.fillRect(0,0,W,g.waterTop+2);}
+  if(conds().time==="Dawn"){ctx.fillStyle="rgba(255,236,210,.8)";ctx.beginPath();ctx.arc(W*0.2,g.waterTop-H*0.02,H*0.03,0,Math.PI*2);ctx.fill();}
+  // far tree line
+  ctx.fillStyle=pal.trees;ctx.beginPath();ctx.moveTo(-10,g.waterTop+4);for(const p of scen.pts)ctx.lineTo(p[0],p[1]);ctx.lineTo(W+10,g.waterTop+4);ctx.closePath();ctx.fill();
+  ctx.fillStyle=pal.far;ctx.fillRect(0,g.waterTop-4,W,8);
+  // water
+  gr=ctx.createLinearGradient(0,g.waterTop,0,g.nearY);gr.addColorStop(0,pal.water[0]);gr.addColorStop(1,pal.water[1]);
+  ctx.fillStyle=gr;ctx.fillRect(0,g.waterTop+3,W,g.nearY-g.waterTop);
+  // current streaks (river flows left to right)
+  ctx.strokeStyle=pal.streak;ctx.lineWidth=1.2;
+  for(const s of scen.streaks){const y=lerp(g.waterTop+10,g.nearY-8,s.t*0+((s.x*7.3)%1+1)%1);
+    const depth=(y-g.waterTop)/(g.nearY-g.waterTop);const x=((s.x+G.t*(14+40*depth))%(W+60))-30;
+    ctx.globalAlpha=0.4+0.6*depth;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+s.l*(0.5+depth),y);ctx.stroke();}
+  ctx.globalAlpha=1;
+  // snag: overhanging willow on the left
+  drawSnag(g,pal);
+  // mist
+  if(conds().weather==="Rain"){ctx.strokeStyle="rgba(210,225,235,.35)";ctx.lineWidth=1;ctx.beginPath();
+    for(let i=0;i<90;i++){const x=((i*71.7+G.t*60)%(W+40))-20,y=((i*131.3+G.t*420)%(H+40))-20;ctx.moveTo(x,y);ctx.lineTo(x-3,y+12);}ctx.stroke();
+    for(let i=0;i<6;i++){const k=(G.t*0.9+i/6)%1;const x=(i*157.1)%W,y=lerp(g.waterTop+10,g.nearY-10,((i*0.37)%1));ctx.strokeStyle=`rgba(230,240,245,${0.4*(1-k)})`;ctx.beginPath();ctx.ellipse(x,y,2+k*10,(2+k*10)*0.35,0,0,Math.PI*2);ctx.stroke();}}
+  if(pal.mist>0){gr=ctx.createLinearGradient(0,g.waterTop-10,0,g.waterTop+H*0.18);gr.addColorStop(0,`rgba(255,250,245,${pal.mist})`);gr.addColorStop(1,"rgba(255,250,245,0)");ctx.fillStyle=gr;ctx.fillRect(0,g.waterTop-10,W,H*0.2);}
+  // ripples
+  for(const r of G.ripples){ctx.strokeStyle=`rgba(255,255,255,${Math.max(0,r.a)*0.7})`;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(r.x,r.y,r.r*r.sc,r.r*0.35*r.sc,0,0,Math.PI*2);ctx.stroke();}
+  // fish under water
+  if(G.state==="fight"&&G.fish)drawFish();
+  // near bank
+  gr=ctx.createLinearGradient(0,g.nearY,0,H);gr.addColorStop(0,pal.bank[0]);gr.addColorStop(1,pal.bank[1]);
+  ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(0,g.nearY+4);
+  for(let x=0;x<=W;x+=12)ctx.lineTo(x,g.nearY+Math.sin(x*0.08)*3);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+  if(run&&run.fire>0){const fx=W*0.1,fy=g.nearY+H*0.06;ctx.fillStyle="#3a2412";ctx.fillRect(fx-10,fy+4,20,4);
+    for(let i=0;i<3;i++){const f=Math.sin(G.t*9+i*2)*3;ctx.fillStyle=["rgba(255,120,40,.85)","rgba(255,190,70,.85)","rgba(255,240,170,.9)"][i];
+      ctx.beginPath();ctx.moveTo(fx-8+i*3,fy+4);ctx.quadraticCurveTo(fx+f,fy-16+i*5,fx+8-i*3,fy+4);ctx.fill();}}
+  ctx.strokeStyle=pal.bank[0];ctx.lineWidth=1.5;
+  for(const r of scen.reeds){const x=r[0],y=g.nearY+2+r[1]*8;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+2,y-r[2]*0.6,x+4+Math.sin(G.t+x)*1.5,y-r[2]);ctx.stroke();}
+  // line + rod
+  drawTackle();
+  if(G.state==="ready"&&G.aim)drawAim();
+  if(save.settings.debug)drawDebug();
+}
+function drawSnag(g,pal){
+  const x0=0,yb=g.waterTop+ (g.nearY-g.waterTop)*0.32;
+  ctx.fillStyle=pal.trees;ctx.beginPath();ctx.moveTo(x0,g.waterTop-H*0.1);
+  ctx.quadraticCurveTo(W*0.16,g.waterTop-H*0.06,W*0.2,yb-6);ctx.quadraticCurveTo(W*0.1,yb+4,x0,yb+18);ctx.closePath();ctx.globalAlpha=0.9;ctx.fill();
+  ctx.globalAlpha=1;ctx.strokeStyle=pal.trees;ctx.lineWidth=1;
+  for(let i=0;i<9;i++){const sx=W*(0.03+i*0.02);ctx.beginPath();ctx.moveTo(sx,yb-10);ctx.quadraticCurveTo(sx+3,yb+10,sx+Math.sin(G.t*0.8+i)*2,yb+24+i%3*6);ctx.stroke();}
+  ctx.strokeStyle="rgba(20,20,15,.55)";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(W*0.02,yb+30);ctx.lineTo(W*0.14,yb+18);ctx.stroke();
+  ctx.font="600 10px 'Alegreya Sans', sans-serif";ctx.fillStyle="rgba(255,255,255,.55)";ctx.fillText("snags",W*0.04,yb+46);
+}
+function drawFish(){
+  const F=G.fish,s=toScreen(F.D,F.X);
+  const len=(16+30*clamp(Math.log(1+F.w)/Math.log(26),0,1)+8)*s.scale*1.4*(F.f.id==="eel"?1.5:1);
+  const ang=Math.atan2(-F.vd*6,F.vx*W*0.3||0.0001);F.ang=lerp(F.ang,ang,0.1);
+  ctx.save();ctx.translate(s.x,s.y-F.air*40*s.scale);ctx.rotate(F.air>0.05?-0.5*F.dir:F.ang);
+  ctx.fillStyle=F.air>0.05?"rgba(214,220,210,.95)":"rgba(10,22,20,.45)";
+  const wig=Math.sin(F.t*(F.mode==="rest"?6:16))*0.35;
+  ctx.beginPath();ctx.ellipse(0,0,len/2,F.f.id==="eel"?len/14:len/6,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.moveTo(-len/2+2,0);ctx.lineTo(-len/2-len*0.22,-len*0.14+wig*len*0.2);ctx.lineTo(-len/2-len*0.22,len*0.14+wig*len*0.2);ctx.closePath();ctx.fill();
+  ctx.restore();
+  if(F.air>0.05){G.ripples.push({x:s.x,y:s.y,r:2,a:0.3,sc:s.scale});}
+  // run direction chevron
+  if(F.mode!=="rest"){ctx.fillStyle=F.mode==="dash"||F.mode==="roll"||F.mode==="twist"?"rgba(227,89,60,.9)":"rgba(240,231,208,.75)";const cx=s.x+F.dir*(len*0.75+10),cy=s.y-12*s.scale;
+    ctx.beginPath();ctx.moveTo(cx+F.dir*7,cy);ctx.lineTo(cx-F.dir*3,cy-6);ctx.lineTo(cx-F.dir*3,cy+6);ctx.closePath();ctx.fill();}
+  // side strain label
+  if(F.mode!=="rest"&&Math.abs(F.with)>0.35){ctx.font="700 12px 'Alegreya Sans', sans-serif";ctx.textAlign="center";
+    ctx.fillStyle=F.with<0?"#ffd27a":"#cfe8c4";ctx.fillText(F.with<0?"Side strain: tiring it":"With the run: easing off",s.x,s.y+22*s.scale+10);ctx.textAlign="left";}
+}
+function drawTackle(){
+  const b=rodBase();let tip=rodTip();let end=null,tension=0.15,show=true;
+  if(G.state==="ready"&&G.aim){const p=aimPower();tip={x:tip.x-G.aim.dx*0.08,y:tip.y+p*H*0.12};show=false;}
+  if(G.state==="flight"){const c=G.cast,tgt=toScreen(c.D,c.aim),k=c.t;
+    end={x:lerp(c.from.x,tgt.x,k),y:lerp(c.from.y,tgt.y,k)-Math.sin(k*Math.PI)*H*0.25};tension=0.1;}
+  if(G.state==="waiting"){const fl=G.float,s=toScreen(fl.D,fl.X);end={x:s.x,y:s.y};tension=0.08;
+    if(!fl.under){const bob=Math.sin(G.t*2.4)*1.2+fl.dip*5*s.scale;const fs=s.scale;
+      ctx.fillStyle="#f3efe3";ctx.fillRect(s.x-1.5*fs-1,s.y-10*fs+bob,3*fs+2,8*fs);ctx.fillStyle="#e3593c";ctx.fillRect(s.x-1.5*fs-1,s.y-14*fs+bob,3*fs+2,5*fs);}}
+  if(G.state==="fight"&&G.fish){const s=toScreen(G.fish.D,G.fish.X);end={x:s.x,y:s.y-G.fish.air*40*s.scale};tension=G.fish.T;}
+  // rod bends toward the line when loaded
+  let ctrl={x:lerp(b.x,tip.x,0.5),y:lerp(b.y,tip.y,0.5)};
+  if(end){tip={x:tip.x+(end.x-tip.x)*0.06*tension,y:tip.y+(end.y-tip.y)*0.05*tension+tension*18};ctrl.x+=(end.x-ctrl.x)*0.05*tension;}
+  if(end&&show!==false){ctx.strokeStyle=tension>0.9?"rgba(255,170,150,.95)":"rgba(240,236,220,.8)";ctx.lineWidth=1;
+    const mx=(tip.x+end.x)/2,my=(tip.y+end.y)/2+(1-clamp(tension,0,1))*40;ctx.beginPath();ctx.moveTo(tip.x,tip.y);ctx.quadraticCurveTo(mx,my,end.x,end.y);ctx.stroke();}
+  ctx.strokeStyle="#2b1b0e";ctx.lineWidth=7;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.quadraticCurveTo(ctrl.x,ctrl.y,lerp(b.x,tip.x,0.45),lerp(b.y,tip.y,0.45));ctx.stroke();
+  ctx.strokeStyle="#5b3a1c";ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(lerp(b.x,tip.x,0.4),lerp(b.y,tip.y,0.4));ctx.quadraticCurveTo(ctrl.x,ctrl.y,tip.x,tip.y);ctx.stroke();
+  ctx.strokeStyle="#dcaa48";ctx.lineWidth=2;ctx.beginPath();ctx.arc(lerp(b.x,tip.x,0.2),lerp(b.y,tip.y,0.2),6,0,Math.PI*2);ctx.stroke();
+  ctx.lineCap="butt";
+}
+function aimPower(){return G.aim?clamp(G.aim.dy/(H*0.4),0,1):0;}
+function aimTiming(){if(!G.aim)return 0;const e=(performance.now()-G.aim.t0)/1000;const per=run&&run.needs.warm<25?0.8:1.2;return (1-Math.cos(2*Math.PI*e/per))/2;}
+function drawAim(){
+  const p=Math.max(0.12,aimPower()),aim=clamp(-G.aim.dx/(W*0.35),-1,1)*0.9;const D=6+p*26;const tgt=toScreen(D,aim);const from=rodTip();
+  ctx.setLineDash([4,6]);ctx.strokeStyle="rgba(255,255,255,.55)";ctx.lineWidth=1.5;ctx.beginPath();
+  ctx.moveTo(from.x,from.y);ctx.quadraticCurveTo((from.x+tgt.x)/2,Math.min(from.y,tgt.y)-H*0.25,tgt.x,tgt.y);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle="rgba(220,170,72,.95)";ctx.beginPath();ctx.ellipse(tgt.x,tgt.y,10*tgt.scale+4,4*tgt.scale+2,0,0,Math.PI*2);ctx.stroke();
+  // timing bar
+  const m=aimTiming(),bw=W*0.62,bx=(W-bw)/2,by=H-34;
+  ctx.fillStyle="rgba(14,28,25,.75)";ctx.fillRect(bx-8,by-20,bw+16,36);
+  ctx.fillStyle="#2e5a4e";ctx.fillRect(bx,by,bw,8);ctx.fillStyle="#dcaa48";ctx.fillRect(bx+bw*0.94,by,bw*0.06,8);
+  ctx.fillStyle="#f0e7d0";ctx.fillRect(bx+bw*m-2,by-4,4,16);
+  ctx.font="700 11px 'Alegreya Sans', sans-serif";ctx.fillStyle="#a7bbad";ctx.fillText(`SWING · ${Math.round(D)} m`,bx,by-7);
+  ctx.textAlign="right";ctx.fillText("release here",bx+bw,by-7);ctx.textAlign="left";
+}
+function drawDebug(){
+  const F=G.fish;ctx.font="11px ui-monospace, Menlo, monospace";ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(6,6,190,F?96:30);ctx.fillStyle="#e8ffe0";
+  const lines=[`state ${G.state}  rod ${G.R.toFixed(2)}`];
+  if(G.state==="waiting")lines.push(`bite ${G.float.fish.name} in ${(G.float.take-G.float.t).toFixed(1)}s`);
+  if(F)lines.push(`${F.f.name} ${F.w.toFixed(2)}lb`,`mode ${F.mode} pull ${F.modePull.toFixed(2)}`,`T ${F.T.toFixed(2)}  S ${F.S.toFixed(2)}`,`D ${F.D.toFixed(1)}  X ${F.X.toFixed(2)}`,`with ${F.with.toFixed(2)} slack ${F.slackT.toFixed(1)} tangle ${F.tangle.toFixed(2)}`);
+  lines.forEach((l,i)=>ctx.fillText(l,12,20+i*14));
+}
+
+/* ---------- Input ---------- */
+cv.addEventListener("pointerdown",e=>{
+  const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  if(G.state==="ready"){G.aim={x0:x,y0:y,dx:0,dy:0,t0:performance.now(),id:e.pointerId};}
+  else if(G.state==="fight"){G.R=clamp((x-W/2)/(W*0.32)*save.settings.sens,-1,1);}
+});
+cv.addEventListener("pointermove",e=>{
+  const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  if(G.state==="ready"&&G.aim&&G.aim.id===e.pointerId){G.aim.dx=x-G.aim.x0;G.aim.dy=y-G.aim.y0;}
+  else if(G.state==="fight"&&e.buttons|| G.state==="fight"&&e.pointerType==="touch"){G.R=clamp((x-W/2)/(W*0.32)*save.settings.sens,-1,1);}
+});
+function release(e){
+  if(G.state==="ready"&&G.aim&&G.aim.id===e.pointerId){
+    const p=aimPower();const q=aimTiming();const aim=clamp(-G.aim.dx/(W*0.35),-1,1)*0.9;G.aim=null;
+    if(p<0.06){toast("Drag further down to swing back",false,1200);return;}
+    startCast(q,Math.max(0.12,p),aim);
+  }
+}
+cv.addEventListener("pointerup",release);cv.addEventListener("pointercancel",e=>{if(G.aim)G.aim=null;});
+document.addEventListener("contextmenu",e=>e.preventDefault());
+window.addEventListener("keydown",e=>{
+  if(e.target&&e.target.tagName==="SELECT")return;
+  const k=e.key;
+  if(k===" "||k==="ArrowUp"||k==="w"||k==="W"){e.preventDefault();
+    if(G.state==="waiting")strike();else if(G.state==="fight"){G.reeling=true;const rb=$("#btnReel");if(rb)rb.classList.add("on");}}
+  if(k==="ArrowLeft"||k==="a"||k==="A")G.keys.left=true;
+  if(k==="ArrowRight"||k==="d"||k==="D")G.keys.right=true;
+  if((k==="n"||k==="N")&&G.state==="fight")tryNet();
+});
+window.addEventListener("keyup",e=>{const k=e.key;
+  if(k===" "||k==="ArrowUp"||k==="w"||k==="W"){G.reeling=false;const rb=$("#btnReel");if(rb)rb.classList.remove("on");}
+  if(k==="ArrowLeft"||k==="a"||k==="A")G.keys.left=false;
+  if(k==="ArrowRight"||k==="d"||k==="D")G.keys.right=false;
+});
+window.addEventListener("blur",()=>{G.reeling=false;G.keys={};});
+["#selBait","#selLine"].forEach(s=>$(s).addEventListener("change",()=>{if(G.state==="ready")panelReady();}));
+
+/* ---------- Log book & settings ---------- */
+$("#btnLog").addEventListener("click",()=>{
+  if(G.state==="fight"||G.state==="waiting"||G.state==="flight")return toast("Not while fishing!",true,900);
+  if(G.state==="result")toReady();
+  const L0=run?run.log:[];const pbs=FISH.map(f=>{const c=L0.filter(e=>e.id===f.id);const best=c.reduce((m,e)=>e.w>m.w?e:m,{w:0});
+    return `<div>${f.name}<b>${c.length?lbOz(best.w):"Not caught"}</b>${c.length} caught</div>`;}).join("");
+  const rows=L0.slice(0,40).map(e=>`<div class="logrow"><b>${e.name}</b><span class="stars">${stars(e.stars)}</span>
+    <small>${lbOz(e.w)} · ${e.len} cm</small><small>${e.bait}, ${e.time.toLowerCase()}, ${e.season.toLowerCase()}${e.day?", day "+e.day:""}</small></div>`).join("");
+  showOverlay(`<h2>Log book</h2><h3>Personal bests</h3><div class="pbs">${pbs}</div><h3>Recent catches</h3>
+  <div class="log">${rows||'<p class="note">No fish yet. Your catches will be listed here with size, weight and conditions.</p>'}</div>
+  <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Close</button></div>`);
+  $("#closeO").addEventListener("click",back);
+});
+$("#btnSet").addEventListener("click",()=>{
+  if(G.state==="fight"||G.state==="waiting"||G.state==="flight")return toast("Not while fishing!",true,900);
+  if(G.state==="result")toReady();
+  showOverlay(`<h2>Settings</h2>
+  <div class="row"><label for="sens">Rod sensitivity</label><input id="sens" type="range" min="0.6" max="1.8" step="0.1" value="${save.settings.sens}"></div>
+  <div class="row"><label for="strict">Tension strictness <b id="strictv">${Math.round(save.settings.strict*100)}%</b></label><input id="strict" type="range" min="0.8" max="1.4" step="0.05" value="${save.settings.strict}"></div>
+  <div class="row"><label for="dbg">Show test numbers</label><input id="dbg" type="checkbox" ${save.settings.debug?"checked":""}></div>
+  <p class="note">Tilt controls can't run inside this preview page. They'll come with the app build; swipe is the default either way.</p>
+  <p class="note">Keyboard: Space or W to reel and strike, A/D or arrows to move the rod, N to net.</p>
+  ${run&&!run.hardcore?`<div class="row"><span class="note">Switch this save to hardcore: permanent death, no going back.</span><button class="danger-btn" id="toHC" type="button">Go hardcore</button></div>`:""}
+  ${run?`<h3>Testing</h3><div class="row"><button class="iconbtn" id="skip1" type="button">Skip 1 hour</button><button class="iconbtn" id="skip6" type="button">Skip 6 hours</button><button class="iconbtn" id="quit" type="button">Quit to title</button></div>`:""}
+  <p class="note">Saves live in this browser only.</p>
+  <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Done</button></div>`);
+  $("#sens").addEventListener("input",e=>{save.settings.sens=+e.target.value;persist();});
+  $("#dbg").addEventListener("change",e=>{save.settings.debug=e.target.checked;persist();});
+  $("#strict").addEventListener("input",e=>{save.settings.strict=+e.target.value;$("#strictv").textContent=Math.round(save.settings.strict*100)+"%";persist();});
+  const hc=$("#toHC");if(hc){let armed=false;hc.addEventListener("click",()=>{
+    if(!armed){armed=true;hc.textContent="Tap again: lock in permadeath";return;}
+    run.hardcore=true;const sl=store.slots[run.slot];if(sl){sl.hardcore=true;if(sl.tavern)sl.tavern.hardcore=true;saveStore();}
+    hc.textContent="Hardcore on";hc.disabled=true;renderHud();toast("This save is now hardcore. Good luck.",true,2200);});}
+  if($("#skip1")){$("#skip1").addEventListener("click",()=>{advance(60);renderHud();toast("1 hour passes");if(checkDeath())return;});
+    $("#skip6").addEventListener("click",()=>{advance(360);renderHud();toast("6 hours pass");if(checkDeath())return;});
+    $("#quit").addEventListener("click",()=>{suspend();run=null;menuScreen();});}
+  $("#closeO").addEventListener("click",back);
+});
+
+/* ---------- Survival: clock, needs, saves ---------- */
+const TIME_RATE=1; // in-game minutes per real second
+const SKEY="tightlines-saves-v1";
+let store={slots:[null,null,null],memorial:[]};
+try{const raw=localStorage.getItem(SKEY);if(raw){const s=JSON.parse(raw);store=Object.assign(store,s);}}catch(e){}
+function saveStore(){try{localStorage.setItem(SKEY,JSON.stringify(store));}catch(e){}}
+let hudT=0,oddsKey="";
+function condKey(){const c=conds();return c.season+c.time+c.weather;}
+function absMin(){return run?(run.day-1)*1440+run.min:0;}
+function clock(m){const h=Math.floor(m/60)%24,mm=Math.floor(m%60);return String(h).padStart(2,"0")+":"+String(mm).padStart(2,"0");}
+function pickWeather(season){const r=Math.random(),wet=season==="Autumn"||season==="Winter";
+  return r<(wet?0.4:0.55)?"Clear":r<(wet?0.65:0.8)?"Overcast":"Rain";}
+function newRun(slot,name,hardcore){
+  return {slot,name,hardcore,day:1,min:6*60,weather:"Clear",weatherIn:300,loc:"tavern",
+    needs:{food:90,warm:90,stam:100,health:100,thirst:100},water:3,ill:0,fire:0,keep:[],xp:0,log:[],away:0,cause:""};}
+function snapshot(){return JSON.parse(JSON.stringify(run));}
+function saveTavern(){if(!run)return;const sl=store.slots[run.slot];if(!sl)return;sl.tavern=snapshot();sl.hardcore=run.hardcore;sl.suspend=null;saveStore();}
+function suspend(){if(!run||!store.slots[run.slot]||G.state==="dead")return;
+  const snap=snapshot();if(G.state==="tavern")snap.loc="tavern";store.slots[run.slot].suspend=snap;saveStore();}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden")suspend();
+  else if(run&&store.slots[run.slot]&&store.slots[run.slot].suspend){store.slots[run.slot].suspend=null;saveStore();}});
+window.addEventListener("pagehide",suspend);
+
+function advance(mins,opt){
+  if(!run||mins<=0)return;opt=opt||{};
+  // step in chunks so fire and day changes land properly
+  while(mins>0){const m=Math.min(mins,10);mins-=m;const h=m/60;const N=run.needs;
+    run.min+=m;if(run.min>=1440){run.min-=1440;run.day++;if((run.day-1)%10===0)toast(`A new season: ${conds().season}`,false,2200);}
+    run.weatherIn-=m;if(run.weatherIn<=0){run.weather=pickWeather(conds().season);run.weatherIn=rand(180,480);}
+    run.away+=m;
+    const c=conds();
+    // warmth
+    let dw={Dawn:-2,Day:4,Dusk:-2,Night:-7}[c.time];
+    if(c.weather==="Rain")dw-=5;else if(c.weather==="Overcast")dw-=1;
+    dw+={Spring:-1,Summer:2,Autumn:-1,Winter:-4}[c.season];
+    if(run.fire>0){dw+=18;run.fire=Math.max(0,run.fire-m);}
+    N.warm=clamp(N.warm+dw*h,0,100);
+    // food and energy
+    N.food=clamp(N.food-(opt.sleep?2.8:4.5)*(run.ill>0?1.3:1)*h,0,100);
+    if(opt.sleep)N.stam=clamp(N.stam+13*h,0,100);
+    else if(opt.rest)N.stam=clamp(N.stam+15*h,0,100);
+    else N.stam=clamp(N.stam-(N.food<25?3:1.2)*h,0,100);
+    // water carried, then thirst
+    run.water=Math.max(0,run.water-m/1440);
+    if(run.water<=0)N.thirst=clamp(N.thirst-6*h,0,100);
+    // illness and health
+    if(run.ill>0)run.ill=Math.max(0,run.ill-m);
+    let dmg=0;if(N.food<=0)dmg+=6;if(N.warm<=0)dmg+=8;if(N.thirst<=0)dmg+=8;if(run.ill>0)dmg+=2;
+    if(dmg)N.health=clamp(N.health-dmg*h,0,100);
+    else if(N.food>40&&N.warm>40&&N.thirst>40)N.health=clamp(N.health+1.5*h,0,100);
+    if(N.health<=0){run.cause=N.warm<=0?"the cold":N.thirst<=0?"thirst":N.food<=0?"hunger":"illness";break;}
+  }
+}
+function checkDeath(){if(run&&run.needs.health<=0&&G.state!=="dead"){die();return true;}return false;}
+
+let warnT=0;
+function renderHud(){
+  const c=conds();
+  $("#cDay").textContent=`${c.season} · Day ${run?((run.day-1)%10)+1:1}`;
+  $("#cTime").textContent=`${clock(run?run.min:600)} ${c.time}`;
+  $("#cWeather").textContent=c.weather;
+  $("#who").textContent=run?`${run.name} · ${run.hardcore?"Hardcore":"Normal"}`:"Survival prototype";
+  if(!run){$("#needs").innerHTML="";return;}
+  const N=run.needs;
+  const waterTxt=run.water>0?"Water":"Thirst";
+  const items=[["Food",N.food],["Warmth",N.warm],["Energy",N.stam],["Health",N.health],[waterTxt,run.water>0?run.water/3*100:N.thirst]];
+  $("#needs").innerHTML=items.map(([n,v])=>`<div class="need ${v<25?"low":v<50?"mid":""}">${n}${n==="Health"&&run.ill>0?" · ill":""}<div class="nb"><i style="width:${clamp(v,0,100)}%"></i></div></div>`).join("");
+  if(["ready","waiting"].includes(G.state)&&G.t-warnT>20){
+    const w=N.health<30?"You're in a bad way. Head back to the tavern.":N.warm<25?"You're shivering. Light a fire at camp.":N.food<20?"You're starving. Eat something.":run.water<=0&&N.thirst<40?"You need water.":N.stam<20?"You're exhausted. Rest at camp.":"";
+    if(w){toast(w,true,2600);warnT=G.t;}}
+}
+
+function back(){if(G.state==="tavern")tavernMenu();else if(G.state==="menu")menuScreen();else hideOverlay();}
+
+function fishAge(k){return (absMin()-k.caught)/1440;}
+function campMenu(){
+  if(G.state!=="ready")return;
+  const N=run.needs,fire=run.fire>0,night=run.min>=18*60||run.min<5*60;
+  const fishRows=run.keep.map((k,i)=>{const age=fishAge(k),spoiled=age>3;
+    return `<div class="act" style="cursor:default"><span>${k.name} · ${lbOz(k.w)}<small>${spoiled?"Spoiled. Only good for chum.":`Fresh for ${Math.max(0,(3-age)).toFixed(1)} more days`}</small></span>
+    <span style="display:flex;gap:6px">${spoiled?`<button class="iconbtn" data-dump="${i}" type="button">Throw away</button>`:
+    `<button class="iconbtn" data-raw="${i}" type="button">Eat raw</button><button class="iconbtn" data-cook="${i}" type="button" ${fire?"":"disabled"}>Cook</button>`}</span></div>`;}).join("");
+  showOverlay(`<h2>Camp</h2>
+  <p class="note">${clock(run.min)}, ${conds().time.toLowerCase()} · ${conds().weather.toLowerCase()}. ${fire?`Fire burning for ${Math.ceil(run.fire/60)} more hours.`:"No fire."} Camping never saves your game.</p>
+  <div class="acts">
+    <button class="act" id="aFire" type="button"><span>${fire?"Add wood":"Light a campfire"}<small>Warms you and lets you cook and boil water. Burns about 3 hours.</small></span><em>30 min</em></button>
+    <button class="act" id="aRest" type="button"><span>Rest by the water<small>Get your energy back.</small></span><em>1 hour</em></button>
+    <button class="act" id="aSleep" type="button" ${night?"":"disabled"}><span>Sleep until dawn<small>${night?(fire?"The fire will keep you warm for a while.":"No fire. It will be a cold night."):"Only after dusk."}</small></span><em>to 06:00</em></button>
+    <button class="act" id="aBoil" type="button" ${fire?"":"disabled"}><span>Boil river water and drink<small>${fire?"Safe to drink.":"Needs a fire."} ${run.water>0?`You still carry ${run.water.toFixed(1)} days of water.`:""}</small></span><em>30 min</em></button>
+    <button class="act" id="aDrink" type="button"><span>Drink straight from the river<small>Quick, but it could make you ill.</small></span><em>5 min</em></button>
+    <button class="act" id="aTavern" type="button"><span>Walk back to the Willowmere Arms<small>Bed, a hot meal and a save.</small></span><em>1 hour</em></button>
+  </div>
+  <h3>Keep net</h3><div class="acts">${fishRows||'<p class="note">Empty. Catch something to eat.</p>'}</div>
+  <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back to fishing</button></div>`);
+  const act=(mins,fn,opt)=>{advance(mins,opt);if(fn)fn();renderHud();if(checkDeath())return;campMenu();};
+  $("#aFire").onclick=()=>act(30,()=>{run.fire=Math.min(run.fire+180,480);toast(fire?"You stack on more wood.":"The fire crackles into life.");});
+  $("#aRest").onclick=()=>act(60,null,{rest:true});
+  $("#aSleep").onclick=()=>{let m=run.min>=18*60?(1440-run.min)+360:360-run.min;advance(m,{sleep:true});renderHud();if(checkDeath())return;
+    toast(run.needs.warm<30?"You wake up frozen and stiff.":"You wake at first light, rested.",run.needs.warm<30,2400);campMenu();};
+  $("#aBoil").onclick=()=>act(30,()=>{run.needs.thirst=100;toast("Boiled and safe.");});
+  $("#aDrink").onclick=()=>act(5,()=>{run.needs.thirst=100;if(Math.random()<0.35){run.ill=Math.max(run.ill,12*60);toast("That water was bad. You feel ill.",true,2400);}else toast("Cold and clear. You got away with it.");});
+  $("#aTavern").onclick=()=>{advance(60);renderHud();if(checkDeath())return;goTavern();};
+  document.querySelectorAll("[data-raw]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.raw,1)[0];
+    act(10,()=>{run.needs.food=clamp(run.needs.food+6+k.w*4,0,100);if(Math.random()<0.15){run.ill=Math.max(run.ill,8*60);toast("Raw fish didn't agree with you.",true,2200);}else toast(`You eat the ${k.name.toLowerCase()} raw.`);});});
+  document.querySelectorAll("[data-cook]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.cook,1)[0];
+    act(30,()=>{run.needs.food=clamp(run.needs.food+12+k.w*8,0,100);run.needs.stam=clamp(run.needs.stam+8,0,100);toast(`Campfire ${k.name.toLowerCase()}. Proper food.`);});});
+  document.querySelectorAll("[data-dump]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.dump,1);campMenu();});
+  $("#closeO").onclick=()=>{hideOverlay();panelReady();};
+}
+
+function goTavern(){run.loc="tavern";G.state="tavern";G.fish=null;G.float=null;G.cast=null;setCondsEnabled(false);
+  $("#panel").innerHTML='<div class="hint">You\'re at the Willowmere Arms.</div>';tavernMenu();}
+function tavernMenu(){
+  const N=run.needs;
+  showOverlay(`<h2>The Willowmere Arms</h2>
+  <p class="note">${clock(run.min)}, day ${run.day}. A low-beamed riverside inn. The fire's going and the landlord nods you in.</p>
+  <div class="acts">
+    <button class="act" id="tStay" type="button"><span>Stay the night<small>Full rest, water skins refilled, illness treated. <b>Saves your game.</b></small></span><em>to 07:00</em></button>
+    <button class="act" id="tMeal" type="button"><span>Hot meal by the fire<small>Fills you up and warms you through.</small></span><em>30 min</em></button>
+    <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
+    <button class="act" id="tGo" type="button"><span>Head down to the river<small>Takes you back to Willowmere River.</small></span><em>1 hour</em></button>
+  </div>
+  <p class="note">Rooms and meals are free for now. Fish Bucks, selling your catch and the request board arrive with towns and trade.</p>`);
+  $("#tStay").onclick=()=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});
+    Object.assign(run.needs,{food:Math.max(run.needs.food,70),warm:100,stam:100,health:100,thirst:100});run.water=3;run.ill=0;run.fire=0;run.away=0;
+    saveTavern();renderHud();toast("Game saved. A new day.",false,2200);tavernMenu();};
+  $("#tMeal").onclick=()=>{advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
+  $("#tBoard").onclick=()=>memorialView(tavernMenu);
+  $("#tGo").onclick=()=>{advance(60);renderHud();run.loc="river";hideOverlay();toReady("Willowmere River. Tight lines.");};
+}
+
+function memorialView(onBack){
+  const rows=store.memorial.slice().reverse().map(m=>`<div class="mem"><b>${m.name}</b><small>Survived ${m.days} days · Fishing level ${m.level} · ${m.species} species · Biggest: ${m.best}<br>Lost to ${m.cause}, ${m.season} day ${m.dayIn}.</small></div>`).join("");
+  showOverlay(`<h2>Memory board</h2><p class="note">Hardcore anglers who didn't make it home.</p>
+  <div class="acts">${rows||'<p class="note">No names yet. May it stay that way.</p>'}</div>
+  <div class="controls"><button class="big ghost" id="mBack" type="button" style="flex:1">Back</button></div>`);
+  $("#mBack").onclick=onBack;
+}
+
+function die(){
+  const r=run,sl=store.slots[r.slot];G.state="dead";G.fish=null;G.float=null;G.reeling=false;setCondsEnabled(false);
+  $("#panel").innerHTML='<div class="hint">…</div>';
+  const best=r.log.reduce((m,e)=>e.w>m.w?e:m,{w:0,name:""});
+  if(r.hardcore){
+    store.memorial.push({name:r.name,days:r.day,level:levelInfo(r.xp).L,species:new Set(r.log.map(e=>e.id)).size,best:best.w?`${best.name}, ${lbOz(best.w)}`:"nothing landed",cause:r.cause||"the wild",season:conds().season,dayIn:((r.day-1)%10)+1});
+    store.slots[r.slot]=null;saveStore();
+    showOverlay(`<span class="tag" style="background:var(--danger)">Hardcore</span><h2>Here ends the tale of ${r.name}</h2>
+    <p>Taken by ${r.cause||"the wild"} on day ${r.day}. Their name goes on the memory board at the Willowmere Arms.</p>
+    <div class="controls"><button class="big strike" id="dTitle" type="button">Back to title</button></div>`);
+    $("#dTitle").onclick=()=>{run=null;menuScreen();};
+  }else{
+    if(sl)sl.suspend=null;saveStore();
+    showOverlay(`<h2>You collapse</h2><p>${r.cause==="the cold"?"The cold got into your bones.":r.cause==="thirst"?"Your throat burns and the world tilts.":r.cause==="hunger"?"You haven't eaten in too long.":"The sickness wins."}</p>
+    <p class="note">You wake at the Willowmere Arms. Everything since your last stay there is lost: a lesson learned, and a second chance.</p>
+    <div class="controls"><button class="big strike" id="dWake" type="button">Wake up</button></div>`);
+    $("#dWake").onclick=()=>{loadRun(JSON.parse(JSON.stringify(sl.tavern)));};
+  }
+}
+
+function loadRun(snap){run=snap;G.reeling=false;renderLevel();renderHud();
+  if(run.loc==="tavern")goTavern();else{hideOverlay();toReady();}}
+
+function menuScreen(){
+  G.state="menu";G.fish=null;G.float=null;setCondsEnabled(false);$("#panel").innerHTML='<div class="hint">Choose a save to start.</div>';renderLevel();renderHud();
+  const rows=store.slots.map((sl,i)=>{
+    if(!sl)return `<div class="slot"><b>Slot ${i+1}</b><small>Empty</small><div class="controls"><button class="big strike" data-new="${i}" type="button">New game</button></div></div>`;
+    const s=sl.suspend||sl.tavern;const c=SEASONS[Math.floor((s.day-1)/10)%4];
+    return `<div class="slot"><b>${sl.name} ${sl.hardcore?'<span class="hc">· Hardcore</span>':""}</b>
+      <small>${c} · day ${s.day} · fishing level ${levelInfo(s.xp).L}${sl.suspend?" · resumes where you left off":" · at the Willowmere Arms"}</small>
+      <div class="controls"><button class="big strike" data-cont="${i}" type="button">Continue</button><button class="big ghost" data-del="${i}" type="button">Delete</button></div></div>`;}).join("");
+  showOverlay(`<h2>Tight Lines</h2><p class="note">Survival prototype. Each slot is its own game, so a hardcore run can sit alongside normal ones.</p>
+  <div class="acts">${rows}</div>
+  <button class="act" id="mMem" type="button"><span>Memory board<small>${store.memorial.length} hardcore anglers remembered</small></span></button>`);
+  document.querySelectorAll("[data-new]").forEach(b=>b.onclick=()=>newGameScreen(+b.dataset.new));
+  document.querySelectorAll("[data-cont]").forEach(b=>b.onclick=()=>{const sl=store.slots[+b.dataset.cont];
+    const snap=sl.suspend?sl.suspend:JSON.parse(JSON.stringify(sl.tavern));sl.suspend=null;saveStore();snap.slot=+b.dataset.cont;loadRun(snap);});
+  document.querySelectorAll("[data-del]").forEach(b=>{let armed=false;b.onclick=()=>{if(!armed){armed=true;b.textContent="Sure?";return;}
+    store.slots[+b.dataset.del]=null;saveStore();menuScreen();};});
+  $("#mMem").onclick=()=>memorialView(menuScreen);
+}
+function newGameScreen(i){
+  let hard=false,armed=false;
+  showOverlay(`<h2>New angler</h2>
+  <label class="lab" for="angName" style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Name</label>
+  <input id="angName" type="text" maxlength="20" value="Angler ${i+1}">
+  <div class="modes">
+    <button class="mode on" id="mNorm" type="button">Normal<small>Die and you wake at your last tavern save.</small></button>
+    <button class="mode hard" id="mHard" type="button">Hardcore<small>One life. Death is permanent.</small></button>
+  </div>
+  <p class="note" id="mNote">You can switch a normal game to hardcore later, but never back.</p>
+  <div class="controls"><button class="big ghost" id="nBack" type="button">Back</button><button class="big strike" id="nGo" type="button">Start</button></div>`);
+  const set=h=>{hard=h;armed=false;$("#mNorm").classList.toggle("on",!h);$("#mHard").classList.toggle("on",h);
+    $("#mNote").textContent=h?"Hardcore: if you die, this angler is gone for good and goes on the memory board.":"You can switch a normal game to hardcore later, but never back.";$("#nGo").textContent="Start";};
+  $("#mNorm").onclick=()=>set(false);$("#mHard").onclick=()=>set(true);
+  $("#nBack").onclick=menuScreen;
+  $("#nGo").onclick=()=>{
+    if(hard&&!armed){armed=true;$("#nGo").textContent="Confirm hardcore";$("#mNote").textContent="Are you sure? Tap again to lock this angler into permadeath.";return;}
+    const name=($("#angName").value||"").trim().slice(0,20)||`Angler ${i+1}`;
+    run=newRun(i,name,hard);store.slots[i]={name,hardcore:hard,tavern:null,suspend:null};saveTavern();
+    renderLevel();goTavern();toast("Spring, day 1. The river's waiting.",false,2400);};
+}
+
+/* ---------- Loop ---------- */
+let last=performance.now(),loopFail=false;
+function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(scen){try{update(dt);draw();}catch(err){console.error(err);if(G.state!=="ready"&&!loopFail){loopFail=true;hideOverlay();toReady("Something went wrong. Reset to a fresh cast.",true);}}}
+  requestAnimationFrame(frame);}
+renderLevel();resize();renderHud();menuScreen();requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
