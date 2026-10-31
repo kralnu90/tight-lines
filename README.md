@@ -6,11 +6,13 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnu90.github.io/tight-lines/
 
-> This is an early prototype. It's playable, but a lot is still to come (see the roadmap below).
+**Current version: 0.8.1** · experimental build
+
+> Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
 ---
 
-## What's in this version
+## What's in the game so far
 
 - **Real fishing fights:** cast with a timing swing, wait out the nibbles, strike when the float goes under, then play the fish. Hold to reel, move the rod with or against its runs, and watch the line tension. Too much and it snaps; too little and the hook slips.
 - **Three fishing spots:** Willowmere River, Willowmere Lake and the sea at Saltmarsh Point, each with its own snags to avoid.
@@ -54,6 +56,41 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 4 · Towns and trade | Region map, towns and a city, Fish Bucks, shops, request boards, reputation | Planned |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
+
+## Changelog
+
+### 0.8.1 · Experimental build (31 Oct 2026)
+- Startup warning that the game is experimental and may have bugs
+- Install Tight Lines as an app from this page, with offline play
+- Version number and a What's new screen in the main menu
+
+### 0.8.0 · Lake, coast and techniques (31 Oct 2026)
+- New spots: Willowmere Lake and Saltmarsh Point, with travel between them
+- 16 new fish: 9 lake and 7 coast species (23 in total)
+- Four methods that play differently: float, ledger, spinning and fly
+- Main menu, in-game menu and a How to play guide
+- More line on the reel before a fish can strip it all
+
+### 0.7.0 · Survival (30 Oct 2026)
+- Day and night clock with 10-day seasons and changing weather
+- Food, warmth, energy, health and water
+- Camp: fires, cooking, boiling water, resting and sleeping
+- Keep net with spoilage
+- The Willowmere Arms: the only place to save
+- Three save slots, Normal and Hardcore modes, and the memory board
+
+### 0.6.0 · All the river fish (30 Oct 2026)
+- Grayling, European eel, barbel and Atlantic salmon, each with its own fight
+- Night fishing and weather (clear, overcast, rain)
+
+### 0.5.0 · Tension tuning (30 Oct 2026)
+- Line tension retuned to the sweet spot
+- Tension strictness setting
+- Cut line button and fixes for the game freezing
+
+### 0.1.0 · First fight prototype (30 Oct 2026)
+- Casting, bites, the fight and landing on Willowmere River
+- Dace, chub and brown trout
 
 ## Install it as an app
 
