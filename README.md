@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnu90.github.io/tight-lines/
 
-**Current version: 0.8.1** · experimental build
+**Current version: 0.9.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -23,6 +23,8 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Camp:** light a fire, cook your catch, boil river water, rest, or sleep until dawn. Camping never saves.
 - **The Willowmere Arms:** the tavern is the only place to save. A night there restores you and refills your water.
 - **Normal or Hardcore:** die on Normal and you wake at your last tavern save. On Hardcore, death is permanent and your angler goes on the tavern's memory board.
+- **Fish Bucks:** sell your catch at the Willowmere Arms. Size, stars and freshness set the price, lake fish pay more in riverside Willowmere, and flooding the market drops prices for a while.
+- **Tackle shop and graded gear:** buy bait, lures, line, rods, reels and kit. Gear comes in Basic, Good, Fine and Master grades, and the shop's gear stock changes daily. Rods, reels and line all change how a fight plays.
 - **Three save slots, a log book with star ratings and personal bests, and fishing XP.**
 
 ## How to play
@@ -44,6 +46,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - When a trout or salmon jumps, stop reeling.
 - Keep the line tight when an eel starts rolling, or it'll tangle.
 - Don't spend a night in the open without a fire.
+- Can't afford a room? The stable is free and still saves, but it's a rough night.
 
 ## Roadmap
 
@@ -53,11 +56,21 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 1 · Fishing core | River, lake and coast fish, techniques (done); gear grades, journal, level unlocks | In progress |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules | First pass done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking | Planned |
-| 4 · Towns and trade | Region map, towns and a city, Fish Bucks, shops, request boards, reputation | Planned |
+| 4 · Towns and trade | Fish Bucks, selling and the tackle shop (done); region map, more towns, request boards, reputation | In progress |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.9.0 · Fish Bucks and gear (31 Oct 2026)
+- Fish Bucks: sell your catch at the Willowmere Arms
+- Prices depend on size, stars and freshness; lake fish pay more in riverside Willowmere
+- Selling lots of one fish drops its price for a while
+- Tackle shop with bait, lures, line and graded rods, reels and kit; gear stock changes daily
+- Bait gets used up and lures are lost when the line breaks
+- Rods, reels and line now change how fights play
+- Rooms cost 6 FB; the stable is free but rough
+- Kit screen to see and change your gear
 
 ### 0.8.1 · Experimental build (31 Oct 2026)
 - Startup warning that the game is experimental and may have bugs

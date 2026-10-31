@@ -161,7 +161,7 @@ h3{margin:4px 0 0;font:700 12px var(--body);letter-spacing:.12em;text-transform:
 <div class="app">
   <header class="top">
     <div class="brand">Tight Lines<small id="who">Kralnu Games</small></div>
-    <div class="lvl"><div>Fishing <b id="lvl">Lv 1</b></div><div id="xptext">0 / 50 XP</div><div class="xpbar"><i id="xpfill"></i></div></div>
+    <div class="lvl"><div>Fishing <b id="lvl">Lv 1</b> · <b id="bucks">0</b> FB</div><div id="xptext">0 / 50 XP</div><div class="xpbar"><i id="xpfill"></i></div></div>
     <button class="iconbtn" id="btnLog" type="button">Log</button>
     <button class="iconbtn" id="btnMenu" type="button">Menu</button>
   </header>
@@ -170,7 +170,7 @@ h3{margin:4px 0 0;font:700 12px var(--body);letter-spacing:.12em;text-transform:
   <div class="conds">
     <div class="cond"><label for="selMethod">Method</label><select id="selMethod"></select></div>
     <div class="cond"><label for="selBait">Bait</label><select id="selBait"></select></div>
-    <div class="cond"><label for="selLine">Line</label><select id="selLine"><option value="Light">4 lb</option><option value="Medium" selected>6 lb</option><option value="Heavy">10 lb</option></select></div>
+    <div class="cond"><label for="selLine">Line</label><select id="selLine"></select></div>
   </div>
 
   <div class="needs" id="needs" aria-label="Survival needs"></div>
@@ -235,11 +235,35 @@ const FISH=[
   F_({id:"conger",name:"Conger eel",water:"Coast",rarity:"Rare",seasons:ALL,times:["Night"],methods:["Ledger"],baits:["Squid","Deadbait"],min:10,max:60,lenK:52,pull:1.15,stam:2.6,speed:0.7,dash:true,eelShape:true,strikeWin:1.3,nibbles:[1,3],fights:"Pulls tail-first into the rocks, huge power"}),
   F_({id:"tope",name:"Tope",water:"Coast",rarity:"Rare",seasons:["Summer"],times:["Day"],methods:["Ledger"],baits:["Deadbait","Squid"],min:20,max:60,lenK:30,pull:1.1,stam:3.0,speed:1.4,longRuns:true,strikeWin:1.1,nibbles:[0,1],fights:"Long, fast runs"})
 ];
-const LINE={Light:1.18,Medium:1.0,Heavy:0.82};
+const LINES={
+  Light:{name:"4 lb line",short:"4 lb",price:8,k:1.18},
+  Medium:{name:"6 lb line",short:"6 lb",price:0,k:1.0},
+  Heavy:{name:"10 lb line",short:"10 lb",price:15,k:0.82,shy:0.6},
+  Strong:{name:"15 lb line",short:"15 lb",price:30,k:0.7,shy:0.4,all:0.85}
+};
+const GEAR={
+  willow:{type:"rod",name:"Willow whip",grade:"Basic",price:0,tm:1,cast:0,desc:"A light, forgiving starter rod."},
+  hollowcane:{type:"rod",name:"Hollowcane rod",grade:"Good",price:40,tm:0.95,cast:2,desc:"Stiffer, casts a little further."},
+  carbon:{type:"rod",name:"Carbon specimen rod",grade:"Fine",price:120,tm:0.9,cast:4,desc:"Soaks up lunges. Built for big fish."},
+  kingfisher:{type:"rod",name:"Kingfisher rod",grade:"Master",price:350,tm:0.84,cast:6,desc:"A craftsman's rod. Barely a fish alive can break it."},
+  hazelfly:{type:"flyrod",name:"Hazel fly rod",grade:"Basic",price:30,tm:1,cast:0,desc:"You need a fly rod to fly fish."},
+  splitcane:{type:"flyrod",name:"Split-cane fly rod",grade:"Fine",price:140,tm:0.9,cast:3,desc:"Delicate casts, forgiving on the strike."},
+  tin:{type:"reel",name:"Tin reel",grade:"Basic",price:0,drag:0.86,speed:2.1,cap:70,desc:"It turns. Mostly."},
+  centrepin:{type:"reel",name:"Brass centrepin",grade:"Good",price:35,drag:0.89,speed:2.3,cap:85,desc:"Smoother drag, more line."},
+  smooth:{type:"reel",name:"Smooth-drag reel",grade:"Fine",price:110,drag:0.92,speed:2.5,cap:110,desc:"Gives line before it snaps."},
+  seaforge:{type:"reel",name:"Seaforge reel",grade:"Master",price:320,drag:0.95,speed:2.8,cap:150,desc:"Holds a tope on the run."},
+  jacket:{type:"kit",name:"Waxed jacket",grade:"Good",price:45,desc:"You lose warmth 30% slower."},
+  waterskin:{type:"kit",name:"Large water skin",grade:"Good",price:25,desc:"Carry 1.5 more days of water."},
+  bedroll:{type:"kit",name:"Bedroll",grade:"Basic",price:20,desc:"Nights outdoors are far less cold."}
+};
+const BAITS={Maggots:[2,10],Bread:[1,10],Worm:[2,10],Sweetcorn:[2,10],Pellets:[3,10],Boilies:[4,10],Deadbait:[4,5],Lugworm:[3,10],Ragworm:[3,10],Squid:[4,5],"Peeler crab":[5,5]};
+const LURES={Spinner:4,"Soft lure":5,"Big lure":8,Feathers:3,"Dry fly":3,Nymph:3};
+const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.8.1";
+const VERSION="0.9.0";
 const CHANGELOG=[
+  {v:"0.9.0",date:"31 Oct 2026",title:"Fish Bucks and gear",items:["Fish Bucks: sell your catch at the Willowmere Arms","Prices depend on size, stars and freshness; lake fish pay more in riverside Willowmere","Selling lots of one fish drops its price for a while","Tackle shop with bait, lures, line and graded rods, reels and kit; gear stock changes daily","Bait gets used up and lures are lost when the line breaks","Rods, reels and line now change how fights play","Rooms cost 6 FB; the stable is free but rough","Kit screen to see and change your gear"]},
   {v:"0.8.1",date:"31 Oct 2026",title:"Experimental build",items:["Startup warning that the game is experimental and may have bugs","Install Tight Lines as an app from the GitHub page, with offline play","Version number and this What's new screen"]},
   {v:"0.8.0",date:"31 Oct 2026",title:"Lake, coast and techniques",items:["New spots: Willowmere Lake and Saltmarsh Point, with travel between them","16 new fish: 9 lake and 7 coast species (23 in total)","Four methods that play differently: float, ledger, spinning and fly","Main menu, in-game menu and a How to play guide","More line on the reel before a fish can strip it all"]},
   {v:"0.7.0",date:"30 Oct 2026",title:"Survival",items:["Day and night clock with 10-day seasons and changing weather","Food, warmth, energy, health and water","Camp: fires, cooking, boiling water, resting and sleeping","Keep net with spoilage","The Willowmere Arms: the only place to save","Three save slots, Normal and Hardcore modes, and the memory board"]},
@@ -271,18 +295,24 @@ function conds(){const r=run||{day:1,min:6.5*60,weather:"Clear"};
 function methodOk(m){return save.settings.unlockAll||level()>=METHODS[m].lvl;}
 function fillMethods(){
   const sel=$("#selMethod"),cur=sel.value||"Float";
-  sel.innerHTML=Object.keys(METHODS).map(m=>{const lock=!methodOk(m),coastFly=m==="Fly"&&spot().salt;
-    return `<option value="${m}" ${lock||coastFly?"disabled":""}>${m}${lock?` (Lv ${METHODS[m].lvl})`:coastFly?" (no)":""}</option>`;}).join("");
+  sel.innerHTML=Object.keys(METHODS).map(m=>{const lock=!methodOk(m),coastFly=m==="Fly"&&spot().salt,noRod=m==="Fly"&&run&&!run.equip.fly;
+    return `<option value="${m}" ${lock||coastFly||noRod?"disabled":""}>${m}${lock?` (Lv ${METHODS[m].lvl})`:coastFly?" (no)":noRod?" (rod)":""}</option>`;}).join("");
   const opt=[...sel.options].find(o=>o.value===cur&&!o.disabled)||[...sel.options].find(o=>!o.disabled);sel.value=opt.value;fillBaits();}
+function have(b){if(!run)return 99;return LURES[b]!==undefined?(run.inv.lures[b]||0):(run.inv.bait[b]||0);}
 function fillBaits(){const sel=$("#selBait"),cur=sel.value;const list=METHODS[$("#selMethod").value].baits;
-  sel.innerHTML=list.map(b=>`<option>${b}</option>`).join("");if(list.includes(cur))sel.value=cur;}
+  sel.innerHTML=list.map(b=>{const n=have(b);return `<option value="${b}" ${n?"":"disabled"}>${b}${run?` (${n})`:""}</option>`;}).join("");
+  const ok=[...sel.options].find(o=>o.value===cur&&!o.disabled)||[...sel.options].find(o=>!o.disabled);if(ok)sel.value=ok.value;else sel.value=list[0];
+  fillLines();}
+function fillLines(){const sel=$("#selLine"),cur=sel.value||(run&&run.equip.line)||"Medium";
+  const owned=Object.keys(LINES).filter(k=>!run||run.inv.lines[k]);
+  sel.innerHTML=owned.map(k=>`<option value="${k}">${LINES[k].short}</option>`).join("");sel.value=owned.includes(cur)?cur:owned[0];if(run)run.equip.line=sel.value;}
 function biteWeights(c,q){return FISH.filter(f=>f.water===c.water).map(f=>{let w=RARITY[f.rarity];
   w*=f.seasons.includes(c.season)?2:0.1;
   if(f.times.includes(c.time))w*=1.5;
   const mOk=f.methods.includes(c.method),bOk=f.baits.includes(c.bait);
   w*=mOk&&bOk?2:mOk?0.4:bOk?0.3:0.05;
   if(f.weather&&f.weather.includes(c.weather))w*=1.5;
-  if(f.spooky&&c.line==="Heavy")w*=0.6;
+  const L=LINES[c.line]||LINES.Medium;if(f.spooky&&L.shy)w*=L.shy;if(L.all)w*=L.all;
   if(q!==undefined&&f.rarity!=="Common")w*=1+0.5*q;
   return {f,w};});}
 function pickFish(c,q){const ws=biteWeights(c,q);const tot=ws.reduce((a,b)=>a+b.w,0);let r=Math.random()*tot;
@@ -345,8 +375,8 @@ function panelReady(){
   const odds=ws.map(x=>`<span class="chip">${x.f.name} <em>${Math.round(x.w/tot*100)}%</em></span>`).join("");
   $("#panel").innerHTML=`<div class="hint">${HINTS[c.method]}</div>
   <div class="odds" aria-label="Bite odds for these conditions">${odds}</div>
-  <div class="controls"><button class="big ghost" id="btnCamp" type="button" style="flex:1">Camp${run&&run.fire>0?" · fire lit":""}</button><button class="big ghost" id="btnKeep" type="button" style="flex:1">Keep net · ${run?run.keep.length:0}</button></div>`;
-  $("#btnCamp").addEventListener("click",campMenu);$("#btnKeep").addEventListener("click",campMenu);
+  <div class="controls"><button class="big ghost" id="btnCamp" type="button" style="flex:1">Camp${run&&run.fire>0?" · fire lit":""}</button><button class="big ghost" id="btnKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="btnKeep" type="button" style="flex:1">Net · ${run?run.keep.length:0}</button></div>`;
+  $("#btnCamp").addEventListener("click",campMenu);$("#btnKeep").addEventListener("click",campMenu);$("#btnKit").addEventListener("click",()=>kitScreen(()=>{hideOverlay();toReady();}));
   oddsKey=condKey();
 }
 function panelWaiting(){
@@ -383,8 +413,13 @@ function toReady(msg,warn){
   G.state="ready";G.fish=null;G.cast=null;G.float=null;G.reeling=false;G.R=0;G.aim=null;
   setCondsEnabled(true);fillMethods();panelReady();if(msg)toast(msg,warn,2200);
 }
-function castRange(m){return {Float:[6,24],Ledger:[10,28],Spinning:[8,26],Fly:[4,14]}[m];}
+function rodFor(m){if(!run)return GEAR.willow;return GEAR[m==="Fly"?run.equip.fly:run.equip.rod]||GEAR.willow;}
+function reelNow(){return run?GEAR[run.equip.reel]||GEAR.tin:GEAR.tin;}
+function castRange(m){const b={Float:[6,24],Ledger:[10,28],Spinning:[8,26],Fly:[4,14]}[m];return [b[0],b[1]+rodFor(m).cast];}
 function startCast(q,power,aim){
+  const cb=conds().bait;
+  if(run&&!have(cb)){toast(`You're out of ${cb.toLowerCase()}. Restock at the Willowmere Arms.`,true,2400);return;}
+  if(run&&LURES[cb]===undefined){run.inv.bait[cb]--;}
   if(run){run.needs.stam=Math.max(0,run.needs.stam-1.5);if(run.needs.stam<20)power*=0.75;}
   const m=conds().method,[d0,dr]=castRange(m);const D=d0+power*dr;
   G.cast={q,D,aim,t:0,from:rodTip(),method:m};
@@ -439,7 +474,9 @@ function nextMode(F){
 function lose(msg){
   const f=G.fish&&G.fish.f;if(run)run.xp+=3;renderLevel();
   const bt=conds().bait,lures=["Spinner","Soft lure","Big lure","Feathers","Dry fly","Nymph"];
-  const lure=lures.includes(bt)&&/snap|Snag|spool|tangle|weed|rocks/i.test(msg)?` Your ${bt.toLowerCase()} went with it.`:"";
+  const gone=lures.includes(bt)&&/snap|Snag|spool|tangle|weed|rocks/i.test(msg);
+  if(gone&&run)run.inv.lures[bt]=Math.max(0,(run.inv.lures[bt]||0)-1);
+  const lure=gone?` Your ${bt.toLowerCase()} went with it${run?` (${run.inv.lures[bt]} left)`:""}.`:"";
   G.state="result";G.reeling=false;
   showOverlay(`<h2>${msg}</h2><p>${f?"You never got a proper look at it.":""}${lure}</p>
   <p class="note">+3 XP for the experience.</p>
@@ -526,17 +563,18 @@ function update(dt){
   if(F.X>1){F.X=1;F.dir=-1;}if(F.X<-1){F.X=-1;F.dir=1;}
   let pullT=P*0.92*(1-0.37*Math.max(w,0))*(1+0.42*Math.max(-w,0));
   if(F.air>0.05)pullT+=G.reeling?0.95*F.air:-0.2;
-  const target=(pullT+(G.reeling?0.5:0))*LINE[conds().line]*save.settings.strict;
-  const dragLim=0.86;
+  const RD=rodFor(conds().method),RL=reelNow();
+  const target=(pullT+(G.reeling?0.5:0))*(LINES[conds().line]||LINES.Medium).k*RD.tm*save.settings.strict;
+  const dragLim=RL.drag;
   const capped=target>dragLim?dragLim+(target-dragLim)*0.54:target;
   F.T+=(Math.max(0,capped)-F.T)*Math.min(1,dt*9);
   let runOut=P*2.4*(0.4+0.6*F.S)*(F.mode==="rest"?0.2:1)*(f.longRuns&&F.mode==="run"?1.6:1);
   if(f.sluggish)runOut*=0.5;if(f.deep&&F.D<12)runOut*=1.5;
-  const reelIn=G.reeling?2.1*(1-Math.min(1,P)*0.55)*(run&&run.needs.stam<20?0.65:1):0;
+  const reelIn=G.reeling?RL.speed*(1-Math.min(1,P)*0.55)*(run&&run.needs.stam<20?0.65:1):0;
   if(run)run.needs.stam=Math.max(0,run.needs.stam-dt*(G.reeling?0.1:0.05));
   const dragOut=target>dragLim?(target-dragLim)*3:0;
-  const prevD=F.D;F.D=clamp(F.D+(runOut*0.5+dragOut-reelIn)*dt,0.6,72);F.vd=(F.D-prevD)/dt;F.vx=lat;
-  if(F.D>=70){lose("Spooled. It ran off all your line");return;}
+  const prevD=F.D;F.D=clamp(F.D+(runOut*0.5+dragOut-reelIn)*dt,0.6,RL.cap+2);F.vd=(F.D-prevD)/dt;F.vx=lat;
+  if(F.D>=RL.cap){lose("Spooled. It ran off all your line");return;}
   const drain=(0.018+F.T*0.07+Math.max(-w,0)*P*0.09+(G.reeling?0.01:0))/F.stamPool;
   F.S=clamp(F.S-drain*dt+(F.T<0.15?0.01*dt:0)+(f.stubborn&&F.mode==="rest"&&F.S>0.08?0.035*dt:0),0,1);
   if(F.T>1){F.snapT+=dt;if(F.snapT>0.24){lose("Snap! The line broke");return;}}else F.snapT=Math.max(0,F.snapT-dt*1.5);
@@ -549,7 +587,7 @@ function updateMeters(){
   const F=G.fish;if(!F)return;const mT=$("#mT");if(!mT)return;
   mT.style.left=clamp(F.T,0,1.1)/1.1*100+"%";$("#mTv").textContent=Math.round(F.T*100)+"%";
   $("#mS").style.width=F.S*100+"%";$("#mSv").textContent=Math.round(F.S*100)+"%";
-  $("#mD").style.width=clamp(F.D/70,0,1)*100+"%";$("#mDv").textContent=F.D.toFixed(1)+" m";
+  $("#mD").style.width=clamp(F.D/reelNow().cap,0,1)*100+"%";$("#mDv").textContent=F.D.toFixed(1)+" m";
   const net=$("#btnNet");const ready=F.D<=3.2;net.classList.toggle("ready",ready&&F.S<0.3);
   net.textContent=ready?(F.S<0.3?"Net it!":"Net (lively)"):"Net";
   if(G.t-lastWarn>1.2){
@@ -739,7 +777,8 @@ window.addEventListener("keyup",e=>{const k=e.key;
 });
 window.addEventListener("blur",()=>{G.reeling=false;G.keys={};});
 $("#selMethod").addEventListener("change",()=>{fillBaits();if(G.state==="ready")panelReady();});
-["#selBait","#selLine"].forEach(s=>$(s).addEventListener("change",()=>{if(G.state==="ready")panelReady();}));
+$("#selBait").addEventListener("change",()=>{if(G.state==="ready")panelReady();});
+$("#selLine").addEventListener("change",()=>{if(run)run.equip.line=$("#selLine").value;if(G.state==="ready")panelReady();});
 
 /* ---------- Survival: clock, needs, saves ---------- */
 const TIME_RATE=1; // in-game minutes per real second
@@ -753,7 +792,8 @@ function absMin(){return run?(run.day-1)*1440+run.min:0;}
 function clock(m){const h=Math.floor(m/60)%24,mm=Math.floor(m%60);return String(h).padStart(2,"0")+":"+String(mm).padStart(2,"0");}
 function pickWeather(season){const r=Math.random(),wet=season==="Autumn"||season==="Winter";
   return r<(wet?0.4:0.55)?"Clear":r<(wet?0.65:0.8)?"Overcast":"Rain";}
-function newRun(slot,name,hardcore){
+function newRun(slot,name,hardcore){return withKit(newRunBase(slot,name,hardcore));}
+function newRunBase(slot,name,hardcore){
   return {slot,name,hardcore,day:1,min:6*60,weather:"Clear",weatherIn:300,loc:"tavern",lastSpot:"river",
     needs:{food:90,warm:90,stam:100,health:100,thirst:100},water:3,ill:0,fire:0,keep:[],xp:0,log:[],away:0,cause:""};}
 function snapshot(){return JSON.parse(JSON.stringify(run));}
@@ -777,7 +817,9 @@ function advance(mins,opt){
     dw+={Spring:-1,Summer:2,Autumn:-1,Winter:-4}[c.season];
     if(run.loc==="coast")dw-=1;
     if(run.fire>0){dw+=18;run.fire=Math.max(0,run.fire-m);}
+    if(dw<0){if(run.inv.gear.jacket)dw*=0.7;if(opt.sleep&&run.inv.gear.bedroll)dw*=0.55;}
     N.warm=clamp(N.warm+dw*h,0,100);
+    for(const id in run.market){run.market[id]=Math.max(0,run.market[id]-m/720);}
     N.food=clamp(N.food-(opt.sleep?2.8:4.5)*(run.ill>0?1.3:1)*h,0,100);
     if(opt.sleep)N.stam=clamp(N.stam+13*h,0,100);
     else if(opt.rest)N.stam=clamp(N.stam+15*h,0,100);
@@ -800,10 +842,11 @@ function renderHud(){
   $("#cDay").textContent=`${c.season} · Day ${run?((run.day-1)%10)+1:1}`;
   $("#cTime").textContent=`${clock(run?run.min:390)} ${c.time}`;
   $("#cWeather").textContent=c.weather;
+  $("#bucks").textContent=run?run.bucks:0;
   $("#who").textContent=run?`${run.name} · ${run.hardcore?"Hardcore":"Normal"}`:"Kralnu Games";
   if(!run){$("#needs").innerHTML="";return;}
   const N=run.needs;
-  const items=[["Food",N.food],["Warmth",N.warm],["Energy",N.stam],["Health",N.health],[run.water>0?"Water":"Thirst",run.water>0?run.water/3*100:N.thirst]];
+  const items=[["Food",N.food],["Warmth",N.warm],["Energy",N.stam],["Health",N.health],[run.water>0?"Water":"Thirst",run.water>0?run.water/maxWater()*100:N.thirst]];
   $("#needs").innerHTML=items.map(([n,v])=>`<div class="need ${v<25?"low":v<50?"mid":""}">${n}${n==="Health"&&run.ill>0?" · ill":""}<div class="nb"><i style="width:${clamp(v,0,100)}%"></i></div></div>`).join("");
   if(["ready","waiting"].includes(G.state)&&G.t-warnT>20){
     const w=N.health<30?"You're in a bad way. Head back to the tavern.":N.warm<25?"You're shivering. Light a fire at camp.":N.food<20?"You're starving. Eat something.":run.water<=0&&N.thirst<40?"You need water.":N.stam<20?"You're exhausted. Rest at camp.":"";
@@ -861,23 +904,118 @@ function campMenu(){
   $("#closeO").onclick=()=>{hideOverlay();panelReady();};
 }
 
+/* ---------- Economy: Fish Bucks, selling, shop, kit ---------- */
+const ROOM=6,MEAL=3;
+function withKit(r){
+  if(r.bucks===undefined)r.bucks=25;
+  if(!r.inv)r.inv={gear:{willow:1,tin:1},bait:{Maggots:20,Bread:10,Worm:10},lures:{Spinner:1},lines:{Medium:1}};
+  if(!r.equip)r.equip={rod:"willow",fly:null,reel:"tin",line:"Medium"};
+  if(!r.market)r.market={};
+  if(!r.shop)r.shop={day:0,stock:[]};
+  return r;}
+function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
+function fishPrice(k){
+  const f=FISH.find(x=>x.id===k.id);const b={Common:[4,1.5],Uncommon:[12,2],Rare:[30,3],"Very rare":[60,4]}[f.rarity];
+  const age=fishAge(k),fr=age<1?1:age<2?0.8:age<3?0.55:0;
+  const reg={Lake:1.3,River:0.8,Coast:1}[f.water]||1;
+  const sat=1/(1+0.15*(run.market[k.id]||0));
+  const p=(b[0]+b[1]*k.w)*[0,0.8,0.9,1,1.15,1.35][k.stars||3]*fr*reg*sat;
+  return {p:Math.max(0,Math.round(p)),fr,reg,sat,water:f.water};}
+function sellScreen(){
+  const rows=run.keep.map((k,i)=>{const q=fishPrice(k);const tags=[];
+    tags.push(q.fr===0?"spoiled":q.fr<1?(q.fr>0.6?"day-old":"stale"):"fresh");
+    if(q.reg>1)tags.push("lake fish +30%");else if(q.reg<1)tags.push("river fish −20%");
+    if(q.sat<0.95)tags.push(`market −${Math.round((1-q.sat)*100)}%`);
+    return `<div class="act" style="cursor:default"><span>${k.name} · ${lbOz(k.w)} <span class="stars" style="font-size:12px">${stars(k.stars||3)}</span><small>${tags.join(" · ")}</small></span>
+    ${q.p>0?`<button class="iconbtn" data-sell="${i}" type="button">Sell ${q.p} FB</button>`:`<button class="iconbtn" data-dump="${i}" type="button">Bin it</button>`}</div>`;}).join("");
+  const total=run.keep.reduce((a,k)=>a+fishPrice(k).p,0);
+  showOverlay(`<h2>Sell your catch</h2><p class="note">The landlord buys for the kitchen and the market. Willowmere is a riverside village: lake fish fetch more, river fish less. Flood him with one kind and the price drops for a while.</p>
+  <p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b></p>
+  <div class="acts">${rows||'<p class="note">Nothing to sell. Go and catch something.</p>'}</div>
+  <div class="controls"><button class="big ghost" id="sBackT" type="button" style="flex:1">Back</button>${total?`<button class="big strike" id="sAll" type="button">Sell all</button>`:""}</div>`);
+  const sell=i=>{const k=run.keep[i];const q=fishPrice(k);run.bucks+=q.p;run.market[k.id]=(run.market[k.id]||0)+1;run.keep.splice(i,1);return q.p;};
+  document.querySelectorAll("[data-sell]").forEach(b=>b.onclick=()=>{const p=sell(+b.dataset.sell);toast(`+${p} Fish Bucks`);renderHud();sellScreen();});
+  document.querySelectorAll("[data-dump]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.dump,1);sellScreen();});
+  if($("#sAll"))$("#sAll").onclick=()=>{let got=0;for(let i=run.keep.length-1;i>=0;i--){if(fishPrice(run.keep[i]).p>0)got+=sell(i);}toast(`+${got} Fish Bucks`);renderHud();sellScreen();};
+  $("#sBackT").onclick=tavernMenu;
+}
+function shopStock(){
+  if(run.shop.day!==run.day){
+    const pool=Object.keys(GEAR).filter(id=>GEAR[id].price>0&&id!=="hazelfly");
+    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+    run.shop={day:run.day,stock:pool.slice(0,4)};}
+  return ["hazelfly",...run.shop.stock].filter((id,i,a)=>a.indexOf(id)===i);
+}
+function shopScreen(tab){
+  const B=run.bucks,tabs=[["bait","Bait"],["lures","Lures"],["lines","Line"],["gear","Gear"]];
+  let body="";
+  if(tab==="bait")body=Object.entries(BAITS).map(([b,[p,n]])=>`<div class="act" style="cursor:default"><span>${b} · ×${n}<small>You have ${run.inv.bait[b]||0}</small></span><button class="iconbtn" data-bb="${b}" type="button" ${B>=p?"":"disabled"}>${p} FB</button></div>`).join("");
+  if(tab==="lures")body=Object.entries(LURES).map(([l,p])=>`<div class="act" style="cursor:default"><span>${l}<small>Lost if the line breaks or snags. You have ${run.inv.lures[l]||0}</small></span><button class="iconbtn" data-bl="${l}" type="button" ${B>=p?"":"disabled"}>${p} FB</button></div>`).join("");
+  if(tab==="lines")body=Object.entries(LINES).filter(([k,L])=>L.price>0).map(([k,L])=>`<div class="act" style="cursor:default"><span>${L.name}<small>${k==="Light"?"Breaks easily, but shy fish don't mind it.":L.all?"Very strong. Most fish are wary of it.":"Stronger. Shy fish notice it."}</small></span>${run.inv.lines[k]?'<em>Owned</em>':`<button class="iconbtn" data-bn="${k}" type="button" ${B>=L.price?"":"disabled"}>${L.price} FB</button>`}</div>`).join("");
+  if(tab==="gear")body=`<p class="note">Today's gear. The stock changes every day.</p>`+shopStock().map(id=>{const g=GEAR[id];
+    return `<div class="act" style="cursor:default"><span>${g.name} <small style="display:inline;color:${GRADES[g.grade]}">${g.grade}</small><small>${g.desc}${gearStats(g)}</small></span>${run.inv.gear[id]?'<em>Owned</em>':`<button class="iconbtn" data-bg="${id}" type="button" ${B>=g.price?"":"disabled"}>${g.price} FB</button>`}</div>`;}).join("");
+  showOverlay(`<h2>Tackle shop</h2><p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p>
+  <div class="controls" style="flex-wrap:wrap">${tabs.map(([k,n])=>`<button class="iconbtn" data-tab="${k}" type="button" style="flex:1;${k===tab?"border-color:var(--brass);color:var(--brass)":""}">${n}</button>`).join("")}</div>
+  <div class="acts">${body}</div>
+  <div class="controls"><button class="big ghost" id="shBack" type="button" style="flex:1">Back</button></div>`);
+  const buy=(p,fn,msg)=>{if(run.bucks<p)return;run.bucks-=p;fn();renderHud();toast(msg);shopScreen(tab);};
+  document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>shopScreen(b.dataset.tab));
+  document.querySelectorAll("[data-bb]").forEach(b=>b.onclick=()=>{const k=b.dataset.bb,[p,n]=BAITS[k];buy(p,()=>run.inv.bait[k]=(run.inv.bait[k]||0)+n,`+${n} ${k.toLowerCase()}`);});
+  document.querySelectorAll("[data-bl]").forEach(b=>b.onclick=()=>{const k=b.dataset.bl;buy(LURES[k],()=>run.inv.lures[k]=(run.inv.lures[k]||0)+1,`Bought a ${k.toLowerCase()}`);});
+  document.querySelectorAll("[data-bn]").forEach(b=>b.onclick=()=>{const k=b.dataset.bn;buy(LINES[k].price,()=>run.inv.lines[k]=1,`Spooled up with ${LINES[k].name}`);});
+  document.querySelectorAll("[data-bg]").forEach(b=>b.onclick=()=>{const id=b.dataset.bg,g=GEAR[id];buy(g.price,()=>{run.inv.gear[id]=1;
+    const cur=g.type==="rod"?GEAR[run.equip.rod]:g.type==="flyrod"?GEAR[run.equip.fly]:g.type==="reel"?GEAR[run.equip.reel]:null;
+    if(g.type!=="kit"&&(!cur||g.price>cur.price))run.equip[g.type==="flyrod"?"fly":g.type]=id;
+    if(id==="waterskin")run.water=Math.min(maxWater(),run.water+1.5);},`${g.name} bought${g.type!=="kit"?" and set up":""}`);});
+  $("#shBack").onclick=tavernMenu;
+}
+function gearStats(g){
+  if(g.type==="rod"||g.type==="flyrod")return ` <br>Strain ${Math.round((1-g.tm)*100)?"−"+Math.round((1-g.tm)*100)+"%":"normal"} · cast +${g.cast} m`;
+  if(g.type==="reel")return ` <br>Drag ${Math.round(g.drag*100)} · reel speed ${g.speed} · ${g.cap} m of line`;
+  return "";}
+function kitScreen(onBack){
+  const slot=(label,key,type)=>{const owned=Object.keys(GEAR).filter(id=>GEAR[id].type===type&&run.inv.gear[id]);
+    const cur=run.equip[key];
+    return `<div class="act" style="cursor:default;flex-wrap:wrap"><span>${label}<small>${cur?GEAR[cur].name+gearStats(GEAR[cur]):"None. Buy one at the tackle shop."}</small></span>
+    ${owned.length>1?`<select data-eq="${key}" style="background:var(--panel);color:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:6px">${owned.map(id=>`<option value="${id}" ${id===cur?"selected":""}>${GEAR[id].name}</option>`).join("")}</select>`:""}</div>`;};
+  const bait=Object.entries(run.inv.bait).filter(([,n])=>n>0).map(([b,n])=>`${b} ${n}`).join(" · ")||"None";
+  const lures=Object.entries(run.inv.lures).filter(([,n])=>n>0).map(([b,n])=>`${b} ${n}`).join(" · ")||"None";
+  const lines=Object.keys(run.inv.lines).map(k=>LINES[k].short).join(", ");
+  const kit=Object.keys(run.inv.gear).filter(id=>GEAR[id].type==="kit").map(id=>`<div class="act" style="cursor:default"><span>${GEAR[id].name}<small>${GEAR[id].desc}</small></span></div>`).join("");
+  showOverlay(`<h2>Kit</h2><p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b></p>
+  <h3>Tackle</h3><div class="acts">${slot("Rod","rod","rod")}${slot("Fly rod","fly","flyrod")}${slot("Reel","reel","reel")}</div>
+  <h3>Bag</h3><p class="note"><b>Bait:</b> ${bait}<br><b>Lures and flies:</b> ${lures}<br><b>Line:</b> ${lines}</p>
+  ${kit?`<h3>Kit</h3><div class="acts">${kit}</div>`:""}
+  <div class="controls"><button class="big ghost" id="kBack" type="button" style="flex:1">Back</button></div>`);
+  document.querySelectorAll("[data-eq]").forEach(sel=>sel.onchange=()=>{run.equip[sel.dataset.eq]=sel.value;kitScreen(onBack);});
+  $("#kBack").onclick=onBack;
+}
+
 /* ---------- Tavern ---------- */
 function goTavern(){run.loc="tavern";G.state="tavern";G.fish=null;G.float=null;G.cast=null;G.reeling=false;setCondsEnabled(false);headerButtons(true);
   $("#panel").innerHTML='<div class="hint">You\'re at the Willowmere Arms.</div>';renderHud();tavernMenu();}
 function tavernMenu(){
   showOverlay(`<h2>The Willowmere Arms</h2>
   <p class="note">${clock(run.min)}, day ${run.day}. A low-beamed inn where the river meets the lane. The fire's going and the landlord nods you in.</p>
-  <div class="acts">
-    <button class="act" id="tStay" type="button"><span>Stay the night<small>Full rest, water skins refilled, illness treated. <b>Saves your game.</b></small></span><em>to 07:00</em></button>
-    <button class="act" id="tMeal" type="button"><span>Hot meal by the fire<small>Fills you up and warms you through.</small></span><em>30 min</em></button>
+  <p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b> in your pocket.</p>
+  <h3>Rest</h3><div class="acts">
+    <button class="act" id="tStay" type="button" ${run.bucks>=ROOM?"":"disabled"}><span>Stay the night · ${ROOM} FB<small>Full rest, water skins refilled, illness treated. <b>Saves your game.</b></small></span><em>to 07:00</em></button>
+    <button class="act" id="tBarn" type="button"><span>Sleep in the stable · free<small>A save and a roof, but a cold, rough night. Doesn't treat illness.</small></span><em>to 07:00</em></button>
+    <button class="act" id="tMeal" type="button" ${run.bucks>=MEAL?"":"disabled"}><span>Hot meal by the fire · ${MEAL} FB<small>Fills you up and warms you through.</small></span><em>30 min</em></button>
+  </div>
+  <h3>Trade</h3><div class="acts">
+    <button class="act" id="tSell" type="button"><span>Sell your catch<small>${run.keep.length?run.keep.length+" fish in your keep net":"Your keep net is empty"}</small></span></button>
+    <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
   </div>
-  <h3>Go fishing</h3><div class="acts">${travelButtons("go")}</div>
-  <p class="note">Rooms and meals are free for now. Fish Bucks, selling your catch and the request board arrive with towns and trade.</p>`);
-  $("#tStay").onclick=()=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});
-    Object.assign(run.needs,{food:Math.max(run.needs.food,70),warm:100,stam:100,health:100,thirst:100});run.water=3;run.ill=0;run.fire=0;run.away=0;
-    saveTavern();renderHud();toast("Game saved. A new day.",false,2200);tavernMenu();};
-  $("#tMeal").onclick=()=>{advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
+  <h3>Go fishing</h3><div class="acts">${travelButtons("go")}</div>`);
+  const night=(fn)=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});fn();run.water=maxWater();run.fire=0;run.away=0;saveTavern();renderHud();};
+  $("#tStay").onclick=()=>{run.bucks-=ROOM;night(()=>{Object.assign(run.needs,{food:Math.max(run.needs.food,70),warm:100,stam:100,health:100,thirst:100});run.ill=0;});
+    toast("Game saved. A new day.",false,2200);tavernMenu();};
+  $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
+    toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
+  $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
+  $("#tSell").onclick=sellScreen;$("#tShop").onclick=()=>shopScreen("bait");
   $("#tBoard").onclick=()=>memorialView(tavernMenu);
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
 }
@@ -902,7 +1040,7 @@ function die(){
     $("#dWake").onclick=()=>loadRun(JSON.parse(JSON.stringify(sl.tavern)));
   }
 }
-function loadRun(snap){run=snap;if(!run.lastSpot)run.lastSpot="river";G.reeling=false;renderLevel();renderHud();
+function loadRun(snap){run=withKit(snap);if(!run.lastSpot)run.lastSpot="river";G.reeling=false;renderLevel();renderHud();
   if(run.loc==="tavern"||!SPOTS[run.loc])goTavern();else toReady();}
 
 /* ---------- Menus ---------- */
@@ -1004,16 +1142,17 @@ function newGameScreen(i){
 function pauseMenu(){
   if(["fight","waiting","flight"].includes(G.state))return toast("Not while fishing!",true,900);
   if(G.state==="result")toReady();
-  const back=()=>{if(G.state==="tavern")tavernMenu();else hideOverlay();};
+  const back=()=>{if(G.state==="tavern")tavernMenu();else{hideOverlay();if(G.state==="ready"){fillMethods();panelReady();}}};
   showOverlay(`<h2>Menu</h2><p class="note">${run.name} · ${spot().name&&run.loc!=="tavern"?spot().name:"The Willowmere Arms"} · day ${run.day}, ${clock(run.min)}. Time is paused.</p>
   <div class="menu">
     <button class="primary" id="pmRes" type="button">Resume</button>
+    <button id="pmKit" type="button">Kit</button>
     <button id="pmLog" type="button">Log book</button>
     <button id="pmHow" type="button">How to play</button>
     <button id="pmSet" type="button">Settings</button>
     <button id="pmQuit" type="button">Quit to title<small>${run.loc==="tavern"?"You'll pick up right here.":"You'll pick up right here, but only a tavern stay truly saves."}</small></button>
   </div>`);
-  $("#pmRes").onclick=back;$("#pmLog").onclick=()=>logBook(pauseMenu);$("#pmHow").onclick=()=>howTo(pauseMenu);$("#pmSet").onclick=()=>settingsScreen(pauseMenu);
+  $("#pmRes").onclick=back;$("#pmLog").onclick=()=>logBook(pauseMenu);$("#pmKit").onclick=()=>kitScreen(pauseMenu);$("#pmHow").onclick=()=>howTo(pauseMenu);$("#pmSet").onclick=()=>settingsScreen(pauseMenu);
   $("#pmQuit").onclick=()=>{suspend();run=null;titleScreen();};
 }
 function logBook(onBack){
@@ -1043,6 +1182,7 @@ function howTo(onBack){
     <dt>Spinning</dt><dd>Hold to retrieve. Fish hit a moving lure, and the hook sets itself.</dd>
     <dt>Fly</dt><dd>Short casts. Strike the instant a fish rises. On the river the fly drifts downstream.</dd></dl>
   <h3>The fight</h3><p>Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
+  <h3>Fish Bucks and gear</h3><p>Sell your catch at the Willowmere Arms for Fish Bucks. Bigger, fresher, better-starred fish pay more, and Willowmere is a riverside village, so lake fish fetch more and river fish less. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p>
   <h3>Staying alive</h3><p>Watch food, warmth, energy, health and water. Light fires, cook your catch and boil water at camp. Only a night at the Willowmere Arms saves your game.</p>
   <h3>Keyboard</h3><p>Space or W to strike and reel, A and D to move the rod, N to net, Esc for the menu.</p>
   </div><div class="controls"><button class="big ghost" id="hBack" type="button" style="flex:1">Back</button></div>`);
