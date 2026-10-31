@@ -118,7 +118,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .stats b{font-size:16px}
 .stars{color:var(--brass);font-size:20px;letter-spacing:2px}
 .stars i{font-style:normal;color:var(--rule)}
-.tag{display:inline-block;background:var(--brass);color:#2a1d07;border-radius:6px;padding:2px 8px;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.tag{display:inline-block;align-self:flex-start;background:var(--brass);color:#2a1d07;border-radius:6px;padding:2px 8px;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
 .log{display:flex;flex-direction:column;gap:6px}
 .logrow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;background:var(--panel-2);border-radius:8px;padding:8px 10px;font-variant-numeric:tabular-nums}
 .logrow b{font-size:15px}
@@ -907,14 +907,14 @@ function latestSlot(){let best=-1,t=-1;store.slots.forEach((s,i)=>{if(s&&(s.play
 function continueSlot(i){const sl=store.slots[i];const snap=sl.suspend?sl.suspend:JSON.parse(JSON.stringify(sl.tavern));
   sl.suspend=null;sl.played=Date.now();saveStore();snap.slot=i;loadRun(snap);}
 /* ---------- Install as an app (only in the GitHub build, which ships a manifest) ---------- */
-let installEvt=null;const hasManifest=!!document.querySelector('link[rel="manifest"]');
+let installEvt=null,noticeDone=false;const hasManifest=!!document.querySelector('link[rel="manifest"]');
 const standalone=()=>window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 if(hasManifest&&"serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
 function installSnoozed(){try{return Date.now()<(+localStorage.getItem("tightlines-install-snooze")||0);}catch(e){return false;}}
 function snoozeInstall(){try{localStorage.setItem("tightlines-install-snooze",String(Date.now()+3*864e5));}catch(e){}}
 function canInstall(){return hasManifest&&!standalone()&&(installEvt||isIOS);}
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;if(G.state==="menu"&&!installSnoozed())installPrompt();else if(G.state==="menu")titleScreen();});
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;if(!noticeDone)return;if(G.state==="menu"&&!installSnoozed())installPrompt();else if(G.state==="menu")titleScreen();});
 window.addEventListener("appinstalled",()=>{installEvt=null;toast("Installed! Find Tight Lines on your home screen.",false,2600);if(G.state==="menu")titleScreen();});
 function installPrompt(){
   const ios=isIOS&&!installEvt;
@@ -1066,8 +1066,18 @@ function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
   if(scen){try{update(dt);draw();}catch(err){console.error(err);
     if(!loopFail&&run&&["flight","waiting","fight"].includes(G.state)){loopFail=true;toReady("Something went wrong. Reset to a fresh cast.",true);setTimeout(()=>loopFail=false,2000);}}}
   requestAnimationFrame(frame);}
-fillMethods();renderLevel();resize();renderHud();titleScreen();requestAnimationFrame(frame);
-if(hasManifest&&isIOS&&!standalone()&&!installSnoozed())setTimeout(()=>{if(G.state==="menu")installPrompt();},900);
+function startupNotice(){
+  G.state="menu";setCondsEnabled(false);headerButtons(false);
+  $("#panel").innerHTML='<div class="hint">Welcome to Willowmere.</div>';
+  showOverlay(`<span class="tag" style="background:var(--danger);color:#fff">Experimental build</span>
+  <h2>Heads up, angler</h2>
+  <p>Tight Lines is in an early, experimental phase. Expect bugs, glitches and things that change between updates, and saves may occasionally need to be cleared.</p>
+  <p class="note">Found something broken? Let me know on Ko-fi or GitHub. Every report helps.</p>
+  <div class="controls"><button class="big strike" id="nOk" type="button">Got it, let's fish</button></div>`);
+  $("#nOk").onclick=()=>{noticeDone=true;titleScreen();
+    if(canInstall()&&!installSnoozed())setTimeout(()=>{if(G.state==="menu")installPrompt();},400);};
+}
+fillMethods();renderLevel();resize();renderHud();startupNotice();requestAnimationFrame(frame);
 })();
 </script>
 
