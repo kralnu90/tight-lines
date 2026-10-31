@@ -55,9 +55,13 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
+## Install it as an app
+
+On Android (Chrome), the game offers to install itself when you open it, or you can use **Install the app** on the main menu. On iPhone or iPad, open it in Safari, tap **Share**, then **Add to Home Screen**. Once installed it runs full screen and works without a signal.
+
 ## Notes
 
-- The whole game is the single `index.html` file. No installs or accounts needed.
+- The game is the single `index.html` file. `manifest.webmanifest`, `sw.js` and the `icons` folder make it installable and playable offline. No accounts needed.
 - Saves are kept in your browser on each device, so clearing your browser data clears your saves.
 - Built phone-first, but it plays in a desktop browser too.
 

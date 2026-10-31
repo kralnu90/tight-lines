@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e1c19">
 <meta name="description" content="Tight Lines: a survival fishing adventure prototype by Kralnu Games.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tight Lines">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Tight Lines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -899,6 +906,26 @@ function memorialView(onBack){
 function latestSlot(){let best=-1,t=-1;store.slots.forEach((s,i)=>{if(s&&(s.played||0)>=t){t=s.played||0;best=i;}});return best;}
 function continueSlot(i){const sl=store.slots[i];const snap=sl.suspend?sl.suspend:JSON.parse(JSON.stringify(sl.tavern));
   sl.suspend=null;sl.played=Date.now();saveStore();snap.slot=i;loadRun(snap);}
+/* ---------- Install as an app (only in the GitHub build, which ships a manifest) ---------- */
+let installEvt=null;const hasManifest=!!document.querySelector('link[rel="manifest"]');
+const standalone=()=>window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+if(hasManifest&&"serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
+function installSnoozed(){try{return Date.now()<(+localStorage.getItem("tightlines-install-snooze")||0);}catch(e){return false;}}
+function snoozeInstall(){try{localStorage.setItem("tightlines-install-snooze",String(Date.now()+3*864e5));}catch(e){}}
+function canInstall(){return hasManifest&&!standalone()&&(installEvt||isIOS);}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;if(G.state==="menu"&&!installSnoozed())installPrompt();else if(G.state==="menu")titleScreen();});
+window.addEventListener("appinstalled",()=>{installEvt=null;toast("Installed! Find Tight Lines on your home screen.",false,2600);if(G.state==="menu")titleScreen();});
+function installPrompt(){
+  const ios=isIOS&&!installEvt;
+  showOverlay(`<h2>Install Tight Lines?</h2><p>Put it on your home screen and play full screen like a proper app, even without a signal.</p>
+  ${ios?`<p class="note">On iPhone or iPad: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.</p>`:""}
+  <div class="controls"><button class="big ghost" id="iLater" type="button" style="flex:1">${ios?"Got it":"Not now"}</button>${ios?"":`<button class="big strike" id="iYes" type="button">Install</button>`}</div>`);
+  $("#iLater").onclick=()=>{snoozeInstall();titleScreen();};
+  if($("#iYes"))$("#iYes").onclick=async()=>{const ev=installEvt;installEvt=null;if(!ev){titleScreen();return;}
+    try{ev.prompt();await ev.userChoice;}catch(_){}titleScreen();};
+}
+
 function titleScreen(){
   G.state="menu";run=null;G.fish=null;G.float=null;setCondsEnabled(false);headerButtons(false);renderLevel();renderHud();
   $("#panel").innerHTML='<div class="hint">Welcome to Willowmere.</div>';
@@ -912,6 +939,7 @@ function titleScreen(){
     <button id="tmMem" type="button">Memory board</button>
     <button id="tmHow" type="button">How to play</button>
     <button id="tmSet" type="button">Settings</button>
+    ${canInstall()?`<button id="tmInst" type="button">Install the app<small>Play from your home screen</small></button>`:""}
     <a href="https://ko-fi.com/kralnu90" target="_blank" rel="noopener">Support on Ko-fi</a>
   </div>
   <p class="note">Prototype build. Saves live in this browser.</p>`,"title-card");
@@ -921,6 +949,7 @@ function titleScreen(){
   $("#tmMem").onclick=()=>memorialView(titleScreen);
   $("#tmHow").onclick=()=>howTo(titleScreen);
   $("#tmSet").onclick=()=>settingsScreen(titleScreen);
+  if($("#tmInst"))$("#tmInst").onclick=installPrompt;
 }
 function slotsScreen(mode){
   const rows=store.slots.map((sl,i)=>{
@@ -1038,6 +1067,7 @@ function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
     if(!loopFail&&run&&["flight","waiting","fight"].includes(G.state)){loopFail=true;toReady("Something went wrong. Reset to a fresh cast.",true);setTimeout(()=>loopFail=false,2000);}}}
   requestAnimationFrame(frame);}
 fillMethods();renderLevel();resize();renderHud();titleScreen();requestAnimationFrame(frame);
+if(hasManifest&&isIOS&&!standalone()&&!installSnoozed())setTimeout(()=>{if(G.state==="menu")installPrompt();},900);
 })();
 </script>
 
