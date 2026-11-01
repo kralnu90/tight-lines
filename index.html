@@ -1,6 +1,19 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1c19">
+<meta name="description" content="Tight Lines: a survival fishing adventure prototype by Kralnu Games.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tight Lines">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Tight Lines</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
@@ -64,7 +77,7 @@ body{height:100%;background:var(--ink);color:var(--cream);font-family:var(--body
 .mem b{display:block}.mem small{color:var(--muted)}
 input[type=text]{width:100%;background:var(--panel-2);color:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:10px;font:600 15px var(--body)}
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mode{background:var(--panel-2);border:1px solid var(--rule);border-radius:10px;padding:10px;color:var(--cream);text-align:left;font:600 15px var(--body);cursor:pointer}
+.mode{display:flex;flex-direction:column;justify-content:flex-start;background:var(--panel-2);border:1px solid var(--rule);border-radius:10px;padding:10px;color:var(--cream);text-align:left;font:600 15px var(--body);cursor:pointer}
 .mode small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:3px}
 .mode.on{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)}
 .mode.hard.on{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger)}
@@ -148,6 +161,8 @@ h3{margin:4px 0 0;font:700 12px var(--body);letter-spacing:.12em;text-transform:
 .lbrow small{display:block;color:var(--muted);font-size:12px}
 .lbrow .wt{grid-area:t;text-align:right}.lbrow .stars{grid-area:s;font-size:13px;text-align:right}
 </style>
+</head>
+<body>
 
 <div class="app">
   <header class="top">
@@ -249,11 +264,20 @@ const GEAR={
 };
 const BAITS={Maggots:[2,10],Bread:[1,10],Worm:[2,10],Sweetcorn:[2,10],Pellets:[3,10],Boilies:[4,10],Deadbait:[4,5],Lugworm:[3,10],Ragworm:[3,10],Squid:[4,5],"Peeler crab":[5,5]};
 const LURES={Spinner:4,"Soft lure":5,"Big lure":8,Feathers:3,"Dry fly":3,Nymph:3};
+const DIFFS={
+  easy:{name:"Easy",tension:0.8,stam:1,needs:0,rare:0.75,xp:0.5,desc:"Pure fishing. Gentler line, no needs to manage. Rare fish are harder to find and XP comes slower."},
+  medium:{name:"Medium",tension:1,stam:1,needs:1,rare:1,xp:1,desc:"The game as designed."},
+  hard:{name:"Hard",tension:1.25,stam:1.25,needs:1.5,rare:1.15,xp:1.2,desc:"Tougher fish, tighter line, needs drop 50% faster. Rare fish turn up more and XP is +20%."},
+  extreme:{name:"Extreme",tension:1.45,stam:1.5,needs:1.75,rare:1.3,xp:1.4,hardcore:true,desc:"Brutal fights, needs drop 75% faster, and always hardcore. Rare fish +30%, XP +40%."}
+};
+const DORDER=["easy","medium","hard","extreme"];
+function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.10.0";
+const VERSION="0.11.0";
 const CHANGELOG=[
+  {v:"0.11.0",date:"1 Nov 2026",title:"Difficulty levels",items:["Choose Easy, Medium, Hard or Extreme when you start a new game","Easy: gentler line tension, needs switched off, fewer rare fish, half XP","Hard: tougher fish and line, needs drop 50% faster, more rare fish, +20% XP","Extreme: brutal fights, needs drop 75% faster, always hardcore, +30% rare fish, +40% XP","Lower a save's difficulty in Settings (it can never be raised)","Difficulty shows on saves and the memory board","Kit, Log and Menu buttons at the Willowmere Arms"]},
   {v:"0.10.0",date:"1 Nov 2026",title:"Online leaderboard",items:["Leaderboard of the heaviest fish of every species, shared between players","Your best catches post automatically when you're online, and wait on the phone when you're not","Turn sharing off any time in Settings"]},
   {v:"0.9.0",date:"31 Oct 2026",title:"Fish Bucks and gear",items:["Fish Bucks: sell your catch at the Willowmere Arms","Prices depend on size, stars and freshness; lake fish pay more in riverside Willowmere","Selling lots of one fish drops its price for a while","Tackle shop with bait, lures, line and graded rods, reels and kit; gear stock changes daily","Bait gets used up and lures are lost when the line breaks","Rods, reels and line now change how fights play","Rooms cost 6 FB; the stable is free but rough","Kit screen to see and change your gear"]},
   {v:"0.8.1",date:"31 Oct 2026",title:"Experimental build",items:["Startup warning that the game is experimental and may have bugs","Install Tight Lines as an app from the GitHub page, with offline play","Version number and this What's new screen"]},
@@ -305,6 +329,7 @@ function biteWeights(c,q){return FISH.filter(f=>f.water===c.water).map(f=>{let w
   w*=mOk&&bOk?2:mOk?0.4:bOk?0.3:0.05;
   if(f.weather&&f.weather.includes(c.weather))w*=1.5;
   const L=LINES[c.line]||LINES.Medium;if(f.spooky&&L.shy)w*=L.shy;if(L.all)w*=L.all;
+  if(f.rarity!=="Common")w*=diff().rare;
   if(q!==undefined&&f.rarity!=="Common")w*=1+0.5*q;
   return {f,w};});}
 function pickFish(c,q){const ws=biteWeights(c,q);const tot=ws.reduce((a,b)=>a+b.w,0);let r=Math.random()*tot;
@@ -445,7 +470,7 @@ function hook(f){
   const r=Math.random();const w=f.min+(f.max-f.min)*Math.pow(r,2);const s=(w-f.min)/(f.max-f.min);
   const fl=G.float;const side=spot().snagSide;
   G.fish={f,w,s,D:fl.D,X:fl.X,S:1,T:0.3,dir:Math.random()<0.5?-1:1,mode:"rest",modeT:0.4,modePull:0.3,
-    pullScale:f.pull*(0.75+0.5*s),stamPool:f.stam*(0.75+0.6*s),snapT:0,slackT:0,tangle:0,air:0,t:0,with:0,ang:0,vx:0,vd:0};
+    pullScale:f.pull*(0.75+0.5*s),stamPool:f.stam*(0.75+0.6*s)*diff().stam,snapT:0,slackT:0,tangle:0,air:0,t:0,with:0,ang:0,vx:0,vd:0};
   if(f.dash){Object.assign(G.fish,{mode:"dash",dir:side,modeT:2.1,modePull:1.25});}
   G.state="fight";G.float=null;G.R=0;G.reeling=false;panelFight();
   const p=toScreen(fl.D,fl.X);G.ripples.push({x:p.x,y:p.y,r:4,a:1,sc:1});
@@ -464,14 +489,14 @@ function nextMode(F){
   F.mode="rest";F.modeT=rand(0.6,1.6);F.modePull=0.25;
 }
 function lose(msg){
-  const f=G.fish&&G.fish.f;if(run)run.xp+=3;renderLevel();
+  const f=G.fish&&G.fish.f;const lx=Math.max(1,Math.round(3*diff().xp));if(run)run.xp+=lx;renderLevel();
   const bt=conds().bait,lures=["Spinner","Soft lure","Big lure","Feathers","Dry fly","Nymph"];
   const gone=lures.includes(bt)&&/snap|Snag|spool|tangle|weed|rocks/i.test(msg);
   if(gone&&run)run.inv.lures[bt]=Math.max(0,(run.inv.lures[bt]||0)-1);
   const lure=gone?` Your ${bt.toLowerCase()} went with it${run?` (${run.inv.lures[bt]} left)`:""}.`:"";
   G.state="result";G.reeling=false;
   showOverlay(`<h2>${msg}</h2><p>${f?"You never got a proper look at it.":""}${lure}</p>
-  <p class="note">+3 XP for the experience.</p>
+  <p class="note">+${lx} XP for the experience.</p>
   <div class="controls"><button class="big strike" id="again" type="button">Cast again</button></div>`);
   $("#again").addEventListener("click",()=>toReady());
 }
@@ -490,7 +515,7 @@ function landed(){
   const st=F.s<0.1?1:F.s<0.25?2:F.s<0.45?3:F.s<0.8?4:5;
   const first=!run.log.some(e=>e.id===f.id);
   const prevPB=run.log.filter(e=>e.id===f.id).reduce((m,e)=>Math.max(m,e.w),0);
-  let xp=Math.round(({Common:10,Uncommon:30,Rare:60})[f.rarity]+10*F.s);if(first)xp+=25;
+  let xp=({Common:10,Uncommon:30,Rare:60})[f.rarity]+10*F.s;if(first)xp+=25;xp=Math.max(1,Math.round(xp*diff().xp));
   const before=levelInfo(run.xp).L;run.xp+=xp;const after=levelInfo(run.xp).L;
   run.log.unshift({id:f.id,name:f.name,w:+F.w.toFixed(3),len,stars:st,season:c.season,time:c.time,bait:c.bait,method:c.method,spot:spot().name,day:run.day});
   run.log=run.log.slice(0,300);run.keep.push({id:f.id,name:f.name,w:+F.w.toFixed(3),stars:st,caught:absMin()});renderLevel();
@@ -557,7 +582,7 @@ function update(dt){
   let pullT=P*0.92*(1-0.37*Math.max(w,0))*(1+0.42*Math.max(-w,0));
   if(F.air>0.05)pullT+=G.reeling?0.95*F.air:-0.2;
   const RD=rodFor(conds().method),RL=reelNow();
-  const target=(pullT+(G.reeling?0.5:0))*(LINES[conds().line]||LINES.Medium).k*RD.tm*save.settings.strict;
+  const target=(pullT+(G.reeling?0.5:0))*(LINES[conds().line]||LINES.Medium).k*RD.tm*diff().tension*save.settings.strict;
   const dragLim=RL.drag;
   const capped=target>dragLim?dragLim+(target-dragLim)*0.54:target;
   F.T+=(Math.max(0,capped)-F.T)*Math.min(1,dt*9);
@@ -804,21 +829,24 @@ function advance(mins,opt){
     run.min+=m;if(run.min>=1440){run.min-=1440;run.day++;if((run.day-1)%10===0)toast(`A new season: ${conds().season}`,false,2200);}
     run.weatherIn-=m;if(run.weatherIn<=0){run.weather=pickWeather(conds().season);run.weatherIn=rand(180,480);}
     run.away+=m;
+    const NM=diff().needs;
+    if(NM===0){Object.assign(N,{food:100,warm:100,stam:100,health:100,thirst:100});run.water=maxWater();run.ill=0;
+      if(run.fire>0)run.fire=Math.max(0,run.fire-m);for(const id in run.market){run.market[id]=Math.max(0,run.market[id]-m/720);}continue;}
     const c=conds();
     let dw={Dawn:-2,Day:4,Dusk:-2,Night:-7}[c.time];
     if(c.weather==="Rain")dw-=5;else if(c.weather==="Overcast")dw-=1;
     dw+={Spring:-1,Summer:2,Autumn:-1,Winter:-4}[c.season];
     if(run.loc==="coast")dw-=1;
     if(run.fire>0){dw+=18;run.fire=Math.max(0,run.fire-m);}
-    if(dw<0){if(run.inv.gear.jacket)dw*=0.7;if(opt.sleep&&run.inv.gear.bedroll)dw*=0.55;}
+    if(dw<0){dw*=NM;if(run.inv.gear.jacket)dw*=0.7;if(opt.sleep&&run.inv.gear.bedroll)dw*=0.55;}
     N.warm=clamp(N.warm+dw*h,0,100);
     for(const id in run.market){run.market[id]=Math.max(0,run.market[id]-m/720);}
-    N.food=clamp(N.food-(opt.sleep?2.8:4.5)*(run.ill>0?1.3:1)*h,0,100);
+    N.food=clamp(N.food-(opt.sleep?2.8:4.5)*NM*(run.ill>0?1.3:1)*h,0,100);
     if(opt.sleep)N.stam=clamp(N.stam+13*h,0,100);
     else if(opt.rest)N.stam=clamp(N.stam+15*h,0,100);
-    else N.stam=clamp(N.stam-(N.food<25?3:1.2)*h,0,100);
-    run.water=Math.max(0,run.water-m/1440);
-    if(run.water<=0)N.thirst=clamp(N.thirst-6*h,0,100);
+    else N.stam=clamp(N.stam-(N.food<25?3:1.2)*NM*h,0,100);
+    run.water=Math.max(0,run.water-m/1440*NM);
+    if(run.water<=0)N.thirst=clamp(N.thirst-6*NM*h,0,100);
     if(run.ill>0)run.ill=Math.max(0,run.ill-m);
     let dmg=0;if(N.food<=0)dmg+=6;if(N.warm<=0)dmg+=8;if(N.thirst<=0)dmg+=8;if(run.ill>0)dmg+=2;
     if(dmg)N.health=clamp(N.health-dmg*h,0,100);
@@ -836,8 +864,9 @@ function renderHud(){
   $("#cTime").textContent=`${clock(run?run.min:390)} ${c.time}`;
   $("#cWeather").textContent=c.weather;
   $("#bucks").textContent=run?run.bucks:0;
-  $("#who").textContent=run?`${run.name} · ${run.hardcore?"Hardcore":"Normal"}`:"Kralnu Games";
+  $("#who").textContent=run?`${run.name} · ${diff().name}${run.hardcore?" · Hardcore":""}`:"Kralnu Games";
   if(!run){$("#needs").innerHTML="";return;}
+  if(diff().needs===0){$("#needs").innerHTML='<div class="need" style="grid-column:1/-1">Easy mode · needs are off. Just fish.</div>';return;}
   const N=run.needs;
   const items=[["Food",N.food],["Warmth",N.warm],["Energy",N.stam],["Health",N.health],[run.water>0?"Water":"Thirst",run.water>0?run.water/maxWater()*100:N.thirst]];
   $("#needs").innerHTML=items.map(([n,v])=>`<div class="need ${v<25?"low":v<50?"mid":""}">${n}${n==="Health"&&run.ill>0?" · ill":""}<div class="nb"><i style="width:${clamp(v,0,100)}%"></i></div></div>`).join("");
@@ -904,6 +933,7 @@ function withKit(r){
   if(!r.inv)r.inv={gear:{willow:1,tin:1},bait:{Maggots:20,Bread:10,Worm:10},lures:{Spinner:1},lines:{Medium:1}};
   if(!r.equip)r.equip={rod:"willow",fly:null,reel:"tin",line:"Medium"};
   if(!r.market)r.market={};
+  if(!r.diff)r.diff="medium";
   if(!r.shop)r.shop={day:0,stock:[]};
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
@@ -1001,7 +1031,9 @@ function tavernMenu(){
     <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
   </div>
-  <h3>Go fishing</h3><div class="acts">${travelButtons("go")}</div>`);
+  <h3>Go fishing</h3><div class="acts">${travelButtons("go")}</div>
+  <div class="controls"><button class="big ghost" id="tKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="tLog" type="button" style="flex:1">Log</button><button class="big ghost" id="tMenu" type="button" style="flex:1">Menu</button></div>`);
+  $("#tKit").onclick=()=>kitScreen(tavernMenu);$("#tLog").onclick=()=>logBook(tavernMenu);$("#tMenu").onclick=pauseMenu;
   const night=(fn)=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});fn();run.water=maxWater();run.fire=0;run.away=0;saveTavern();renderHud();};
   $("#tStay").onclick=()=>{run.bucks-=ROOM;night(()=>{Object.assign(run.needs,{food:Math.max(run.needs.food,70),warm:100,stam:100,health:100,thirst:100});run.ill=0;});
     toast("Game saved. A new day.",false,2200);tavernMenu();};
@@ -1019,7 +1051,7 @@ function die(){
   $("#panel").innerHTML='<div class="hint">…</div>';
   const best=r.log.reduce((m,e)=>e.w>m.w?e:m,{w:0,name:""});
   if(r.hardcore){
-    store.memorial.push({name:r.name,days:r.day,level:levelInfo(r.xp).L,species:new Set(r.log.map(e=>e.id)).size,best:best.w?`${best.name}, ${lbOz(best.w)}`:"nothing landed",cause:r.cause||"the wild",season:conds().season,dayIn:((r.day-1)%10)+1});
+    store.memorial.push({name:r.name,days:r.day,level:levelInfo(r.xp).L,species:new Set(r.log.map(e=>e.id)).size,best:best.w?`${best.name}, ${lbOz(best.w)}`:"nothing landed",cause:r.cause||"the wild",diff:diff().name,season:conds().season,dayIn:((r.day-1)%10)+1});
     store.slots[r.slot]=null;saveStore();
     showOverlay(`<span class="tag" style="background:var(--danger)">Hardcore</span><h2>Here ends the tale of ${r.name}</h2>
     <p>Taken by ${r.cause||"the wild"} on day ${r.day}. Their name goes on the memory board at the Willowmere Arms.</p>
@@ -1038,7 +1070,7 @@ function loadRun(snap){run=withKit(snap);if(!run.lastSpot)run.lastSpot="river";G
 
 /* ---------- Menus ---------- */
 function memorialView(onBack){
-  const rows=store.memorial.slice().reverse().map(m=>`<div class="mem"><b>${m.name}</b><small>Survived ${m.days} days · Fishing level ${m.level} · ${m.species} species · Biggest: ${m.best}<br>Lost to ${m.cause}, ${m.season} day ${m.dayIn}.</small></div>`).join("");
+  const rows=store.memorial.slice().reverse().map(m=>`<div class="mem"><b>${m.name}</b><small>Survived ${m.days} days · Fishing level ${m.level} · ${m.species} species · Biggest: ${m.best}<br>${m.diff?m.diff+" · ":""}Lost to ${m.cause}, ${m.season} day ${m.dayIn}.</small></div>`).join("");
   showOverlay(`<h2>Memory board</h2><p class="note">Hardcore anglers who didn't make it home.</p>
   <div class="acts">${rows||'<p class="note">No names yet. May it stay that way.</p>'}</div>
   <div class="controls"><button class="big ghost" id="mBack" type="button" style="flex:1">Back</button></div>`);
@@ -1155,7 +1187,7 @@ function titleScreen(){
   const snap=sl?(sl.suspend||sl.tavern):null;
   showOverlay(`<div class="sub">Kralnu Games</div><h1>Tight Lines</h1><div class="sub">A survival fishing adventure</div><div class="rule"></div>
   <div class="menu">
-    ${sl?`<button class="primary" id="tmCont" type="button">Continue<small>${sl.name} · ${SEASONS[Math.floor((snap.day-1)/10)%4]} day ${((snap.day-1)%10)+1}${sl.hardcore?" · Hardcore":""}</small></button>`:""}
+    ${sl?`<button class="primary" id="tmCont" type="button">Continue<small>${sl.name} · ${SEASONS[Math.floor((snap.day-1)/10)%4]} day ${((snap.day-1)%10)+1}${sl.diff?" · "+DIFFS[sl.diff].name:""}${sl.hardcore?" · Hardcore":""}</small></button>`:""}
     <button class="${sl?"":"primary"}" id="tmNew" type="button">New game</button>
     <button id="tmLoad" type="button" ${store.slots.some(Boolean)?"":"disabled"}>Load game</button>
     <button id="tmLb" type="button">Leaderboard</button>
@@ -1181,7 +1213,7 @@ function slotsScreen(mode){
   const rows=store.slots.map((sl,i)=>{
     if(!sl)return `<div class="slot"><b>Slot ${i+1}</b><small>Empty</small><div class="controls"><button class="big strike" data-new="${i}" type="button">New game here</button></div></div>`;
     const s=sl.suspend||sl.tavern;const c=SEASONS[Math.floor((s.day-1)/10)%4];
-    return `<div class="slot"><b>${sl.name} ${sl.hardcore?'<span class="hc">· Hardcore</span>':""}</b>
+    return `<div class="slot"><b>${sl.name} <span style="font-weight:500;color:var(--muted)">· ${DIFFS[sl.diff||"medium"].name}</span> ${sl.hardcore?'<span class="hc">· Hardcore</span>':""}</b>
       <small>${c} · day ${s.day} · fishing level ${levelInfo(s.xp).L}${sl.suspend?" · resumes where you left off":" · at the Willowmere Arms"}</small>
       <div class="controls">${mode==="new"?`<button class="big ghost" data-over="${i}" type="button" style="flex:1">Overwrite</button>`:`<button class="big strike" data-cont="${i}" type="button">Continue</button>`}<button class="big ghost" data-del="${i}" type="button">Delete</button></div></div>`;}).join("");
   showOverlay(`<h2>${mode==="new"?"New game":"Load game"}</h2><p class="note">${mode==="new"?"Pick a slot. Each slot is its own game, so a hardcore run can sit alongside normal ones.":"Pick up where you left off."}</p>
@@ -1199,20 +1231,26 @@ function newGameScreen(i){
   showOverlay(`<h2>New angler</h2>
   <label for="angName" style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Name</label>
   <input id="angName" type="text" maxlength="20" value="Angler ${i+1}">
+  <h3>Difficulty</h3>
+  <div class="modes" id="dPick">${DORDER.map(k=>`<button class="mode ${k==="medium"?"on":""} ${k==="extreme"?"hard":""}" data-diff="${k}" type="button">${DIFFS[k].name}<small>${DIFFS[k].desc}</small></button>`).join("")}</div>
+  <h3>Death</h3>
   <div class="modes">
     <button class="mode on" id="mNorm" type="button">Normal<small>Die and you wake at your last tavern save.</small></button>
     <button class="mode hard" id="mHard" type="button">Hardcore<small>One life. Death is permanent.</small></button>
   </div>
-  <p class="note" id="mNote">You can switch a normal game to hardcore later, but never back.</p>
+  <p class="note" id="mNote">You can switch a normal game to hardcore later, but never back. You can lower the difficulty later, but never raise it.</p>
   <div class="controls"><button class="big ghost" id="nBack" type="button">Back</button><button class="big strike" id="nGo" type="button">Start</button></div>`);
-  const set=h=>{hard=h;armed=false;$("#mNorm").classList.toggle("on",!h);$("#mHard").classList.toggle("on",h);
+  let dsel="medium";
+  document.querySelectorAll("[data-diff]").forEach(b=>b.onclick=()=>{dsel=b.dataset.diff;document.querySelectorAll("[data-diff]").forEach(x=>x.classList.toggle("on",x===b));
+    const lock=!!DIFFS[dsel].hardcore;$("#mNorm").disabled=lock;if(lock)set(true);});
+  const set=h=>{if(!h&&DIFFS[dsel]&&DIFFS[dsel].hardcore)h=true;hard=h;armed=false;$("#mNorm").classList.toggle("on",!h);$("#mHard").classList.toggle("on",h);
     $("#mNote").textContent=h?"Hardcore: if you die, this angler is gone for good and goes on the memory board.":"You can switch a normal game to hardcore later, but never back.";$("#nGo").textContent="Start";};
   $("#mNorm").onclick=()=>set(false);$("#mHard").onclick=()=>set(true);
   $("#nBack").onclick=()=>slotsScreen("new");
   $("#nGo").onclick=()=>{
     if(hard&&!armed){armed=true;$("#nGo").textContent="Confirm hardcore";$("#mNote").textContent="Are you sure? Tap again to lock this angler into permadeath.";return;}
     const name=($("#angName").value||"").trim().slice(0,20)||`Angler ${i+1}`;
-    run=newRun(i,name,hard);store.slots[i]={name,hardcore:hard,tavern:null,suspend:null,played:Date.now()};saveTavern();
+    run=newRun(i,name,hard);run.diff=dsel;store.slots[i]={name,hardcore:hard,diff:dsel,tavern:null,suspend:null,played:Date.now()};saveTavern();
     renderLevel();goTavern();toast("Spring, day 1. The water's waiting.",false,2400);};
 }
 function pauseMenu(){
@@ -1268,12 +1306,15 @@ function howTo(onBack){
 function settingsScreen(onBack){
   showOverlay(`<h2>Settings</h2>
   <div class="row"><label for="sens">Rod sensitivity</label><input id="sens" type="range" min="0.6" max="1.8" step="0.1" value="${save.settings.sens}"></div>
-  <div class="row"><label for="strict">Tension strictness <b id="strictv">${Math.round(save.settings.strict*100)}%</b></label><input id="strict" type="range" min="0.8" max="1.4" step="0.05" value="${save.settings.strict}"></div>
+  ${run?`<div class="row"><label for="diffSel">Difficulty</label><select id="diffSel" style="background:var(--panel-2);color:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:6px">${DORDER.slice(0,DORDER.indexOf(run.diff||"medium")+1).map(k=>`<option value="${k}" ${k===(run.diff||"medium")?"selected":""}>${DIFFS[k].name}</option>`).join("")}</select></div>
+  <p class="note" id="diffNote">${diff().desc} You can lower the difficulty, but never raise it again.</p>`:""}
   <div class="row"><label for="unl">All methods unlocked (testing)</label><input id="unl" type="checkbox" ${save.settings.unlockAll?"checked":""}></div>
   <p class="note">Normally ledgering unlocks at fishing level 5, spinning at 10 and fly fishing at 15.</p>
   <div class="row"><label for="dbg">Show test numbers</label><input id="dbg" type="checkbox" ${save.settings.debug?"checked":""}></div>
   ${run&&!run.hardcore?`<div class="row"><span class="note">Switch this save to hardcore: permanent death, no going back.</span><button class="danger-btn" id="toHC" type="button">Go hardcore</button></div>`:""}
-  ${run?`<h3>Testing</h3><div class="row"><button class="iconbtn" id="skip1" type="button">Skip 1 hour</button><button class="iconbtn" id="skip6" type="button">Skip 6 hours</button></div>`:""}
+  <h3>Testing</h3>
+  <div class="row"><label for="strict">Tension strictness <b id="strictv">${Math.round(save.settings.strict*100)}%</b></label><input id="strict" type="range" min="0.8" max="1.4" step="0.05" value="${save.settings.strict}"></div>
+  ${run?`<div class="row"><button class="iconbtn" id="skip1" type="button">Skip 1 hour</button><button class="iconbtn" id="skip6" type="button">Skip 6 hours</button></div>`:""}
   <div class="row"><label for="lbShare">Post my best catches to the online leaderboard</label><input id="lbShare" type="checkbox" ${lb.share?"checked":""}></div>
   <p class="note">Shares your angler name and each species' heaviest fish. No account or code needed.</p>
   <p class="note">Tilt controls will come with the app build.</p>
@@ -1281,6 +1322,9 @@ function settingsScreen(onBack){
   $("#sens").oninput=e=>{save.settings.sens=+e.target.value;persist();};
   $("#dbg").onchange=e=>{save.settings.debug=e.target.checked;persist();};
   $("#unl").onchange=e=>{save.settings.unlockAll=e.target.checked;persist();if(G.state==="ready")fillMethods();};
+  const ds=$("#diffSel");if(ds)ds.onchange=()=>{const k=ds.value;if(k===run.diff)return;
+    $("#diffNote").innerHTML=`Lower to <b>${DIFFS[k].name}</b>? You won't be able to raise it again. <button class="danger-btn" id="diffOk" type="button">Confirm</button>`;
+    $("#diffOk").onclick=()=>{run.diff=k;const sl=store.slots[run.slot];if(sl){sl.diff=k;if(sl.tavern)sl.tavern.diff=k;saveStore();}renderHud();toast(`Difficulty: ${DIFFS[k].name}`);settingsScreen(onBack);};};
   $("#strict").oninput=e=>{save.settings.strict=+e.target.value;$("#strictv").textContent=Math.round(save.settings.strict*100)+"%";persist();};
   const hc=$("#toHC");if(hc){let armed=false;hc.onclick=()=>{
     if(!armed){armed=true;hc.textContent="Tap again: lock in permadeath";return;}
@@ -1319,4 +1363,5 @@ fillMethods();renderLevel();resize();renderHud();startupNotice();requestAnimatio
 })();
 </script>
 
-</body></html>
+</body>
+</html>

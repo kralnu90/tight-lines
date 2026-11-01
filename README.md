@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnu90.github.io/tight-lines/
 
-**Current version: 0.10.0** · experimental build
+**Current version: 0.11.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -22,6 +22,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Survival:** food, warmth, energy, health and water, on a live day and night clock with 10-day seasons.
 - **Camp:** light a fire, cook your catch, boil river water, rest, or sleep until dawn. Camping never saves.
 - **The Willowmere Arms:** the tavern is the only place to save. A night there restores you and refills your water.
+- **Four difficulty levels:** Easy is pure fishing with no needs to manage, Medium is the game as designed, Hard toughens the fish and the wild, and Extreme is brutal and always hardcore. Harder levels turn up more rare fish and give more XP.
 - **Normal or Hardcore:** die on Normal and you wake at your last tavern save. On Hardcore, death is permanent and your angler goes on the tavern's memory board.
 - **Fish Bucks:** sell your catch at the Willowmere Arms. Size, stars and freshness set the price, lake fish pay more in riverside Willowmere, and flooding the market drops prices for a while.
 - **Tackle shop and graded gear:** buy bait, lures, line, rods, reels and kit. Gear comes in Basic, Good, Fine and Master grades, and the shop's gear stock changes daily. Rods, reels and line all change how a fight plays.
@@ -62,6 +63,15 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.11.0 · Difficulty levels (1 Nov 2026)
+- Choose Easy, Medium, Hard or Extreme when you start a new game
+- Easy: gentler line tension, needs switched off, fewer rare fish, half XP
+- Hard: tougher fish and line, needs drop 50% faster, more rare fish, +20% XP
+- Extreme: brutal fights, needs drop 75% faster, always hardcore, +30% rare fish, +40% XP
+- Lower a save's difficulty in Settings (it can never be raised)
+- Difficulty shows on saves and the memory board
+- Kit, Log and Menu buttons at the Willowmere Arms
 
 ### 0.10.0 · Online leaderboard (1 Nov 2026)
 - Leaderboard of the heaviest fish of every species, shared between players
