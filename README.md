@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnu90.github.io/tight-lines/
 
-**Current version: 0.9.0** · experimental build
+**Current version: 0.10.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -26,6 +26,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Fish Bucks:** sell your catch at the Willowmere Arms. Size, stars and freshness set the price, lake fish pay more in riverside Willowmere, and flooding the market drops prices for a while.
 - **Tackle shop and graded gear:** buy bait, lures, line, rods, reels and kit. Gear comes in Basic, Good, Fine and Master grades, and the shop's gear stock changes daily. Rods, reels and line all change how a fight plays.
 - **Three save slots, a log book with star ratings and personal bests, and fishing XP.**
+- **Online leaderboard:** see the heaviest fish of every species landed by other players. Your angler's best catch of each species posts automatically when you're online, and waits on your phone until you are. No account or code needed, and you can turn sharing off in Settings.
 
 ## How to play
 
@@ -61,6 +62,11 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.10.0 · Online leaderboard (1 Nov 2026)
+- Leaderboard of the heaviest fish of every species, shared between players
+- Your best catches post automatically when you're online, and wait on the phone when you're not
+- Turn sharing off any time in Settings
 
 ### 0.9.0 · Fish Bucks and gear (31 Oct 2026)
 - Fish Bucks: sell your catch at the Willowmere Arms
@@ -112,6 +118,7 @@ On Android (Chrome), the game offers to install itself when you open it, or you 
 ## Notes
 
 - The game is the single `index.html` file. `manifest.webmanifest`, `sw.js` and the `icons` folder make it installable and playable offline. No accounts needed.
+- The online leaderboard is the only part of the game that uses the internet. It shares your angler name and each species' heaviest catch, nothing else. Everything else still works offline.
 - Saves are kept in your browser on each device, so clearing your browser data clears your saves.
 - Built phone-first, but it plays in a desktop browser too.
 

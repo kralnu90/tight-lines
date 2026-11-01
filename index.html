@@ -1,19 +1,6 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0e1c19">
-<meta name="description" content="Tight Lines: a survival fishing adventure prototype by Kralnu Games.">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tight Lines">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Tight Lines</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700;800&display=swap">
@@ -154,9 +141,13 @@ h3{margin:4px 0 0;font:700 12px var(--body);letter-spacing:.12em;text-transform:
 .howto dt{font-weight:700;color:var(--brass)}
 .howto dd{margin:0;color:var(--cream)}
 .top .iconbtn[hidden]{display:none}
+.lbrow{display:grid;grid-template-columns:22px minmax(0,1fr) auto;grid-template-areas:"r w t" "r w s";gap:0 10px;align-items:center;background:var(--panel-2);border-radius:8px;padding:8px 10px;font-variant-numeric:tabular-nums}
+.lbrow.me{box-shadow:inset 0 0 0 1px var(--brass)}
+.lbrow .rank{grid-area:r;font:700 16px var(--display);color:var(--brass);text-align:center}
+.lbrow .who{grid-area:w;min-width:0}.lbrow .who b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbrow small{display:block;color:var(--muted);font-size:12px}
+.lbrow .wt{grid-area:t;text-align:right}.lbrow .stars{grid-area:s;font-size:13px;text-align:right}
 </style>
-</head>
-<body>
 
 <div class="app">
   <header class="top">
@@ -261,8 +252,9 @@ const LURES={Spinner:4,"Soft lure":5,"Big lure":8,Feathers:3,"Dry fly":3,Nymph:3
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.9.0";
+const VERSION="0.10.0";
 const CHANGELOG=[
+  {v:"0.10.0",date:"1 Nov 2026",title:"Online leaderboard",items:["Leaderboard of the heaviest fish of every species, shared between players","Your best catches post automatically when you're online, and wait on the phone when you're not","Turn sharing off any time in Settings"]},
   {v:"0.9.0",date:"31 Oct 2026",title:"Fish Bucks and gear",items:["Fish Bucks: sell your catch at the Willowmere Arms","Prices depend on size, stars and freshness; lake fish pay more in riverside Willowmere","Selling lots of one fish drops its price for a while","Tackle shop with bait, lures, line and graded rods, reels and kit; gear stock changes daily","Bait gets used up and lures are lost when the line breaks","Rods, reels and line now change how fights play","Rooms cost 6 FB; the stable is free but rough","Kit screen to see and change your gear"]},
   {v:"0.8.1",date:"31 Oct 2026",title:"Experimental build",items:["Startup warning that the game is experimental and may have bugs","Install Tight Lines as an app from the GitHub page, with offline play","Version number and this What's new screen"]},
   {v:"0.8.0",date:"31 Oct 2026",title:"Lake, coast and techniques",items:["New spots: Willowmere Lake and Saltmarsh Point, with travel between them","16 new fish: 9 lake and 7 coast species (23 in total)","Four methods that play differently: float, ledger, spinning and fly","Main menu, in-game menu and a How to play guide","More line on the reel before a fish can strip it all"]},
@@ -502,13 +494,14 @@ function landed(){
   const before=levelInfo(run.xp).L;run.xp+=xp;const after=levelInfo(run.xp).L;
   run.log.unshift({id:f.id,name:f.name,w:+F.w.toFixed(3),len,stars:st,season:c.season,time:c.time,bait:c.bait,method:c.method,spot:spot().name,day:run.day});
   run.log=run.log.slice(0,300);run.keep.push({id:f.id,name:f.name,w:+F.w.toFixed(3),stars:st,caught:absMin()});renderLevel();
+  const lbBest=lbOn()&&lb.share&&lbRecord(f,F.w,len,st);
   const unlocked=after>before?Object.keys(METHODS).filter(m=>METHODS[m].lvl>before&&METHODS[m].lvl<=after):[];
   const pb=!first&&F.w>prevPB;
   showOverlay(`${first?'<span class="tag">New species</span>':pb?'<span class="tag">Personal best</span>':""}
   <h2>${f.name}</h2>
   <div class="stars" aria-label="${st} of 5 stars">${stars(st)}</div>
   <div class="stats"><div><small>Weight</small><b>${lbOz(F.w)}</b></div><div><small>Length</small><b>${len} cm</b></div><div><small>XP</small><b>+${xp}</b></div></div>
-  <p class="note">${f.fights}. ${c.method} with ${c.bait.toLowerCase()} at ${spot().name}, ${c.time.toLowerCase()}.${after>before?` <b style="color:var(--brass)">Fishing level ${after}!${unlocked.length?" "+unlocked.join(", ")+" unlocked.":""}</b>`:""} Added to your keep net.</p>
+  <p class="note">${f.fights}. ${c.method} with ${c.bait.toLowerCase()} at ${spot().name}, ${c.time.toLowerCase()}.${after>before?` <b style="color:var(--brass)">Fishing level ${after}!${unlocked.length?" "+unlocked.join(", ")+" unlocked.":""}</b>`:""} Added to your keep net.${lbBest?` <b style="color:var(--brass)">Your best ${f.name.toLowerCase()} yet, posted to the leaderboard.</b>`:""}</p>
   <div class="controls"><button class="big strike" id="again" type="button">Cast again</button></div>`);
   $("#again").addEventListener("click",()=>toReady());
 }
@@ -1074,6 +1067,87 @@ function installPrompt(){
     try{ev.prompt();await ev.userChoice;}catch(_){}titleScreen();};
 }
 
+/* ---------- Online leaderboard (Firebase over REST, no library) ----------
+   Each angler (save slot) has one entry per species: their heaviest fish.
+   Catches queue on the device and post when there's a connection. */
+const FIREBASE={apiKey:"AIzaSyDGDa14qGfkFulvxOPaOle3WplN15y4tRw",projectId:"tight-lines-031018"}; // paste from Firebase project settings
+const LKEY="tightlines-lb-v1";
+let lb={uid:null,refresh:null,token:null,exp:0,share:true,queue:{},best:{},cache:{},pick:"pike"};
+try{const raw=localStorage.getItem(LKEY);if(raw)lb=Object.assign(lb,JSON.parse(raw));}catch(e){}
+lb.token=null;lb.exp=0;
+function lbSave(){try{const {token,exp,...rest}=lb;localStorage.setItem(LKEY,JSON.stringify(rest));}catch(e){}}
+const lbOn=()=>!!(FIREBASE.apiKey&&FIREBASE.projectId);
+function esc(t){return String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function lbRunId(){const sl=run&&store.slots[run.slot];if(!sl)return null;
+  if(!sl.lbId){sl.lbId=Math.random().toString(36).slice(2,10).padEnd(8,"0");saveStore();}return sl.lbId;}
+async function lbJSON(url,opt){const r=await fetch(url,opt);let j=null;try{j=await r.json();}catch(e){}
+  if(!r.ok){const err=new Error((j&&j.error&&(j.error.message||j.error.status))||("HTTP "+r.status));err.status=r.status;throw err;}return j;}
+async function lbAuth(){
+  if(lb.token&&Date.now()<lb.exp-60000)return lb.token;
+  if(lb.refresh){try{
+    const j=await lbJSON(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE.apiKey}`,{method:"POST",
+      headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(lb.refresh)});
+    lb.token=j.id_token;lb.refresh=j.refresh_token;lb.uid=j.user_id;lb.exp=Date.now()+(+j.expires_in)*1000;lbSave();return lb.token;
+  }catch(e){if(e.status!==400)throw e;lb.refresh=null;}}
+  const j=await lbJSON(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE.apiKey}`,{method:"POST",
+    headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
+  lb.token=j.idToken;lb.refresh=j.refreshToken;lb.uid=j.localId;lb.exp=Date.now()+(+j.expiresIn)*1000;lbSave();return lb.token;}
+const lbBase=()=>`https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents`;
+/* Called when a fish is landed. Returns true if it's this angler's new best for the species. */
+function lbRecord(f,w,len,st){
+  const rid=lbRunId();if(!rid)return false;const k=rid+"_"+f.id;
+  if(w<=(lb.best[k]||0))return false;
+  lb.best[k]=w;
+  lb.queue[k]={sp:f.id,rid,name:run.name.slice(0,20),w:+w.toFixed(3),len,stars:st,hc:!!run.hardcore,day:run.day,at:new Date().toISOString()};
+  lbSave();lbFlush();return true;}
+let lbBusy=false;
+async function lbFlush(){
+  if(!lbOn()||!lb.share||lbBusy||!Object.keys(lb.queue).length)return;
+  if(navigator.onLine===false)return;
+  lbBusy=true;
+  try{const tok=await lbAuth();
+    for(const k of Object.keys(lb.queue)){const e=lb.queue[k];
+      const body={fields:{name:{stringValue:e.name},w:{doubleValue:e.w},len:{integerValue:String(e.len)},stars:{integerValue:String(e.stars)},
+        hc:{booleanValue:e.hc},day:{integerValue:String(e.day)},at:{timestampValue:e.at}}};
+      try{await lbJSON(`${lbBase()}/lb_${e.sp}/${lb.uid}_${e.rid}`,{method:"PATCH",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},body:JSON.stringify(body)});
+        delete lb.queue[k];
+      }catch(err){if(err.status===403||err.status===400){delete lb.queue[k];}else throw err;}
+      lbSave();}
+  }catch(e){/* offline or blocked: keep the queue for next time */}
+  lbBusy=false;}
+async function lbTop(sp){
+  const tok=await lbAuth();
+  const j=await lbJSON(`${lbBase()}:runQuery`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+    body:JSON.stringify({structuredQuery:{from:[{collectionId:"lb_"+sp}],orderBy:[{field:{fieldPath:"w"},direction:"DESCENDING"}],limit:10}})});
+  const v=x=>x?(x.stringValue??(x.doubleValue!=null?+x.doubleValue:x.integerValue!=null?+x.integerValue:x.booleanValue??x.timestampValue)):undefined;
+  return (j||[]).filter(r=>r.document).map(r=>{const F=r.document.fields,id=r.document.name.split("/").pop();
+    return {me:id.startsWith(lb.uid+"_"),name:v(F.name),w:v(F.w),len:v(F.len),stars:v(F.stars),hc:v(F.hc),day:v(F.day)};});}
+function lbRows(rows){
+  if(!rows.length)return '<p class="note">No one has landed one yet. Be the first.</p>';
+  return rows.map((r,i)=>`<div class="lbrow${r.me?" me":""}"><span class="rank">${i+1}</span>
+    <span class="who"><b>${esc(r.name||"Angler")}</b><small>${r.me?"You · ":""}${r.hc?'<span class="hc">Hardcore</span> · ':""}day ${r.day||1}</small></span>
+    <span class="wt"><b>${lbOz(r.w||0)}</b><small>${r.len||0} cm</small></span><span class="stars">${stars(Math.max(1,Math.min(5,r.stars||1)))}</span></div>`).join("");}
+async function leaderboard(onBack,sp){
+  sp=sp||lb.pick;if(!FISH.some(f=>f.id===sp))sp=FISH[0].id;lb.pick=sp;lbSave();
+  const groups=["River","Lake","Coast"].map(wt=>`<optgroup label="${wt}">${FISH.filter(f=>f.water===wt).map(f=>`<option value="${f.id}" ${f.id===sp?"selected":""}>${f.name}</option>`).join("")}</optgroup>`).join("");
+  const cached=lb.cache[sp];
+  showOverlay(`<h2>Leaderboard</h2>
+  <div class="cond"><label for="lbSp">Heaviest</label><select id="lbSp">${groups}</select></div>
+  <div class="log" id="lbList">${!lbOn()?'<p class="note">The online leaderboard isn\'t switched on in this build yet.</p>':cached?lbRows(cached.rows):'<p class="note">Fetching the board…</p>'}</div>
+  <p class="note" id="lbNote">${lbOn()?(lb.share?"Each angler's heaviest fish of each species is posted when you're online.":"Sharing is off in Settings, so your catches stay on this device."):""}</p>
+  <div class="controls"><button class="big ghost" id="lbBack" type="button" style="flex:1">Back</button></div>`);
+  $("#lbBack").onclick=onBack;
+  $("#lbSp").onchange=e=>leaderboard(onBack,e.target.value);
+  if(!lbOn())return;
+  await lbFlush();
+  try{const rows=await lbTop(sp);lb.cache[sp]={rows,t:Date.now()};lbSave();
+    if($("#lbSp")&&$("#lbSp").value===sp)$("#lbList").innerHTML=lbRows(rows);
+  }catch(e){if($("#lbSp")&&$("#lbSp").value===sp){
+    const n=$("#lbNote");if(n)n.textContent=cached?`Can't reach the leaderboard, so this is the board from ${new Date(cached.t).toLocaleString([], {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}.`:"Can't reach the leaderboard right now. Check your connection and try again.";
+    if(!cached)$("#lbList").innerHTML="";}}
+}
+window.addEventListener("online",lbFlush);
+
 function titleScreen(){
   G.state="menu";run=null;G.fish=null;G.float=null;setCondsEnabled(false);headerButtons(false);renderLevel();renderHud();
   $("#panel").innerHTML='<div class="hint">Welcome to Willowmere.</div>';
@@ -1084,6 +1158,7 @@ function titleScreen(){
     ${sl?`<button class="primary" id="tmCont" type="button">Continue<small>${sl.name} · ${SEASONS[Math.floor((snap.day-1)/10)%4]} day ${((snap.day-1)%10)+1}${sl.hardcore?" · Hardcore":""}</small></button>`:""}
     <button class="${sl?"":"primary"}" id="tmNew" type="button">New game</button>
     <button id="tmLoad" type="button" ${store.slots.some(Boolean)?"":"disabled"}>Load game</button>
+    <button id="tmLb" type="button">Leaderboard</button>
     <button id="tmMem" type="button">Memory board</button>
     <button id="tmHow" type="button">How to play</button>
     <button id="tmNews" type="button">What's new<small>Version ${VERSION}</small></button>
@@ -1096,6 +1171,7 @@ function titleScreen(){
   $("#tmNew").onclick=()=>slotsScreen("new");
   $("#tmLoad").onclick=()=>slotsScreen("load");
   $("#tmMem").onclick=()=>memorialView(titleScreen);
+  $("#tmLb").onclick=()=>leaderboard(titleScreen);
   $("#tmHow").onclick=()=>howTo(titleScreen);
   $("#tmNews").onclick=()=>whatsNew(titleScreen);
   $("#tmSet").onclick=()=>settingsScreen(titleScreen);
@@ -1148,11 +1224,12 @@ function pauseMenu(){
     <button class="primary" id="pmRes" type="button">Resume</button>
     <button id="pmKit" type="button">Kit</button>
     <button id="pmLog" type="button">Log book</button>
+    <button id="pmLb" type="button">Leaderboard</button>
     <button id="pmHow" type="button">How to play</button>
     <button id="pmSet" type="button">Settings</button>
     <button id="pmQuit" type="button">Quit to title<small>${run.loc==="tavern"?"You'll pick up right here.":"You'll pick up right here, but only a tavern stay truly saves."}</small></button>
   </div>`);
-  $("#pmRes").onclick=back;$("#pmLog").onclick=()=>logBook(pauseMenu);$("#pmKit").onclick=()=>kitScreen(pauseMenu);$("#pmHow").onclick=()=>howTo(pauseMenu);$("#pmSet").onclick=()=>settingsScreen(pauseMenu);
+  $("#pmRes").onclick=back;$("#pmLb").onclick=()=>leaderboard(pauseMenu);$("#pmLog").onclick=()=>logBook(pauseMenu);$("#pmKit").onclick=()=>kitScreen(pauseMenu);$("#pmHow").onclick=()=>howTo(pauseMenu);$("#pmSet").onclick=()=>settingsScreen(pauseMenu);
   $("#pmQuit").onclick=()=>{suspend();run=null;titleScreen();};
 }
 function logBook(onBack){
@@ -1197,6 +1274,8 @@ function settingsScreen(onBack){
   <div class="row"><label for="dbg">Show test numbers</label><input id="dbg" type="checkbox" ${save.settings.debug?"checked":""}></div>
   ${run&&!run.hardcore?`<div class="row"><span class="note">Switch this save to hardcore: permanent death, no going back.</span><button class="danger-btn" id="toHC" type="button">Go hardcore</button></div>`:""}
   ${run?`<h3>Testing</h3><div class="row"><button class="iconbtn" id="skip1" type="button">Skip 1 hour</button><button class="iconbtn" id="skip6" type="button">Skip 6 hours</button></div>`:""}
+  <div class="row"><label for="lbShare">Post my best catches to the online leaderboard</label><input id="lbShare" type="checkbox" ${lb.share?"checked":""}></div>
+  <p class="note">Shares your angler name and each species' heaviest fish. No account or code needed.</p>
   <p class="note">Tilt controls will come with the app build.</p>
   <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back</button></div>`);
   $("#sens").oninput=e=>{save.settings.sens=+e.target.value;persist();};
@@ -1209,6 +1288,7 @@ function settingsScreen(onBack){
     hc.textContent="Hardcore on";hc.disabled=true;renderHud();toast("This save is now hardcore. Good luck.",true,2200);};}
   if($("#skip1")){$("#skip1").onclick=()=>{advance(60);renderHud();toast("1 hour passes");checkDeath();};
     $("#skip6").onclick=()=>{advance(360);renderHud();toast("6 hours pass");checkDeath();};}
+  $("#lbShare").onchange=e=>{lb.share=e.target.checked;lbSave();if(lb.share)lbFlush();};
   $("#closeO").onclick=()=>{if(G.state==="ready")fillMethods();onBack();};
 }
 $("#btnLog").addEventListener("click",()=>{
@@ -1235,9 +1315,8 @@ function startupNotice(){
   $("#nOk").onclick=()=>{noticeDone=true;titleScreen();
     if(canInstall()&&!installSnoozed())setTimeout(()=>{if(G.state==="menu")installPrompt();},400);};
 }
-fillMethods();renderLevel();resize();renderHud();startupNotice();requestAnimationFrame(frame);
+fillMethods();renderLevel();resize();renderHud();startupNotice();requestAnimationFrame(frame);setTimeout(lbFlush,1500);
 })();
 </script>
 
-</body>
-</html>
+</body></html>
