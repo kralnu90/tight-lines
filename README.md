@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnu90.github.io/tight-lines/
 
-**Current version: 0.11.0** · experimental build
+**Current version: 0.12.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -63,6 +63,13 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.12.0 · Graphics pass (3 Nov 2026)
+- Hazards drawn as the real thing: a weeping willow with sunken branches on the river, lily pads, reeds and weed on the lake, and a rocky point with breaking surf on the coast
+- No more text labels on hazards
+- Drifting clouds, sun and moon reflections, sparkling water and a softer far bank
+- A proper float, a rod with cork grip, guides and a turning reel, and leaping fish in their own colours
+- Firelight glow at camp
 
 ### 0.11.0 · Difficulty levels (1 Nov 2026)
 - Choose Easy, Medium, Hard or Extreme when you start a new game
