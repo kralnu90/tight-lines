@@ -4,7 +4,7 @@
 
 Fish the rivers, lakes and coast of a busy, trading world. You'll read the conditions, fight every catch the way real anglers do, and get home to the tavern before the cold, hunger or the dark gets you.
 
-▶ **Play the prototype:** https://kralnu90.github.io/tight-lines/
+▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
 **Current version: 0.12.0** · experimental build
 
@@ -145,7 +145,7 @@ Found a bug or have an idea? Open an issue on this repository.
 
 If you'd like to support development, you can buy me a coffee on **Ko-fi:** https://ko-fi.com/kralnu90
 
-More games: https://kralnu90.github.io
+More games: https://kralnugames.com
 
 ---
 
