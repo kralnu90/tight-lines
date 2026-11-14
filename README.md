@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.13.0** · experimental build
+**Current version: 0.14.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -27,6 +27,9 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Fish Bucks:** sell your catch at the Willowmere Arms. Size, stars and freshness set the price, lake fish pay more in riverside Willowmere, and flooding the market drops prices for a while.
 - **Tackle shop and graded gear:** buy bait, lures, line, rods, reels and kit. Gear comes in Basic, Good, Fine and Master grades, and the shop's gear stock changes daily. Rods, reels and line all change how a fight plays.
 - **Events:** things happen while you travel, rest and sleep out. Wolves, wild boar, bears, a fox thief, a stranger at the fire, an abandoned camp and more. Pick a choice, roll a d20 and add your bonuses: skill level, a campfire, a storm lantern after dark, and penalties for being hurt or exhausted.
+- **Hunting:** set snares and check back after a few hours, or go tracking for rabbits, game birds, roe deer, wild boar and the red stag. A hunting bow gives +5 from hunting level 10.
+- **Foraging:** herbs, berries, wild veg, mushrooms, coastal finds, spices, rare herbs and truffles, depending on your level, the season and where you are. Dig your own bait from foraging level 5.
+- **Larder:** game and foraged food spoil over time. Eat it, cook it, or brew rare herbs into teas. Only fish products sell.
 - **Skills:** fishing, hunting, foraging and cooking each level from 1 to 50, with unlocks every 5 levels. Cooking your catch at camp trains cooking, and events train hunting and foraging.
 - **Three save slots, a log book with star ratings and personal bests, and fishing XP.**
 - **Online leaderboard:** see the heaviest fish of every species landed by other players. Your angler's best catch of each species posts automatically when you're online, and waits on your phone until you are. No account or code needed, and you can turn sharing off in Settings.
@@ -59,12 +62,21 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 0 · Fight prototype | Casting, bites, the fight, landing | Done |
 | 1 · Fishing core | River, lake and coast fish, techniques (done); gear grades, journal, level unlocks | In progress |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules | First pass done |
-| 3 · Camp skills | Text events, animal encounters and skill levels (done); hunting, foraging, deeper cooking | In progress |
+| 3 · Camp skills | Text events, animal encounters, skill levels, hunting and foraging (done); deeper cooking | In progress |
 | 4 · Towns and trade | Fish Bucks, selling and the tackle shop (done); region map, more towns, request boards, reputation | In progress |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.14.0 · Hunting and foraging (14 Nov 2026)
+- Forage at camp: herbs, berries, wild veg, mushrooms, coastal finds, spices, rare herbs and truffles, depending on your level, the season and where you are
+- Dig for bait from foraging level 5: worms inland, lugworm and ragworm on the coast
+- Snares: set up to 3, check back after a few hours. You start with 2
+- Tracking from hunting level 5: rabbits, then pigeons and pheasants, roe deer, wild boar and the red stag
+- Hunting bow and arrows in a new Hunting tab at the tackle shop: +5 when tracking from hunting level 10
+- A larder for game and foraged food: eat it, cook it, or brew rare herbs into teas
+- Clean springs at foraging level 30: drinking straight is almost always safe
 
 ### 0.13.0 · Events and skills (14 Nov 2026)
 - Text events with d20 rolls while you travel, rest and sleep out: wolves, wild boar, bears, a fox thief, a stranger at the fire, an abandoned camp, a slippery bank and a lost lure
