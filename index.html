@@ -113,6 +113,15 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .card h2{margin:0;font-family:var(--display);font-size:26px;color:var(--brass);line-height:1.1;text-wrap:balance}
 .card p{margin:0;color:var(--cream);line-height:1.4}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;font-variant-numeric:tabular-nums}
+.dice{display:flex;gap:12px;align-items:center;background:var(--panel-2);border:1px solid var(--rule);border-radius:10px;padding:10px;margin:8px 0}
+.dice .die{flex:none;width:52px;height:52px;border-radius:10px;display:grid;place-items:center;font:700 26px var(--display);background:var(--panel);border:2px solid var(--muted);font-variant-numeric:tabular-nums}
+.dice.win .die{border-color:var(--safe);color:var(--safe)}.dice.lose .die{border-color:var(--danger);color:var(--danger)}
+.dice small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+#overlay .skbar{min-height:7px;height:7px;box-sizing:border-box;background:var(--panel-2);border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:4px 0}#overlay .skbar i{display:block;height:100%;min-height:5px;background:var(--brass)}
+.sktable{display:grid;gap:2px;margin-bottom:6px}
+.skrow{display:grid;grid-template-columns:28px 1fr auto;gap:8px;font-size:13px;padding:4px 6px;border-radius:6px;color:var(--muted)}
+.skrow b{color:var(--cream);font-variant-numeric:tabular-nums}.skrow em{font-style:normal;font-size:11px;color:var(--muted)}
+.skrow.got{background:var(--panel-2);color:var(--cream)}.skrow.got em{color:var(--safe)}
 .stats div{background:var(--panel-2);border-radius:8px;padding:6px 8px}
 .stats small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .stats b{font-size:16px}
@@ -260,7 +269,9 @@ const GEAR={
   seaforge:{type:"reel",name:"Seaforge reel",grade:"Master",price:320,drag:0.95,speed:2.8,cap:150,desc:"Holds a tope on the run."},
   jacket:{type:"kit",name:"Waxed jacket",grade:"Good",price:45,desc:"You lose warmth 30% slower."},
   waterskin:{type:"kit",name:"Large water skin",grade:"Good",price:25,desc:"Carry 1.5 more days of water."},
-  bedroll:{type:"kit",name:"Bedroll",grade:"Basic",price:20,desc:"Nights outdoors are far less cold."}
+  bedroll:{type:"kit",name:"Bedroll",grade:"Basic",price:20,desc:"Nights outdoors are far less cold."},
+  lantern:{type:"kit",name:"Storm lantern",grade:"Good",price:30,desc:"+2 to rolls in events after dark."},
+  bell:{type:"kit",name:"Bear bell",grade:"Basic",price:12,desc:"Animals hear you coming: fewer boar on the path, and +1 in animal encounters on the move."}
 };
 const BAITS={Maggots:[2,10],Bread:[1,10],Worm:[2,10],Sweetcorn:[2,10],Pellets:[3,10],Boilies:[4,10],Deadbait:[4,5],Lugworm:[3,10],Ragworm:[3,10],Squid:[4,5],"Peeler crab":[5,5]};
 const LURES={Spinner:4,"Soft lure":5,"Big lure":8,Feathers:3,"Dry fly":3,Nymph:3};
@@ -275,8 +286,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.12.1";
+const VERSION="0.13.0";
 const CHANGELOG=[
+  {v:"0.13.0",date:"14 Nov 2026",title:"Events and skills",items:["Text events with d20 rolls while you travel, rest and sleep out: wolves, wild boar, bears, a fox thief, a stranger at the fire, an abandoned camp, a slippery bank and a lost lure","Your bonuses are shown before you choose: skill level, campfire, lantern, being rested, hurt or exhausted","Hunting, foraging and cooking skills, levelling 1 to 50 like fishing","Skills screen with every unlock table (Menu, Skills)","Cooking your catch at camp earns cooking XP","New kit: storm lantern and bear bell","Turn random events off in Settings"]},
   {v:"0.12.1",date:"9 Nov 2026",title:"Update notices",items:["A notice pops up when a new version of the game is out, with an Update button","Get the latest version button on the title screen"]},
   {v:"0.12.0",date:"3 Nov 2026",title:"Graphics pass",items:["Hazards drawn as the real thing: a weeping willow with sunken branches on the river, lily pads, reeds and weed on the lake, and a rocky point with breaking surf on the coast","No more text labels on hazards","Drifting clouds, sun and moon reflections, sparkling water and a softer far bank","A proper float, a rod with cork grip, guides and a turning reel, and leaping fish in their own colours","Firelight glow at camp"]},
   {v:"0.11.0",date:"1 Nov 2026",title:"Difficulty levels",items:["Choose Easy, Medium, Hard or Extreme when you start a new game","Easy: gentler line tension, needs switched off, fewer rare fish, half XP","Hard: tougher fish and line, needs drop 50% faster, more rare fish, +20% XP","Extreme: brutal fights, needs drop 75% faster, always hardcore, +30% rare fish, +40% XP","Lower a save's difficulty in Settings (it can never be raised)","Difficulty shows on saves and the memory board","Kit, Log and Menu buttons at the Willowmere Arms"]},
@@ -1017,8 +1029,9 @@ function fishAge(k){return (absMin()-k.caught)/1440;}
 function travelTo(dest){
   const from=run.loc,mins=(SPOTS[from]&&SPOTS[from].travel[dest])||(SPOTS[dest]?SPOTS[dest].travel.tavern:60);
   advance(mins);run.fire=0;renderHud();if(checkDeath())return;
-  if(dest==="tavern"){goTavern();return;}
-  run.loc=dest;run.lastSpot=dest;hideOverlay();toReady(`${SPOTS[dest].name}. Tight lines.`);
+  const arrive=()=>{if(dest==="tavern"){goTavern();return;}
+    run.loc=dest;run.lastSpot=dest;hideOverlay();toReady(`${SPOTS[dest].name}. Tight lines.`);};
+  if(!maybeEvent("road",0.25,arrive))arrive();
 }
 function travelButtons(prefix){
   const here=run.loc,opts=[];
@@ -1049,18 +1062,205 @@ function campMenu(){
   <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back to fishing</button></div>`);
   const act=(mins,fn,opt)=>{advance(mins,opt);if(fn)fn();renderHud();if(checkDeath())return;campMenu();};
   $("#aFire").onclick=()=>act(30,()=>{run.fire=Math.min(run.fire+180,480);toast(fire?"You stack on more wood.":"The fire crackles into life.");});
-  $("#aRest").onclick=()=>act(60,null,{rest:true});
-  $("#aSleep").onclick=()=>{let m=run.min>=18*60?(1440-run.min)+360:360-run.min;advance(m,{sleep:true});renderHud();if(checkDeath())return;
-    toast(run.needs.warm<30?"You wake up frozen and stiff.":"You wake at first light, rested.",run.needs.warm<30,2400);campMenu();};
+  $("#aRest").onclick=()=>{advance(60,{rest:true});renderHud();if(checkDeath())return;if(!maybeEvent("camp",0.12,campMenu))campMenu();};
+  $("#aSleep").onclick=()=>{const m=run.min>=18*60?(1440-run.min)+360:360-run.min,half=Math.floor(m/2);
+    advance(half,{sleep:true});renderHud();if(checkDeath())return;
+    const finish=()=>{advance(m-half,{sleep:true});renderHud();if(checkDeath())return;
+      toast(run.needs.warm<30?"You wake up frozen and stiff.":"You wake at first light, rested.",run.needs.warm<30,2400);campMenu();};
+    if(!maybeEvent("night",0.3,finish))finish();};
   if($("#aBoil"))$("#aBoil").onclick=()=>act(30,()=>{run.needs.thirst=100;toast("Boiled and safe.");});
   if($("#aDrink"))$("#aDrink").onclick=()=>act(5,()=>{run.needs.thirst=100;if(Math.random()<0.35){run.ill=Math.max(run.ill,12*60);toast("That water was bad. You feel ill.",true,2400);}else toast("Cold and clear. You got away with it.");});
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-raw]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.raw,1)[0];
     act(10,()=>{run.needs.food=clamp(run.needs.food+6+k.w*4,0,100);if(Math.random()<0.15){run.ill=Math.max(run.ill,8*60);toast("Raw fish didn't agree with you.",true,2200);}else toast(`You eat the ${k.name.toLowerCase()} raw.`);});});
   document.querySelectorAll("[data-cook]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.cook,1)[0];
-    act(30,()=>{run.needs.food=clamp(run.needs.food+12+k.w*8,0,100);run.needs.stam=clamp(run.needs.stam+8,0,100);toast(`Campfire ${k.name.toLowerCase()}. Proper food.`);});});
+    act(30,()=>{run.needs.food=clamp(run.needs.food+12+k.w*8,0,100);run.needs.stam=clamp(run.needs.stam+8,0,100);const g=gainSk("cook",8+Math.round(k.w*4));toast(`Campfire ${k.name.toLowerCase()}. Proper food. +${g} cooking XP`);});});
   document.querySelectorAll("[data-dump]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.dump,1);campMenu();});
   $("#closeO").onclick=()=>{hideOverlay();panelReady();};
+}
+
+/* ---------- Skills: hunting, foraging, cooking (fishing uses run.xp) ---------- */
+// Each skill levels 1-50 on the same curve as fishing. live:false = shown as "coming soon".
+const SKILLS={
+  fish:{n:"Fishing",unl:[[1,"Float fishing",1],[5,"Ledgering",1],[10,"Spinning",1],[15,"Fly fishing",1],[20,"Nets, traps and pots"],[25,"Boat hire"],[30,"Wreck and reef fishing"],[35,"Boat ownership"],[40,"Deep-sea fishing"],[45,"Big game (halibut, tuna, sharks)"],[50,"Master Angler title"]]},
+  hunt:{n:"Hunting",unl:[[1,"Simple snares (rabbits)"],[5,"Reading tracks"],[10,"Bow use"],[15,"Game birds (pheasant, pigeon)"],[20,"Deer tracking"],[25,"Hides and furs"],[30,"Wild boar"],[35,"Bow add-ons"],[40,"Predator awareness: +3 in animal encounters",1],[45,"Red stag (trophy hunt)"],[50,"Master Hunter title"]]},
+  forage:{n:"Foraging",unl:[[1,"Common herbs and berries"],[5,"Bait digging"],[10,"Wild veg (wild garlic, sorrel, nettles)"],[15,"Common mushrooms"],[20,"Coastal finds (seaweed, samphire)"],[25,"Prized mushrooms (ceps, chanterelles)"],[30,"Clean springs (safe water without boiling)"],[35,"Wild spices (juniper, fennel seed)"],[40,"Rare herbs that boost needs"],[45,"Truffles"],[50,"Master Forager title"]]},
+  cook:{n:"Cooking",unl:[[1,"Campfire cooking",1],[5,"Better gutting and filleting"],[10,"Pan and pot dishes"],[15,"Salting"],[20,"Dutch oven dishes"],[25,"Smoking"],[30,"BBQ and grill specialties"],[35,"Regional recipes"],[40,"Feasts"],[45,"Master preserving"],[50,"Head Chef title"]]}
+};
+function skXp(k){return k==="fish"?(run?run.xp:0):(run&&run.sk?run.sk[k]||0:0);}
+function skLv(k){return levelInfo(skXp(k)).L;}
+function gainSk(k,xp){if(!run||xp<=0)return 0;xp=Math.max(1,Math.round(xp*diff().xp));
+  const before=skLv(k);if(k==="fish")run.xp+=xp;else run.sk[k]=(run.sk[k]||0)+xp;const after=skLv(k);
+  if(k==="fish")renderLevel();
+  if(after>before)setTimeout(()=>toast(`${SKILLS[k].n} level ${after}!`,false,2200),300);
+  return xp;}
+function skillsScreen(onBack){
+  const card=k=>{const S=SKILLS[k],i=levelInfo(skXp(k));
+    const rows=S.unl.map(([L,t,live])=>{const got=i.L>=L;
+      return `<div class="skrow ${got&&live?"got":""}"><b>${L}</b><span>${t}</span><em>${live?(got?"✓":""):"Coming soon"}</em></div>`;}).join("");
+    return `<h3>${S.n} · Lv ${i.L}</h3><div class="skbar"><i style="width:${i.need?i.into/i.need*100:100}%"></i></div>
+      <p class="note">${i.need?`${i.into} / ${i.need} XP to level ${i.L+1}`:"Max level"}</p><div class="sktable">${rows}</div>`;};
+  showOverlay(`<h2>Skills</h2><p class="note">Every skill levels from 1 to 50. Higher levels add to your dice rolls in events (+1 for every 10 levels in the skill being tested).</p>
+    ${["fish","hunt","forage","cook"].map(card).join("")}
+    <div class="controls"><button class="big ghost" id="skBack" type="button" style="flex:1">Back</button></div>`);
+  $("#skBack").onclick=onBack;
+}
+
+/* ---------- Text events: a short scene, a few choices, a d20 roll ---------- */
+// Roll d20 + bonuses; meet or beat the target to succeed. A natural 20 always works, a natural 1 always fails.
+// Bonuses: the tested skill's level, a campfire against animals, a lantern in the dark, being rested, hurt or exhausted, kit.
+const d20=()=>1+Math.floor(Math.random()*20);
+function freshFish(){return run.keep.map((k,i)=>({k,i})).filter(o=>fishAge(o.k)<=3);}
+function takeFish(which){const f=freshFish();if(!f.length)return null;
+  f.sort((a,b)=>a.k.w-b.k.w);const o=which==="big"?f[f.length-1]:which==="small"?f[0]:f[Math.floor(Math.random()*f.length)];
+  run.keep.splice(o.i,1);return o.k;}
+function evCtx(where){const c=conds();return {where,time:c.time,season:c.season,weather:c.weather,loc:run.loc,
+  fire:run.fire>0&&where!=="road",dark:c.time==="Night"||where==="night",fish:freshFish().length,salt:!!(SPOTS[run.loc]&&SPOTS[run.loc].salt)};}
+// small helpers that change the run and describe what happened
+function fx(list){const out=[];const N=run.needs;
+  for(const [k,v] of list){
+    if(k==="health"){N.health=clamp(N.health+v,diff().needs===0?1:0,100);out.push(`${v>0?"+":""}${v} health`);}
+    else if(k==="warm"){N.warm=clamp(N.warm+v,0,100);out.push(`${v>0?"+":""}${v} warmth`);}
+    else if(k==="stam"){N.stam=clamp(N.stam+v,0,100);out.push(`${v>0?"+":""}${v} energy`);}
+    else if(k==="food"){N.food=clamp(N.food+v,0,100);out.push(`${v>0?"+":""}${v} food`);}
+    else if(k==="bucks"){run.bucks+=v;out.push(`+${v} Fish Bucks`);}
+    else if(k==="mins"){advance(v);out.push(`${v>=60?(v/60)+" h":v+" min"} lost`);}
+    else if(k==="ill"){run.ill=Math.max(run.ill,v);out.push("you feel ill");}
+    else if(k==="bait"){const [b,n]=v;run.inv.bait[b]=(run.inv.bait[b]||0)+n;out.push(`+${n} ${b.toLowerCase()}`);}
+    else if(k==="lure"){run.inv.lures[v]=(run.inv.lures[v]||0)+1;out.push(`+1 ${v.toLowerCase()}`);}
+    else if(k==="kit"){run.inv.gear[v]=1;out.push(`found: ${GEAR[v].name}`);if(v==="waterskin")run.water=Math.min(maxWater(),run.water+1.5);}
+    else if(k==="fish"){const f=takeFish(v);if(f)out.push(`lost your ${f.name.toLowerCase()} (${lbOz(f.w)})`);}
+    else if(k==="allfish"){const n=freshFish().length;run.keep=run.keep.filter(x=>fishAge(x)>3);if(n)out.push(`lost ${n} fish from the keep net`);}
+    else if(k==="xp"){const [s,n]=v;const g=gainSk(s,n);if(g)out.push(`+${g} ${SKILLS[s].n.toLowerCase()} XP`);}
+  }
+  return out;}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const EVENTS=[
+  {id:"wolves",animal:1,title:"Eyes in the dark",
+    w:c=>c.where==="night"?(c.season==="Winter"?5:3):(c.where==="camp"&&c.dark?2:0),
+    text:c=>`You wake to a low growl. Three wolves are circling the edge of ${c.fire?"the firelight":"your camp"}, heads low, watching your keep net.`,
+    ch:c=>[
+      {t:c.fire?"Build up the fire and shout":"Bang the pan and shout",sub:"Make yourself the scariest thing in the woods.",dc:c.fire?10:14,skill:"hunt",fireB:4,
+        ok:()=>["They flinch at the noise and melt back into the trees.",[["xp",["hunt",40]],["stam",-5]]],
+        bad:()=>["One darts in before the others turn tail. Teeth find your arm.",[["health",-25],["fish","big"],["stam",-10]]]},
+      c.fish?{t:"Throw them your biggest fish",sub:"No roll. It works, but it costs you.",auto:()=>["They snatch it up and lope off, squabbling over it.",[["fish","big"],["xp",["hunt",10]]]]}:null,
+      {t:"Climb a tree and wait it out",sub:"Safe up there, but a long, cold wait.",dc:11,skill:"hunt",fit:1,
+        ok:()=>["You sit it out on a branch until they lose interest. Stiff and frozen, but whole.",[["warm",-15],["stam",-15],["xp",["hunt",25]]]],
+        bad:()=>["A branch snaps on the way up and you land hard. They scatter at the crash, but it hurts.",[["health",-15],["warm",-15]]]}
+    ]},
+  {id:"boar",animal:1,title:"Boar on the path",
+    w:c=>c.where==="road"&&!c.dark?((c.season==="Autumn"?4:3)*(run.inv.gear.bell?0.4:1)):0,
+    text:()=>"A wild boar crashes out of the undergrowth and stops dead on the path, tusks up, snorting. It hasn't decided about you yet.",
+    ch:()=>[
+      {t:"Freeze and let it pass",sub:"Don't move. Don't even blink.",dc:11,skill:"hunt",
+        ok:()=>["It stares, snorts and trots off into the bracken.",[["xp",["hunt",30]]]],
+        bad:()=>["You twitch. It charges and clips you as it barrels past.",[["health",-30]]]},
+      {t:"Back away the long way round",sub:"Slow and careful. Costs you half an hour.",dc:7,skill:"hunt",
+        ok:()=>["You give it a wide berth through the trees.",[["mins",30],["xp",["hunt",15]]]],
+        bad:()=>["You tread on a stick. It comes for you before you reach the trees.",[["health",-15],["mins",30]]]},
+      {t:"Shout and wave your arms",sub:"Risky, but if it works it really works.",dc:15,skill:"hunt",
+        ok:()=>["It squeals and bolts. Your heart's going like a drum.",[["xp",["hunt",60]]]],
+        bad:()=>["Wrong call. It lowers its head and charges straight at you.",[["health",-35]]]}
+    ]},
+  {id:"bear",animal:1,title:"Something big",
+    w:c=>(c.where==="night"||(c.where==="camp"&&c.time!=="Day"))&&c.season!=="Winter"&&!c.salt?(1.2+(c.fish?2:0)):0,
+    text:c=>`A bear shambles out of the dark, nose working. It's found your ${c.fish?"keep net":"camp"}, and it's between you and the path.`,
+    ch:c=>[
+      c.fish?{t:"Let it have the keep net",sub:"No roll. Every fish goes, but so does the bear.",auto:()=>["It drags the net off into the trees. You hear it eating for a long time.",[["allfish",1],["xp",["hunt",15]]]]}:null,
+      {t:"Stand tall, shout and bang the pan",sub:"Look big. Sound bigger.",dc:15,skill:"hunt",fireB:4,
+        ok:()=>["It rears, huffs, and decides you're not worth it.",[["xp",["hunt",80]],["stam",-10]]],
+        bad:()=>["It swats you aside and helps itself.",[["health",-45],["allfish",1]]]},
+      {t:"Play dead",sub:"Face down, hands over your neck.",dc:12,skill:"hunt",
+        ok:()=>["It sniffs you over, takes what it wants and leaves.",[["fish","big"],["xp",["hunt",40]],["stam",-10]]],
+        bad:()=>["It isn't fooled. A paw rakes your back before it loses interest.",[["health",-30],["fish","big"]]]}
+    ]},
+  {id:"fox",animal:1,title:"Thief",
+    w:c=>(c.where==="camp"||c.where==="night")&&c.fish?3:0,
+    text:()=>"A flash of red by the keep net. A fox has its head in it, and a fish in its jaws.",
+    ch:()=>[
+      {t:"Chase it",sub:"Foxes are quick. So are you, maybe.",dc:13,skill:"hunt",fit:1,
+        ok:()=>["You corner it in the brambles and it drops the fish and bolts.",[["xp",["hunt",25]],["stam",-8]]],
+        bad:()=>["It's gone before you're on your feet, and you trip over a root after it.",[["fish","rand"],["health",-5],["stam",-10]]]},
+      {t:"Let it go",sub:"No roll. It takes a small one.",auto:()=>["It trots off with your smallest fish.",[["fish","small"]]]}
+    ]},
+  {id:"stranger",title:"A stranger at the fire",
+    w:c=>c.fire&&(c.time==="Dusk"||c.time==="Night")?2.5:0,
+    text:()=>"An old angler, rod over his shoulder and a pipe in his teeth, asks if he can warm his hands at your fire.",
+    ch:c=>[
+      c.fish?{t:"Share a fish with him",sub:"No roll. A good meal loosens tongues.",auto:()=>{const gift=pick([["bait",["Lugworm",10]],["bait",["Boilies",10]],["lure","Spinner"],["lure","Dry fly"],["bucks",15]]);
+        return ["He eats like he hasn't in days, then tells you where the big ones lie and presses something into your hand.",[["fish","small"],["food",8],["xp",["fish",60]],gift]];}}:null,
+      {t:"Swap stories",sub:"He's got a few. Can you keep up?",dc:10,
+        ok:()=>["Tall tales, old tricks and one that might even be true. You learn a lot.",[["xp",["fish",40]],["mins",60]]],
+        bad:()=>["He talks until the small hours about a pike he once nearly caught.",[["stam",-15],["mins",120]]]},
+      {t:"Send him on his way",sub:"No roll. You'd rather be alone.",auto:()=>["He shrugs, tips his hat and wanders off into the dark.",[]]}
+    ]},
+  {id:"camp",title:"An abandoned camp",
+    w:c=>c.where==="road"&&!c.dark?2:0,
+    text:()=>"Off the path, a cold fire pit and a collapsed tarp. Whoever camped here left in a hurry.",
+    ch:()=>[
+      {t:"Search it",sub:"Might be something useful. Might be something sharp.",dc:11,skill:"forage",
+        ok:()=>{const spare=["bedroll","waterskin","lantern"].filter(id=>!run.inv.gear[id]);
+          const loot=Math.random()<0.15&&spare.length?["kit",pick(spare)]:pick([["bucks",rand(6,20)|0],["lure","Spinner"],["lure","Soft lure"],["bait",["Worm",10]],["bait",["Pellets",10]]]);
+          return ["Under the tarp you find something worth keeping.",[loot,["xp",["forage",30]],["mins",20]]];},
+        bad:()=>["A rusty tin slices your hand. Nothing here but rubbish.",[["health",-10],["mins",20],Math.random()<0.3?["ill",6*60]:["xp",["forage",5]]]]},
+      {t:"Leave it be",sub:"No roll. Not your business.",auto:()=>["You carry on.",[]]}
+    ]},
+  {id:"slip",title:"Slippery bank",
+    w:c=>c.where==="road"?(c.weather==="Rain"?4:1.2):0,
+    text:c=>`The path runs along a steep, ${c.weather==="Rain"?"rain-slick":"muddy"} bank. Halfway along, your boot goes out from under you.`,
+    ch:()=>[
+      {t:"Grab for a root",sub:"Quick hands.",dc:10,fit:1,
+        ok:()=>["You catch a root and haul yourself back up. Muddy, but dry.",[["stam",-5]]],
+        bad:()=>["The root snaps and you slide all the way into the water.",[["warm",-35],["stam",-10]]]},
+      {t:"Go with it and keep the rod up",sub:"No roll. You'll get soaked, but nothing breaks.",auto:()=>["You slither down and splash in up to your waist, rod held high.",[["warm",-30]]]}
+    ]},
+  {id:"tackle",title:"Snagged in the reeds",
+    w:c=>c.where==="road"&&!c.dark?1.5:0,
+    text:()=>"A snapped line glints in the reeds, with somebody's lure still on the end.",
+    ch:()=>[
+      {t:"Wade in for it",sub:"It's not deep. Probably.",dc:9,skill:"forage",
+        ok:()=>{const l=pick(["Spinner","Soft lure","Big lure","Nymph"]);return ["You fish it out without getting too wet.",[["lure",l],["xp",["forage",15]]]];},
+        bad:()=>["It's deeper than it looks. You come back wet and empty-handed.",[["warm",-20]]]},
+      {t:"Leave it",sub:"No roll.",auto:()=>["You leave it for the next fool.",[]]}
+    ]}
+];
+function evOn(){return save.settings.events!==false;}
+// where: "road" (travelling), "camp" (resting), "night" (sleeping out). Returns true if an event started.
+function maybeEvent(where,chance,then){
+  if(!run||!evOn()||Math.random()>chance)return false;
+  const c=evCtx(where);const pool=EVENTS.map(e=>({e,w:e.w(c)})).filter(o=>o.w>0);if(!pool.length)return false;
+  let r=Math.random()*pool.reduce((a,o)=>a+o.w,0);let ev=pool[0].e;for(const o of pool){r-=o.w;if(r<=0){ev=o.e;break;}}
+  runEvent(ev,c,then);return true;}
+function rollBonuses(ev,ch,c){const b=[],N=run.needs;
+  if(ch.skill){const L=skLv(ch.skill),s=Math.floor(L/10);if(s)b.push([`${SKILLS[ch.skill].n} Lv ${L}`,s]);}
+  if(ch.fireB&&c.fire)b.push(["Campfire",ch.fireB]);
+  if(ev.animal&&skLv("hunt")>=40)b.push(["Predator awareness",3]);
+  if(ev.animal&&c.where==="road"&&run.inv.gear.bell)b.push(["Bear bell",1]);
+  if(c.dark&&run.inv.gear.lantern)b.push(["Lantern",2]);
+  if(ch.fit&&N.stam>60)b.push(["Rested",1]);
+  if(N.stam<25)b.push(["Exhausted",-2]);
+  if(N.health<40)b.push(["Hurt",-2]);
+  return b;}
+const sgn=n=>(n>=0?"+":"−")+Math.abs(n);
+function runEvent(ev,c,then){
+  const chs=ev.ch(c).filter(Boolean);
+  showOverlay(`<span class="tag">Event</span><h2>${ev.title}</h2><p>${ev.text(c)}</p><div class="acts">${chs.map((ch,i)=>{
+    if(ch.auto)return `<button class="act" data-ev="${i}" type="button"><span>${ch.t}<small>${ch.sub}</small></span></button>`;
+    const tot=rollBonuses(ev,ch,c).reduce((a,[,n])=>a+n,0);
+    return `<button class="act" data-ev="${i}" type="button"><span>${ch.t}<small>${ch.sub}</small></span><em>🎲 ${ch.dc}+${tot?" · "+sgn(tot):""}</em></button>`;}).join("")}</div>
+    <p class="note">Roll a d20 and add your bonuses. Meet the number to succeed.</p>`,"event");
+  document.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>{
+    const ch=chs[+b.dataset.ev];let html="",res;
+    if(ch.auto){res=ch.auto();html=`<p>${res[0]}</p>`;}
+    else{const bon=rollBonuses(ev,ch,c),die=d20(),tot=die+bon.reduce((a,[,n])=>a+n,0);
+      const win=die===20||(die!==1&&tot>=ch.dc);res=win?ch.ok():ch.bad();
+      html=`<div class="dice ${win?"win":"lose"}"><div class="die">${die}</div><div><b>${win?(die===20?"Natural 20!":"Success"):(die===1?"Natural 1":"Failed")}</b>
+        <small>${die}${bon.map(([l,n])=>` ${sgn(n)} ${l}`).join("")} = <b>${tot}</b> · needed ${ch.dc}</small></div></div><p>${res[0]}</p>`;}
+    const out=fx(res[1]);renderHud();
+    showOverlay(`<span class="tag">Event</span><h2>${ev.title}</h2><p class="note"><b>${ch.t}</b></p>${html}
+      ${out.length?`<p class="note">${out.join(" · ")}</p>`:""}
+      <div class="controls"><button class="big" id="evOk" type="button" style="flex:1">Carry on</button></div>`,"event");
+    $("#evOk").onclick=()=>{if(checkDeath())return;then();};});
 }
 
 /* ---------- Economy: Fish Bucks, selling, shop, kit ---------- */
@@ -1072,6 +1272,7 @@ function withKit(r){
   if(!r.market)r.market={};
   if(!r.diff)r.diff="medium";
   if(!r.shop)r.shop={day:0,stock:[]};
+  if(!r.sk)r.sk={hunt:0,forage:0,cook:0};
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
 function fishPrice(k){
@@ -1400,12 +1601,13 @@ function pauseMenu(){
     <button class="primary" id="pmRes" type="button">Resume</button>
     <button id="pmKit" type="button">Kit</button>
     <button id="pmLog" type="button">Log book</button>
+    <button id="pmSk" type="button">Skills</button>
     <button id="pmLb" type="button">Leaderboard</button>
     <button id="pmHow" type="button">How to play</button>
     <button id="pmSet" type="button">Settings</button>
     <button id="pmQuit" type="button">Quit to title<small>${run.loc==="tavern"?"You'll pick up right here.":"You'll pick up right here, but only a tavern stay truly saves."}</small></button>
   </div>`);
-  $("#pmRes").onclick=back;$("#pmLb").onclick=()=>leaderboard(pauseMenu);$("#pmLog").onclick=()=>logBook(pauseMenu);$("#pmKit").onclick=()=>kitScreen(pauseMenu);$("#pmHow").onclick=()=>howTo(pauseMenu);$("#pmSet").onclick=()=>settingsScreen(pauseMenu);
+  $("#pmRes").onclick=back;$("#pmLb").onclick=()=>leaderboard(pauseMenu);$("#pmLog").onclick=()=>logBook(pauseMenu);$("#pmKit").onclick=()=>kitScreen(pauseMenu);$("#pmSk").onclick=()=>skillsScreen(pauseMenu);$("#pmHow").onclick=()=>howTo(pauseMenu);$("#pmSet").onclick=()=>settingsScreen(pauseMenu);
   $("#pmQuit").onclick=()=>{suspend();run=null;titleScreen();};
 }
 function logBook(onBack){
@@ -1437,6 +1639,8 @@ function howTo(onBack){
   <h3>The fight</h3><p>Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
   <h3>Fish Bucks and gear</h3><p>Sell your catch at the Willowmere Arms for Fish Bucks. Bigger, fresher, better-starred fish pay more, and Willowmere is a riverside village, so lake fish fetch more and river fish less. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p>
   <h3>Staying alive</h3><p>Watch food, warmth, energy, health and water. Light fires, cook your catch and boil water at camp. Only a night at the Willowmere Arms saves your game.</p>
+  <h3>Events</h3><p>Things happen while you travel, rest and sleep out: wolves, boar, bears, foxes, strangers and finds. Pick a choice, roll a d20 and add your bonuses to beat the number. Skills add +1 for every 10 levels, a campfire scares animals off, a storm lantern helps after dark, and being exhausted or hurt counts against you. A natural 20 always works and a natural 1 always fails.</p>
+  <h3>Skills</h3><p>Fishing, hunting, foraging and cooking each level from 1 to 50. Cooking your catch at camp trains cooking, and events train hunting and foraging. See them all under Menu, Skills.</p>
   <h3>Keyboard</h3><p>Space or W to strike and reel, A and D to move the rod, N to net, Esc for the menu.</p>
   </div><div class="controls"><button class="big ghost" id="hBack" type="button" style="flex:1">Back</button></div>`);
   $("#hBack").onclick=onBack;
@@ -1448,6 +1652,8 @@ function settingsScreen(onBack){
   <p class="note" id="diffNote">${diff().desc} You can lower the difficulty, but never raise it again.</p>`:""}
   <div class="row"><label for="unl">All methods unlocked (testing)</label><input id="unl" type="checkbox" ${save.settings.unlockAll?"checked":""}></div>
   <p class="note">Normally ledgering unlocks at fishing level 5, spinning at 10 and fly fishing at 15.</p>
+  <div class="row"><label for="evts">Random events</label><input id="evts" type="checkbox" ${save.settings.events!==false?"checked":""}></div>
+  <p class="note">Animal encounters, strangers and finds while you travel, rest and sleep out.</p>
   <div class="row"><label for="dbg">Show test numbers</label><input id="dbg" type="checkbox" ${save.settings.debug?"checked":""}></div>
   ${run&&!run.hardcore?`<div class="row"><span class="note">Switch this save to hardcore: permanent death, no going back.</span><button class="danger-btn" id="toHC" type="button">Go hardcore</button></div>`:""}
   <h3>Testing</h3>
@@ -1459,6 +1665,7 @@ function settingsScreen(onBack){
   <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back</button></div>`);
   $("#sens").oninput=e=>{save.settings.sens=+e.target.value;persist();};
   $("#dbg").onchange=e=>{save.settings.debug=e.target.checked;persist();};
+  $("#evts").onchange=e=>{save.settings.events=e.target.checked;persist();};
   $("#unl").onchange=e=>{save.settings.unlockAll=e.target.checked;persist();if(G.state==="ready")fillMethods();};
   const ds=$("#diffSel");if(ds)ds.onchange=()=>{const k=ds.value;if(k===run.diff)return;
     $("#diffNote").innerHTML=`Lower to <b>${DIFFS[k].name}</b>? You won't be able to raise it again. <button class="danger-btn" id="diffOk" type="button">Confirm</button>`;

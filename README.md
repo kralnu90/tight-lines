@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.12.0** · experimental build
+**Current version: 0.13.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -26,6 +26,8 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Normal or Hardcore:** die on Normal and you wake at your last tavern save. On Hardcore, death is permanent and your angler goes on the tavern's memory board.
 - **Fish Bucks:** sell your catch at the Willowmere Arms. Size, stars and freshness set the price, lake fish pay more in riverside Willowmere, and flooding the market drops prices for a while.
 - **Tackle shop and graded gear:** buy bait, lures, line, rods, reels and kit. Gear comes in Basic, Good, Fine and Master grades, and the shop's gear stock changes daily. Rods, reels and line all change how a fight plays.
+- **Events:** things happen while you travel, rest and sleep out. Wolves, wild boar, bears, a fox thief, a stranger at the fire, an abandoned camp and more. Pick a choice, roll a d20 and add your bonuses: skill level, a campfire, a storm lantern after dark, and penalties for being hurt or exhausted.
+- **Skills:** fishing, hunting, foraging and cooking each level from 1 to 50, with unlocks every 5 levels. Cooking your catch at camp trains cooking, and events train hunting and foraging.
 - **Three save slots, a log book with star ratings and personal bests, and fishing XP.**
 - **Online leaderboard:** see the heaviest fish of every species landed by other players. Your angler's best catch of each species posts automatically when you're online, and waits on your phone until you are. No account or code needed, and you can turn sharing off in Settings.
 
@@ -57,12 +59,21 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 0 · Fight prototype | Casting, bites, the fight, landing | Done |
 | 1 · Fishing core | River, lake and coast fish, techniques (done); gear grades, journal, level unlocks | In progress |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules | First pass done |
-| 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking | Planned |
+| 3 · Camp skills | Text events, animal encounters and skill levels (done); hunting, foraging, deeper cooking | In progress |
 | 4 · Towns and trade | Fish Bucks, selling and the tackle shop (done); region map, more towns, request boards, reputation | In progress |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.13.0 · Events and skills (14 Nov 2026)
+- Text events with d20 rolls while you travel, rest and sleep out: wolves, wild boar, bears, a fox thief, a stranger at the fire, an abandoned camp, a slippery bank and a lost lure
+- Your bonuses are shown before you choose: skill level, campfire, lantern, being rested, hurt or exhausted
+- Hunting, foraging and cooking skills, levelling 1 to 50 like fishing
+- Skills screen with every unlock table (Menu, Skills)
+- Cooking your catch at camp earns cooking XP
+- New kit: storm lantern and bear bell
+- Turn random events off in Settings
 
 ### 0.12.0 · Graphics pass (3 Nov 2026)
 - Hazards drawn as the real thing: a weeping willow with sunken branches on the river, lily pads, reeds and weed on the lake, and a rocky point with breaking surf on the coast
