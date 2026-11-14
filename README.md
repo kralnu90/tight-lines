@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.14.0** · experimental build
+**Current version: 0.15.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -30,6 +30,8 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Hunting:** set snares and check back after a few hours, or go tracking for rabbits, game birds, roe deer, wild boar and the red stag. A hunting bow gives +5 from hunting level 10.
 - **Foraging:** herbs, berries, wild veg, mushrooms, coastal finds, spices, rare herbs and truffles, depending on your level, the season and where you are. Dig your own bait from foraging level 5.
 - **Larder:** game and foraged food spoil over time. Eat it, cook it, or brew rare herbs into teas. Only fish products sell.
+- **Cooking:** every fish starts with a gutting and filleting dice roll. Cook and eat it, cook it to sell, salt it, smoke it, or cook one of 13 recipes with foraged ingredients. Learn recipes from Maggie, the cook at the Willowmere Arms, from strangers and from abandoned camps. Cooked, preserved and recipe fish all sell for more than raw.
+- **Chum:** spoiled fish isn't wasted. Chop it up, throw it in, and bites come much quicker for two hours.
 - **Skills:** fishing, hunting, foraging and cooking each level from 1 to 50, with unlocks every 5 levels. Cooking your catch at camp trains cooking, and events train hunting and foraging.
 - **Three save slots, a log book with star ratings and personal bests, and fishing XP.**
 - **Online leaderboard:** see the heaviest fish of every species landed by other players. Your angler's best catch of each species posts automatically when you're online, and waits on your phone until you are. No account or code needed, and you can turn sharing off in Settings.
@@ -62,12 +64,22 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 0 · Fight prototype | Casting, bites, the fight, landing | Done |
 | 1 · Fishing core | River, lake and coast fish, techniques (done); gear grades, journal, level unlocks | In progress |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules | First pass done |
-| 3 · Camp skills | Text events, animal encounters, skill levels, hunting and foraging (done); deeper cooking | In progress |
+| 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | First pass done |
 | 4 · Towns and trade | Fish Bucks, selling and the tackle shop (done); region map, more towns, request boards, reputation | In progress |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.15.0 · Deeper cooking (14 Nov 2026)
+- A kitchen for every fish at camp: cook and eat, cook to keep, salt, smoke or cook a recipe
+- Prep dice rolls: gutting and filleting can go well (worth more, feeds more) or get botched
+- 13 recipes using foraged ingredients: pan dishes, Dutch oven stews and chowders, BBQ grills, two Willowmere regional dishes and the Angler's truffle feast
+- Maggie, the cook at the Willowmere Arms, teaches recipes for coin or a rare fish; strangers and abandoned camps can share them too
+- Salting (level 15) and smoking (level 25, portable smoker) keep fish for 15 and 10 days and sell for 1.5× and 1.8×
+- Cooked, preserved and recipe fish all sell, priced by form, prep quality and recipe
+- Spoiled fish makes chum: throw it in for much quicker bites for 2 hours
+- New Kitchen tab at the tackle shop: salt, portable smoker and camp BBQ
 
 ### 0.14.0 · Hunting and foraging (14 Nov 2026)
 - Forage at camp: herbs, berries, wild veg, mushrooms, coastal finds, spices, rare herbs and truffles, depending on your level, the season and where you are

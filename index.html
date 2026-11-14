@@ -272,6 +272,8 @@ const GEAR={
   bedroll:{type:"kit",name:"Bedroll",grade:"Basic",price:20,desc:"Nights outdoors are far less cold."},
   lantern:{type:"kit",name:"Storm lantern",grade:"Good",price:30,desc:"+2 to rolls in events after dark."},
   bow:{type:"kit",name:"Hunting bow",grade:"Good",price:60,desc:"+5 when tracking, once you reach hunting level 10. Deer, boar and stags need one. Uses arrows."},
+  smoker:{type:"kit",name:"Portable smoker",grade:"Fine",price:80,desc:"Smoke fish over your campfire from cooking level 25. Smoked fish keeps 10 days and sells for 1.8× raw."},
+  bbq:{type:"kit",name:"Camp BBQ",grade:"Good",price:50,desc:"Grill recipes from cooking level 30."},
   bell:{type:"kit",name:"Bear bell",grade:"Basic",price:12,desc:"Animals hear you coming: fewer boar on the path, and +1 in animal encounters on the move."}
 };
 const BAITS={Maggots:[2,10],Bread:[1,10],Worm:[2,10],Sweetcorn:[2,10],Pellets:[3,10],Boilies:[4,10],Deadbait:[4,5],Lugworm:[3,10],Ragworm:[3,10],Squid:[4,5],"Peeler crab":[5,5]};
@@ -287,8 +289,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.14.0";
+const VERSION="0.15.0";
 const CHANGELOG=[
+  {v:"0.15.0",date:"14 Nov 2026",title:"Deeper cooking",items:["A kitchen for every fish at camp: cook and eat, cook to keep, salt, smoke or cook a recipe","Prep dice rolls: gutting and filleting can go well (worth more, feeds more) or get botched","13 recipes using foraged ingredients: pan dishes, Dutch oven stews and chowders, BBQ grills, two Willowmere regional dishes and the Angler's truffle feast","Maggie, the cook at the Willowmere Arms, teaches recipes for coin or a rare fish; strangers and abandoned camps can share them too","Salting (level 15) and smoking (level 25, portable smoker) keep fish for 15 and 10 days and sell for 1.5× and 1.8×","Cooked, preserved and recipe fish all sell, priced by form, prep quality and recipe","Spoiled fish makes chum: throw it in for much quicker bites for 2 hours","New Kitchen tab at the tackle shop: salt, portable smoker and camp BBQ"]},
   {v:"0.14.0",date:"14 Nov 2026",title:"Hunting and foraging",items:["Forage at camp: herbs, berries, wild veg, mushrooms, coastal finds, spices, rare herbs and truffles, depending on your level, the season and where you are","Dig for bait from foraging level 5: worms inland, lugworm and ragworm on the coast","Snares: set up to 3, check back after a few hours. You start with 2","Tracking from hunting level 5: rabbits, then pigeons and pheasants, roe deer, wild boar and the red stag","Hunting bow and arrows in a new Hunting tab at the tackle shop: +5 when tracking from hunting level 10","A larder for game and foraged food: eat it, cook it, or brew rare herbs into teas","Clean springs at foraging level 30: drinking straight is almost always safe"]},
   {v:"0.13.0",date:"14 Nov 2026",title:"Events and skills",items:["Text events with d20 rolls while you travel, rest and sleep out: wolves, wild boar, bears, a fox thief, a stranger at the fire, an abandoned camp, a slippery bank and a lost lure","Your bonuses are shown before you choose: skill level, campfire, lantern, being rested, hurt or exhausted","Hunting, foraging and cooking skills, levelling 1 to 50 like fishing","Skills screen with every unlock table (Menu, Skills)","Cooking your catch at camp earns cooking XP","New kit: storm lantern and bear bell","Turn random events off in Settings"]},
   {v:"0.12.1",date:"9 Nov 2026",title:"Update notices",items:["A notice pops up when a new version of the game is out, with an Update button","Get the latest version button on the title screen"]},
@@ -479,6 +482,7 @@ function landFloat(){
   G.ripples.push({x:s.x,y:s.y,r:2,a:0.9,sc:s.scale});
   const q=c.q;let wait=rand(2.5,7)*(1.35-0.6*q)*(q<0.35?1.5:1);
   if(c.method==="Spinning")wait=rand(1.5,6)*(1.25-0.5*q);
+  if(run&&(run.chumUntil||0)>absMin())wait*=0.6;
   const f=pickFish(conds(),q);
   const n=Math.floor(rand(f.nibbles[0],f.nibbles[1]+0.999));
   const nib=[];let t=wait;for(let i=0;i<n;i++){nib.push(t);t+=rand(0.7,1.5);}
@@ -1045,10 +1049,10 @@ function travelButtons(prefix){
 function campMenu(){
   if(G.state!=="ready")return;
   const N=run.needs,fire=run.fire>0,night=run.min>=18*60||run.min<5*60,salt=spot().salt,wname=spot().water.toLowerCase(),dark=conds().time==="Night";
-  const fishRows=run.keep.map((k,i)=>{const age=fishAge(k),spoiled=age>3;
-    return `<div class="act" style="cursor:default"><span>${k.name} · ${lbOz(k.w)}<small>${spoiled?"Spoiled. Only good for chum.":`Fresh for ${Math.max(0,(3-age)).toFixed(1)} more days`}</small></span>
-    <span style="display:flex;gap:6px">${spoiled?`<button class="iconbtn" data-dump="${i}" type="button">Throw away</button>`:
-    `<button class="iconbtn" data-raw="${i}" type="button">Eat raw</button><button class="iconbtn" data-cook="${i}" type="button" ${fire?"":"disabled"}>Cook</button>`}</span></div>`;}).join("");
+  const fishRows=run.keep.map((k,i)=>{const spoiled=isSpoiled(k),raw=(k.form||"raw")==="raw",left=Math.max(0,keepDays(k)-itemAge(k));
+    return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)}<small>${spoiled?"Spoiled. Only good for chum.":`Good for ${left.toFixed(1)} more days`}${qTag(k)&&!spoiled?" · "+qTag(k):""}</small></span>
+    <span style="display:flex;gap:6px">${spoiled?`<button class="iconbtn" data-chum="${i}" type="button">Make chum</button><button class="iconbtn" data-dump="${i}" type="button">Bin</button>`:
+    `${raw?`<button class="iconbtn" data-raw="${i}" type="button">Eat raw</button>`:`<button class="iconbtn" data-peat="${i}" type="button">Eat</button>`}<button class="iconbtn" data-cook="${i}" type="button">${raw?"Cook":"Kitchen"}</button>`}</span></div>`;}).join("");
   showOverlay(`<h2>Camp</h2>
   <p class="note">${spot().name} · ${clock(run.min)}, ${conds().time.toLowerCase()} · ${conds().weather.toLowerCase()}. ${fire?`Fire burning for ${Math.ceil(run.fire/60)} more hours.`:"No fire."} Camping never saves your game.</p>
   <div class="acts">
@@ -1059,6 +1063,7 @@ function campMenu(){
     <button class="act" id="aBoil" type="button" ${fire?"":"disabled"}><span>Boil ${wname} water and drink<small>${fire?"Safe to drink.":"Needs a fire."} ${run.water>0?`You still carry ${run.water.toFixed(1)} days of water.`:""}</small></span><em>30 min</em></button>
     <button class="act" id="aDrink" type="button"><span>Drink straight from the ${wname}<small>${skLv("forage")>=30?"You know where the clean springs are. Almost always safe.":"Quick, but it could make you ill."}</small></span><em>5 min</em></button>`}
   </div>
+  ${run.inv.chum>0||(run.chumUntil||0)>absMin()?`<div class="acts"><button class="act" id="aChum" type="button" ${run.inv.chum>0?"":"disabled"}><span>Throw in chum (${run.inv.chum})<small>${(run.chumUntil||0)>absMin()?`Chum's working for another ${Math.ceil((run.chumUntil-absMin())/6)/10} hours. `:""}Bites come much quicker for 2 hours.</small></span><em>5 min</em></button></div>`:""}
   <h3>Hunting and foraging</h3><div class="acts">
     <button class="act" id="aForage" type="button" ${dark?"disabled":""}><span>Forage nearby<small>${dark?"Too dark to see what you're picking.":`Herbs, berries${skLv("forage")>=10?", wild veg":""}${skLv("forage")>=15?", mushrooms":""}. Foraging Lv ${skLv("forage")}.`}</small></span><em>45 min</em></button>
     <button class="act" id="aDig" type="button" ${skLv("forage")>=5?"":"disabled"}><span>Dig for bait<small>${skLv("forage")>=5?(salt?"Lugworm and ragworm from the wet sand.":"Worms from the bank."):"Needs foraging level 5."}</small></span><em>30 min</em></button>
@@ -1083,8 +1088,10 @@ function campMenu(){
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-raw]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.raw,1)[0];
     act(10,()=>{run.needs.food=clamp(run.needs.food+6+k.w*4,0,100);if(Math.random()<0.15){run.ill=Math.max(run.ill,8*60);toast("Raw fish didn't agree with you.",true,2200);}else toast(`You eat the ${k.name.toLowerCase()} raw.`);});});
-  document.querySelectorAll("[data-cook]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.cook,1)[0];
-    act(30,()=>{run.needs.food=clamp(run.needs.food+12+k.w*8,0,100);run.needs.stam=clamp(run.needs.stam+8,0,100);const g=gainSk("cook",8+Math.round(k.w*4));toast(`Campfire ${k.name.toLowerCase()}. Proper food. +${g} cooking XP`);});});
+  document.querySelectorAll("[data-cook]").forEach(b=>b.onclick=()=>kitchen(+b.dataset.cook,campMenu));
+  document.querySelectorAll("[data-peat]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.peat,1)[0];act(10,()=>{fxObj(eatFx(k));toast(`You eat the ${prodName(k).toLowerCase()}.`);});});
+  document.querySelectorAll("[data-chum]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.chum,1);act(10,()=>{run.inv.chum++;toast("Chopped up for chum. It smells exactly as bad as you'd think.",false,2200);});});
+  if($("#aChum"))$("#aChum").onclick=()=>act(5,()=>{run.inv.chum--;run.chumUntil=absMin()+120;toast("Chum in the water. Fish will come looking for the next two hours.",false,2400);});
   document.querySelectorAll("[data-dump]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.dump,1);campMenu();});
   $("#aForage").onclick=()=>goForage(campMenu);$("#aDig").onclick=()=>digBait(campMenu);$("#aTrack").onclick=()=>goTracking(campMenu);
   $("#aSnare").onclick=()=>act(15,()=>{run.inv.snares--;run.snares.push({loc:run.loc,at:absMin()});toast("Snare set on a run through the grass.");});
@@ -1103,7 +1110,7 @@ const SKILLS={
   fish:{n:"Fishing",unl:[[1,"Float fishing",1],[5,"Ledgering",1],[10,"Spinning",1],[15,"Fly fishing",1],[20,"Nets, traps and pots"],[25,"Boat hire"],[30,"Wreck and reef fishing"],[35,"Boat ownership"],[40,"Deep-sea fishing"],[45,"Big game (halibut, tuna, sharks)"],[50,"Master Angler title"]]},
   hunt:{n:"Hunting",unl:[[1,"Simple snares (rabbits)",1],[5,"Tracking (rabbits)",1],[10,"Bow use: +5 when tracking",1],[15,"Game birds (pheasant, pigeon)",1],[20,"Deer tracking",1],[25,"Hides and furs"],[30,"Wild boar",1],[35,"Bow add-ons"],[40,"Predator awareness: +3 in animal encounters",1],[45,"Red stag (trophy hunt)",1],[50,"Master Hunter title"]]},
   forage:{n:"Foraging",unl:[[1,"Common herbs and berries",1],[5,"Bait digging",1],[10,"Wild veg (wild garlic, sorrel, nettles)",1],[15,"Common mushrooms",1],[20,"Coastal finds (seaweed, samphire)",1],[25,"Prized mushrooms (ceps, chanterelles)",1],[30,"Clean springs: drinking straight is almost always safe",1],[35,"Wild spices (juniper, fennel seed)",1],[40,"Rare herbs for teas that boost needs",1],[45,"Truffles",1],[50,"Master Forager title"]]},
-  cook:{n:"Cooking",unl:[[1,"Campfire cooking",1],[5,"Better gutting and filleting"],[10,"Pan and pot dishes"],[15,"Salting"],[20,"Dutch oven dishes"],[25,"Smoking"],[30,"BBQ and grill specialties"],[35,"Regional recipes"],[40,"Feasts"],[45,"Master preserving"],[50,"Head Chef title"]]}
+  cook:{n:"Cooking",unl:[[1,"Campfire cooking",1],[5,"Better gutting and filleting (+2)",1],[10,"Pan and pot dishes",1],[15,"Salting",1],[20,"Dutch oven dishes (stews, chowders)",1],[25,"Smoking",1],[30,"BBQ and grill specialties",1],[35,"Regional recipes from the tavern cook",1],[40,"Feasts",1],[45,"Master preserving: lasts twice as long",1],[50,"Head Chef title"]]}
 };
 function skXp(k){return k==="fish"?(run?run.xp:0):(run&&run.sk?run.sk[k]||0:0);}
 function skLv(k){return levelInfo(skXp(k)).L;}
@@ -1128,7 +1135,7 @@ function skillsScreen(onBack){
 // Roll d20 + bonuses; meet or beat the target to succeed. A natural 20 always works, a natural 1 always fails.
 // Bonuses: the tested skill's level, a campfire against animals, a lantern in the dark, being rested, hurt or exhausted, kit.
 const d20=()=>1+Math.floor(Math.random()*20);
-function freshFish(){return run.keep.map((k,i)=>({k,i})).filter(o=>fishAge(o.k)<=3);}
+function freshFish(){return run.keep.map((k,i)=>({k,i})).filter(o=>!isSpoiled(o.k));}
 function takeFish(which){const f=freshFish();if(!f.length)return null;
   f.sort((a,b)=>a.k.w-b.k.w);const o=which==="big"?f[f.length-1]:which==="small"?f[0]:f[Math.floor(Math.random()*f.length)];
   run.keep.splice(o.i,1);return o.k;}
@@ -1147,8 +1154,9 @@ function fx(list){const out=[];const N=run.needs;
     else if(k==="bait"){const [b,n]=v;run.inv.bait[b]=(run.inv.bait[b]||0)+n;out.push(`+${n} ${b.toLowerCase()}`);}
     else if(k==="lure"){run.inv.lures[v]=(run.inv.lures[v]||0)+1;out.push(`+1 ${v.toLowerCase()}`);}
     else if(k==="kit"){run.inv.gear[v]=1;out.push(`found: ${GEAR[v].name}`);if(v==="waterskin")run.water=Math.min(maxWater(),run.water+1.5);}
-    else if(k==="fish"){const f=takeFish(v);if(f)out.push(`lost your ${f.name.toLowerCase()} (${lbOz(f.w)})`);}
-    else if(k==="allfish"){const n=freshFish().length;run.keep=run.keep.filter(x=>fishAge(x)>3);if(n)out.push(`lost ${n} fish from the keep net`);}
+    else if(k==="fish"){const f=takeFish(v);if(f)out.push(`lost your ${prodName(f).toLowerCase()} (${lbOz(f.w)})`);}
+    else if(k==="recipe"){const r=learnRecipe();if(r)out.push(`learned a recipe: ${recipeTitle(r)}`);else{run.bucks+=15;out.push("+15 Fish Bucks");}}
+    else if(k==="allfish"){const n=freshFish().length;run.keep=run.keep.filter(x=>isSpoiled(x));if(n)out.push(`lost ${n} fish from the keep net`);}
     else if(k==="meat"){const [id,n]=v;larderAdd(id,n);out.push(`+${n>1?n+" ":""}${FOODS[id].n.toLowerCase()}${n>1?" portions":""}`);}
     else if(k==="arrow"){if(run.inv.arrows>0){run.inv.arrows--;out.push("lost an arrow");}}
     else if(k==="xp"){const [s,n]=v;const g=gainSk(s,n);if(g)out.push(`+${g} ${SKILLS[s].n.toLowerCase()} XP`);}
@@ -1207,7 +1215,7 @@ const EVENTS=[
     w:c=>c.fire&&(c.time==="Dusk"||c.time==="Night")?2.5:0,
     text:()=>"An old angler, rod over his shoulder and a pipe in his teeth, asks if he can warm his hands at your fire.",
     ch:c=>[
-      c.fish?{t:"Share a fish with him",sub:"No roll. A good meal loosens tongues.",auto:()=>{const gift=pick([["bait",["Lugworm",10]],["bait",["Boilies",10]],["lure","Spinner"],["lure","Dry fly"],["bucks",15]]);
+      c.fish?{t:"Share a fish with him",sub:"No roll. A good meal loosens tongues.",auto:()=>{const gift=Math.random()<0.5?["recipe",1]:pick([["bait",["Lugworm",10]],["bait",["Boilies",10]],["lure","Spinner"],["lure","Dry fly"],["bucks",15]]);
         return ["He eats like he hasn't in days, then tells you where the big ones lie and presses something into your hand.",[["fish","small"],["food",8],["xp",["fish",60]],gift]];}}:null,
       {t:"Swap stories",sub:"He's got a few. Can you keep up?",dc:10,
         ok:()=>["Tall tales, old tricks and one that might even be true. You learn a lot.",[["xp",["fish",40]],["mins",60]]],
@@ -1220,7 +1228,7 @@ const EVENTS=[
     ch:()=>[
       {t:"Search it",sub:"Might be something useful. Might be something sharp.",dc:11,skill:"forage",
         ok:()=>{const spare=["bedroll","waterskin","lantern"].filter(id=>!run.inv.gear[id]);
-          const loot=Math.random()<0.15&&spare.length?["kit",pick(spare)]:pick([["bucks",rand(6,20)|0],["lure","Spinner"],["lure","Soft lure"],["bait",["Worm",10]],["bait",["Pellets",10]]]);
+          const loot=Math.random()<0.15&&spare.length?["kit",pick(spare)]:Math.random()<0.18?["recipe",1]:pick([["bucks",rand(6,20)|0],["lure","Spinner"],["lure","Soft lure"],["bait",["Worm",10]],["bait",["Pellets",10]]]);
           return ["Under the tarp you find something worth keeping.",[loot,["xp",["forage",30]],["mins",20]]];},
         bad:()=>["A rusty tin slices your hand. Nothing here but rubbish.",[["health",-10],["mins",20],Math.random()<0.3?["ill",6*60]:["xp",["forage",5]]]]},
       {t:"Leave it be",sub:"No roll. Not your business.",auto:()=>["You carry on.",[]]}
@@ -1403,6 +1411,113 @@ function larderRows(){
     return `<div class="act" style="cursor:default"><span>${F.n}${idx.length>1?" ×"+idx.length:""}<small>${F.kind} · ${sp?"Spoiled.":`Good for ${Math.max(0,left).toFixed(1)} more days`}${!F.eat&&!F.cook&&!F.tea&&!sp?" · For recipes (coming soon)":""}</small></span><span style="display:flex;gap:6px">${btns}</span></div>`;}).join("");
 }
 
+/* ---------- Cooking: prep rolls, preserving, recipes, chum ---------- */
+// Keep net items: {id,name,w,stars,caught} plus, once worked on: form (cooked/salted/smoked/dish), q (prep: -1 botched, 0, +1 good), made, dish.
+const FORMS={raw:{keep:3,price:1},cooked:{keep:1.5,price:1.25,pre:"Campfire"},salted:{keep:15,price:1.5,pre:"Salted"},smoked:{keep:10,price:1.8,pre:"Smoked"},dish:{keep:1.5,price:1}};
+// need: larder items by id or group. fish: how many fish it takes. fm: food multiplier. eat: extra effects. mult: sale price multiplier.
+const ING={herb:["thyme"],veg:["garlic","sorrel","nettles"],mush:["fieldmush","ceps","chanterelles"],coastal:["samphire","seaweed"]};
+const ING_N={herb:"a herb",veg:"wild veg",mush:"mushrooms",coastal:"samphire or seaweed"};
+const RECIPES={
+  thyme:{n:"{F} with wild thyme",lv:10,need:["thyme"],mult:2,eat:{stam:10},src:"start"},
+  garlic:{n:"Pan-fried {f} with wild garlic",lv:10,need:["garlic"],mult:2.2,eat:{stam:12},src:"start"},
+  nettle:{n:"{F} and nettle soup",lv:10,need:["nettles"],mult:2,eat:{warm:20}},
+  sorrel:{n:"{F} with sorrel butter sauce",lv:10,need:["sorrel"],mult:2.2,eat:{health:5}},
+  mush:{n:"{F} with fried mushrooms",lv:10,need:["mush"],mult:2.3,eat:{stam:15}},
+  samphire:{n:"{F} with samphire",lv:10,need:["samphire"],mult:2.3,eat:{health:5}},
+  stew:{n:"Fisherman's stew",lv:20,need:["veg","herb"],fish:2,fm:1.5,mult:3,eat:{warm:30,stam:20},how:"Dutch oven"},
+  chowder:{n:"Coastal chowder",lv:20,need:["coastal","herb"],mult:2.8,eat:{warm:25,health:10},how:"Dutch oven"},
+  juniper:{n:"Juniper-crusted grilled {f}",lv:30,need:["juniper"],bbq:1,mult:3,eat:{stam:20}},
+  fennel:{n:"{F} grilled with fennel seed",lv:30,need:["fennel"],bbq:1,mult:3,eat:{health:10}},
+  riverpie:{n:"Willowmere river pie",lv:35,need:["mush","herb"],water:"River",region:1,mult:3.5,eat:{warm:20,stam:20}},
+  smokie:{n:"Willowmere smokie with sorrel",lv:35,need:["sorrel"],form:"smoked",region:1,mult:3.5,eat:{stam:25,health:10}},
+  feast:{n:"Angler's truffle feast",lv:40,need:["truffle","mush","herb"],fish:2,fm:2.2,mult:5,eat:{warm:40,stam:40,health:30},feast:1}
+};
+const COOK_PRICE={buy:20,region:60,feast:80};
+function keepDays(k){const f=k.form||"raw";let d=FORMS[f].keep;if((f==="salted"||f==="smoked")&&skLv("cook")>=45)d*=2;return d;}
+function itemAge(k){return (absMin()-(k.made||k.caught))/1440;}
+function isSpoiled(k){return itemAge(k)>keepDays(k);}
+const capF=t=>t.charAt(0).toUpperCase()+t.slice(1);
+function prodName(k){const f=k.form||"raw";if(f==="dish"){const R=RECIPES[k.dish];return R.n.replace("{F}",capF(k.name.toLowerCase())).replace("{f}",k.name.toLowerCase());}
+  return f==="raw"?k.name:`${FORMS[f].pre} ${k.name.toLowerCase()}`;}
+function qTag(k){return k.q===1?"well prepped":k.q===-1?"botched prep":"";}
+// Gutting and filleting: d20 + 1 per 10 cooking levels (+2 from level 5) vs 8. 16+ is a good job.
+function prepRoll(k){if(k.q!==undefined)return "";const L=skLv("cook"),die=d20(),tot=die+Math.floor(L/10)+(L>=5?2:0);
+  k.q=die===20||(die!==1&&tot>=16)?1:die!==1&&tot>=8?0:-1;gainSk("cook",4);
+  return k.q===1?"Clean, neat fillets. ":k.q===-1?"You make a hash of the filleting and lose some of it. ":"";}
+function qMul(k){return k.q===1?1.15:k.q===-1?0.7:1;}
+function eatFx(k){const f=k.form||"raw",m=qMul(k),base=12+k.w*8;
+  if(f==="dish"){const R=RECIPES[k.dish];const o={food:Math.round(base*(R.fm||1.4)*m)};for(const [a,v] of Object.entries(R.eat))o[a]=Math.round(v*m);return o;}
+  if(f==="salted")return {food:Math.round((10+k.w*5)*m),stam:4};
+  if(f==="smoked")return {food:Math.round((12+k.w*6)*m),stam:6,warm:5};
+  return {food:Math.round(base*m),stam:Math.round(8*m)};}
+function freshLarder(id){return run.larder.findIndex(it=>it.id===id&&larderAge(it)<=FOODS[it.id].keep);}
+function findIng(tag){for(const id of (ING[tag]||[tag])){const i=freshLarder(id);if(i>=0)return i;}return -1;}
+function ingName(tag){return ING_N[tag]||FOODS[tag].n.toLowerCase();}
+// Can this recipe be cooked with fish k right now? Returns "" if yes, or the reason.
+function canCook(R,k,i){const L=skLv("cook");
+  if(L<R.lv)return `Needs cooking level ${R.lv}`;
+  if(run.fire<=0)return "Needs a fire";
+  if(R.bbq&&!run.inv.gear.bbq)return "Needs a camp BBQ";
+  if(R.form&&(k.form||"raw")!==R.form)return `Needs ${R.form} fish`;
+  if(!R.form&&(k.form||"raw")!=="raw")return "Needs fresh, raw fish";
+  if(R.water){const f=FISH.find(x=>x.id===k.id);if(f.water!==R.water)return `Needs a ${R.water.toLowerCase()} fish`;}
+  if((R.fish||1)>1&&!run.keep.some((o,j)=>j!==i&&(o.form||"raw")==="raw"&&!isSpoiled(o)))return `Needs ${R.fish} fresh fish`;
+  const miss=R.need.filter(t=>findIng(t)<0);if(miss.length)return "Needs "+miss.map(ingName).join(" and ");
+  return "";}
+function cookRecipe(id,i){const R=RECIPES[id];let k=run.keep[i];let note=prepRoll(k);
+  const used=R.need.map(t=>{const j=findIng(t);const it=run.larder.splice(j,1)[0];return FOODS[it.id].n.toLowerCase();});
+  if((R.fish||1)>1){const j=run.keep.findIndex((o,jj)=>jj!==i&&(o.form||"raw")==="raw"&&!isSpoiled(o));const o=run.keep[j];k.w=+(k.w+o.w).toFixed(3);k.stars=Math.max(k.stars||3,o.stars||3);run.keep.splice(j,1);}
+  k.form="dish";k.dish=id;k.made=absMin();
+  advance(R.feast?90:R.how?60:30);
+  const g=gainSk("cook",R.feast?60:15+R.lv);
+  return `${note}${prodName(k)}, made with ${used.join(" and ")}. +${g} cooking XP`;}
+function kitchen(i,back){
+  const k=run.keep[i];if(!k)return back();const f=k.form||"raw",L=skLv("cook"),fire=run.fire>0,raw=f==="raw";
+  const opt=(id,t,sub,time,ok)=>`<button class="act" data-kc="${id}" type="button" ${ok?"":"disabled"}><span>${t}<small>${sub}</small></span><em>${time}</em></button>`;
+  const known=Object.keys(RECIPES).filter(r=>run.recipes.includes(r));
+  const recs=known.map(r=>{const R=RECIPES[r],why=canCook(R,k,i);const nm=R.n.replace("{F}",capF(k.name.toLowerCase())).replace("{f}",k.name.toLowerCase());
+    return opt("r:"+r,nm,why||`Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}. Sells for about ${R.mult}× raw.${R.region?" Regional dish.":""}`,R.feast?"1.5 h":R.how?"1 hour":"30 min",!why);}).join("");
+  showOverlay(`<span class="tag">Kitchen</span><h2>${prodName(k)}</h2><p class="note">${lbOz(k.w)} · ${isSpoiled(k)?"spoiled":`good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}${qTag(k)?" · "+qTag(k):""}. Cooking Lv ${L}. ${fire?"The fire's going.":"No fire."}</p>
+    ${raw?`<p class="note">Anything you cook starts with gutting and filleting: a d20 roll, better with cooking level. A good job is worth more and feeds you more; a botched one less.</p>`:""}
+    <div class="acts">
+    ${raw?opt("eatcook","Cook and eat it now",fire?"Proper food, straight off the fire.":"Needs a fire.","30 min",fire):opt("eat","Eat it",(()=>{const e=eatFx(k);return Object.entries(e).map(([a,v])=>`+${v} ${({food:"food",stam:"energy",warm:"warmth",health:"health"})[a]}`).join(", ");})(),"10 min",true)}
+    ${raw?opt("cook","Cook it to keep or sell",fire?"Sells for a little more than raw. Keeps about a day and a half.":"Needs a fire.","30 min",fire):""}
+    ${raw?opt("salt","Salt it",L<15?"Needs cooking level 15.":run.inv.salt>0?`Keeps ${keepDays({form:"salted"})} days, sells for 1.5× raw. ${run.inv.salt} salt left.`:"No salt. Buy it at the tackle shop.","20 min",L>=15&&run.inv.salt>0):""}
+    ${raw?opt("smoke","Smoke it",L<25?"Needs cooking level 25.":!run.inv.gear.smoker?"Needs a portable smoker.":!fire?"Needs a fire.":`Keeps ${keepDays({form:"smoked"})} days, sells for 1.8× raw.`,"2 hours",L>=25&&run.inv.gear.smoker&&fire):""}
+    </div>
+    ${recs?`<h3>Recipes</h3><div class="acts">${recs}</div>`:""}
+    <p class="note">You know ${known.length} of ${Object.keys(RECIPES).length} recipes. Learn more from the cook at the Willowmere Arms, strangers at your fire and abandoned camps.${L<10?" Pan and pot dishes start at cooking level 10.":""}</p>
+    <div class="controls"><button class="big ghost" id="kcBack" type="button" style="flex:1">Back</button></div>`,"event");
+  const done=msg=>{renderHud();if(checkDeath())return;if(msg)toast(msg,false,2600);back();};
+  document.querySelectorAll("[data-kc]").forEach(b=>b.onclick=()=>{const a=b.dataset.kc;
+    if(a==="eat"){run.keep.splice(i,1);advance(10);fxObj(eatFx(k));return done(`You eat the ${prodName(k).toLowerCase()}.`);}
+    if(a==="eatcook"){run.keep.splice(i,1);const n=prepRoll(k);k.form="cooked";advance(30);fxObj(eatFx(k));const g=gainSk("cook",8+Math.round(k.w*4));return done(`${n}Campfire ${k.name.toLowerCase()}. Proper food. +${g} cooking XP`);}
+    if(a==="cook"){const n=prepRoll(k);k.form="cooked";k.made=absMin();advance(30);const g=gainSk("cook",8+Math.round(k.w*4));return done(`${n}${prodName(k)}, wrapped and in the net. +${g} cooking XP`);}
+    if(a==="salt"){const n=prepRoll(k);run.inv.salt--;k.form="salted";k.made=absMin();advance(20);const g=gainSk("cook",10+Math.round(k.w*2));return done(`${n}Packed in salt. It'll keep for weeks. +${g} cooking XP`);}
+    if(a==="smoke"){const n=prepRoll(k);k.form="smoked";k.made=absMin();advance(120);const g=gainSk("cook",20+Math.round(k.w*3));return done(`${n}Two hours over oak smoke. Golden and fragrant. +${g} cooking XP`);}
+    if(a.startsWith("r:"))return done(cookRecipe(a.slice(2),i));});
+  $("#kcBack").onclick=back;
+}
+function learnRecipe(pool){const opts=(pool||Object.keys(RECIPES).filter(r=>!RECIPES[r].region&&!RECIPES[r].feast)).filter(r=>!run.recipes.includes(r));
+  if(!opts.length)return null;const r=pick(opts);run.recipes.push(r);return r;}
+function recipeTitle(r){return RECIPES[r].n.replace("{F}","Fish").replace("{f}","fish");}
+// The cook at the Willowmere Arms: everyday recipes for coin; regional dishes and the feast for coin or a rare fish
+function cookScreen(){
+  const L=skLv("cook"),B=run.bucks;
+  const rare=run.keep.findIndex(k=>(k.form||"raw")==="raw"&&!isSpoiled(k)&&["Rare","Very rare"].includes(FISH.find(f=>f.id===k.id).rarity));
+  const row=r=>{const R=RECIPES[r],have=run.recipes.includes(r),price=R.feast?COOK_PRICE.feast:R.region?COOK_PRICE.region:COOK_PRICE.buy,lock=(R.region&&L<35)||(R.feast&&L<40);
+    return `<div class="act" style="cursor:default"><span>${recipeTitle(r)}<small>${have?"You know this one.":lock?`She'll teach you at cooking level ${R.feast?40:35}.`:`Cooking level ${R.lv}. Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}${R.bbq?", on a camp BBQ":""}.`}</small></span>
+      ${have?"<em>Known</em>":lock?"":`<span style="display:flex;gap:6px">${(R.region||R.feast)&&rare>=0?`<button class="iconbtn" data-cf="${r}" type="button">Give a rare fish</button>`:""}<button class="iconbtn" data-cb="${r}" type="button" ${B>=price?"":"disabled"}>${price} FB</button></span>`}</div>`;};
+  showOverlay(`<h2>The cook</h2><p class="note">Maggie runs the Arms' kitchen and has forgotten more about fish than most people learn. She'll teach a recipe for coin. Bring her a rare fish and she'll share her own Willowmere dishes for nothing.</p>
+    <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Cooking Lv ${L}</p>
+    <div class="acts">${Object.keys(RECIPES).map(row).join("")}</div>
+    <p class="note">Regional dishes are Willowmere's own. They'll sell for more away from Willowmere once there are other towns to visit.</p>
+    <div class="controls"><button class="big ghost" id="ckBack" type="button" style="flex:1">Back</button></div>`);
+  document.querySelectorAll("[data-cb]").forEach(b=>b.onclick=()=>{const r=b.dataset.cb,R=RECIPES[r],p=R.feast?COOK_PRICE.feast:R.region?COOK_PRICE.region:COOK_PRICE.buy;if(run.bucks<p)return;run.bucks-=p;run.recipes.push(r);renderHud();toast(`Learned: ${recipeTitle(r)}`,false,2200);cookScreen();});
+  document.querySelectorAll("[data-cf]").forEach(b=>b.onclick=()=>{const r=b.dataset.cf,k=run.keep.splice(rare,1)[0];run.recipes.push(r);toast(`Maggie takes the ${k.name.toLowerCase()} with a grin. Learned: ${recipeTitle(r)}`,false,3000);cookScreen();});
+  $("#ckBack").onclick=tavernMenu;
+}
+
 /* ---------- Economy: Fish Bucks, selling, shop, kit ---------- */
 const ROOM=6,MEAL=3;
 function withKit(r){
@@ -1414,22 +1529,26 @@ function withKit(r){
   if(!r.shop)r.shop={day:0,stock:[]};
   if(!r.sk)r.sk={hunt:0,forage:0,cook:0};
   if(!r.larder)r.larder=[];if(!r.snares)r.snares=[];
+  if(!r.recipes)r.recipes=["thyme","garlic"];if(r.inv.salt===undefined)r.inv.salt=0;if(r.inv.chum===undefined)r.inv.chum=0;
   if(r.inv.snares===undefined)r.inv.snares=2;if(r.inv.arrows===undefined)r.inv.arrows=0;
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
 function fishPrice(k){
   const f=FISH.find(x=>x.id===k.id);const b={Common:[4,1.5],Uncommon:[12,2],Rare:[30,3],"Very rare":[60,4]}[f.rarity];
-  const age=fishAge(k),fr=age<1?1:age<2?0.8:age<3?0.55:0;
+  const form=k.form||"raw",age=itemAge(k),kd=keepDays(k);
+  const fr=form==="raw"?(age<1?1:age<2?0.8:age<3?0.55:0):(age>kd?0:age>kd*0.66?0.85:1);
+  const pm=FORMS[form].price*(form==="dish"?RECIPES[k.dish].mult:1)*(k.q===1?1.1:k.q===-1?0.85:1);
   const reg={Lake:1.3,River:0.8,Coast:1}[f.water]||1;
   const sat=1/(1+0.15*(run.market[k.id]||0));
-  const p=(b[0]+b[1]*k.w)*[0,0.8,0.9,1,1.15,1.35][k.stars||3]*fr*reg*sat;
-  return {p:Math.max(0,Math.round(p)),fr,reg,sat,water:f.water};}
+  const p=(b[0]+b[1]*k.w)*[0,0.8,0.9,1,1.15,1.35][k.stars||3]*fr*reg*sat*pm;
+  return {p:Math.max(0,Math.round(p)),fr,reg,sat,water:f.water,form};}
 function sellScreen(){
   const rows=run.keep.map((k,i)=>{const q=fishPrice(k);const tags=[];
-    tags.push(q.fr===0?"spoiled":q.fr<1?(q.fr>0.6?"day-old":"stale"):"fresh");
+    tags.push(q.fr===0?"spoiled":q.form!=="raw"?(q.fr<1?"getting old":"good"):q.fr<1?(q.fr>0.6?"day-old":"stale"):"fresh");
+    if(qTag(k))tags.push(qTag(k));if(q.form==="dish"&&RECIPES[k.dish].region)tags.push("regional dish");
     if(q.reg>1)tags.push("lake fish +30%");else if(q.reg<1)tags.push("river fish −20%");
     if(q.sat<0.95)tags.push(`market −${Math.round((1-q.sat)*100)}%`);
-    return `<div class="act" style="cursor:default"><span>${k.name} · ${lbOz(k.w)} <span class="stars" style="font-size:12px">${stars(k.stars||3)}</span><small>${tags.join(" · ")}</small></span>
+    return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)} <span class="stars" style="font-size:12px">${stars(k.stars||3)}</span><small>${tags.join(" · ")}</small></span>
     ${q.p>0?`<button class="iconbtn" data-sell="${i}" type="button">Sell ${q.p} FB</button>`:`<button class="iconbtn" data-dump="${i}" type="button">Bin it</button>`}</div>`;}).join("");
   const total=run.keep.reduce((a,k)=>a+fishPrice(k).p,0);
   showOverlay(`<h2>Sell your catch</h2><p class="note">The landlord buys for the kitchen and the market. Willowmere is a riverside village: lake fish fetch more, river fish less. Flood him with one kind and the price drops for a while.</p>
@@ -1444,13 +1563,13 @@ function sellScreen(){
 }
 function shopStock(){
   if(run.shop.day!==run.day){
-    const pool=Object.keys(GEAR).filter(id=>GEAR[id].price>0&&id!=="hazelfly"&&id!=="bow");
+    const pool=Object.keys(GEAR).filter(id=>GEAR[id].price>0&&id!=="hazelfly"&&id!=="bow"&&id!=="smoker"&&id!=="bbq");
     for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
     run.shop={day:run.day,stock:pool.slice(0,4)};}
   return ["hazelfly",...run.shop.stock].filter((id,i,a)=>a.indexOf(id)===i);
 }
 function shopScreen(tab){
-  const B=run.bucks,tabs=[["bait","Bait"],["lures","Lures"],["lines","Line"],["gear","Gear"],["hunt","Hunting"]];
+  const B=run.bucks,tabs=[["bait","Bait"],["lures","Lures"],["lines","Line"],["gear","Gear"],["hunt","Hunting"],["kitchen","Kitchen"]];
   let body="";
   if(tab==="bait")body=Object.entries(BAITS).map(([b,[p,n]])=>`<div class="act" style="cursor:default"><span>${b} · ×${n}<small>You have ${run.inv.bait[b]||0}</small></span><button class="iconbtn" data-bb="${b}" type="button" ${B>=p?"":"disabled"}>${p} FB</button></div>`).join("");
   if(tab==="lures")body=Object.entries(LURES).map(([l,p])=>`<div class="act" style="cursor:default"><span>${l}<small>Lost if the line breaks or snags. You have ${run.inv.lures[l]||0}</small></span><button class="iconbtn" data-bl="${l}" type="button" ${B>=p?"":"disabled"}>${p} FB</button></div>`).join("");
@@ -1461,6 +1580,9 @@ function shopScreen(tab){
     <div class="act" style="cursor:default"><span>Snares · ×3<small>Set them at camp and check back after a few hours. You have ${run.inv.snares}</small></span><button class="iconbtn" data-bh="snares" type="button" ${B>=6?"":"disabled"}>6 FB</button></div>
     <div class="act" style="cursor:default"><span>Arrows · ×6<small>A miss can cost you one. You have ${run.inv.arrows}</small></span><button class="iconbtn" data-bh="arrows" type="button" ${B>=8?"":"disabled"}>8 FB</button></div>
     <div class="act" style="cursor:default"><span>${GEAR.bow.name} <small style="display:inline;color:${GRADES.Good}">Good</small><small>${GEAR.bow.desc}</small></span>${run.inv.gear.bow?'<em>Owned</em>':`<button class="iconbtn" data-bh="bow" type="button" ${B>=60?"":"disabled"}>60 FB</button>`}</div>`;
+  if(tab==="kitchen")body=`<p class="note">Cooking level ${skLv("cook")}. Salting starts at level 15, smoking at 25 and grilling at 30.</p>
+    <div class="act" style="cursor:default"><span>Salt · ×4<small>One portion salts one fish. You have ${run.inv.salt}</small></span><button class="iconbtn" data-bk="salt" type="button" ${B>=5?"":"disabled"}>5 FB</button></div>
+    ${["smoker","bbq"].map(id=>`<div class="act" style="cursor:default"><span>${GEAR[id].name} <small style="display:inline;color:${GRADES[GEAR[id].grade]}">${GEAR[id].grade}</small><small>${GEAR[id].desc}</small></span>${run.inv.gear[id]?'<em>Owned</em>':`<button class="iconbtn" data-bk="${id}" type="button" ${B>=GEAR[id].price?"":"disabled"}>${GEAR[id].price} FB</button>`}</div>`).join("")}`;
   showOverlay(`<h2>Tackle shop</h2><p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p>
   <div class="controls" style="flex-wrap:wrap">${tabs.map(([k,n])=>`<button class="iconbtn" data-tab="${k}" type="button" style="flex:1;${k===tab?"border-color:var(--brass);color:var(--brass)":""}">${n}</button>`).join("")}</div>
   <div class="acts">${body}</div>
@@ -1478,6 +1600,8 @@ function shopScreen(tab){
     if(k==="snares")buy(6,()=>run.inv.snares+=3,"+3 snares");
     if(k==="arrows")buy(8,()=>run.inv.arrows+=6,"+6 arrows");
     if(k==="bow")buy(60,()=>{run.inv.gear.bow=1;if(!run.inv.arrows)run.inv.arrows=6;},"Hunting bow bought, with 6 arrows");});
+  document.querySelectorAll("[data-bk]").forEach(b=>b.onclick=()=>{const k=b.dataset.bk;
+    if(k==="salt")buy(5,()=>run.inv.salt+=4,"+4 salt");else buy(GEAR[k].price,()=>run.inv.gear[k]=1,`${GEAR[k].name} bought`);});
   $("#shBack").onclick=tavernMenu;
 }
 function gearStats(g){
@@ -1495,7 +1619,7 @@ function kitScreen(onBack){
   const kit=Object.keys(run.inv.gear).filter(id=>GEAR[id].type==="kit").map(id=>`<div class="act" style="cursor:default"><span>${GEAR[id].name}<small>${GEAR[id].desc}</small></span></div>`).join("");
   showOverlay(`<h2>Kit</h2><p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b></p>
   <h3>Tackle</h3><div class="acts">${slot("Rod","rod","rod")}${slot("Fly rod","fly","flyrod")}${slot("Reel","reel","reel")}</div>
-  <h3>Bag</h3><p class="note"><b>Bait:</b> ${bait}<br><b>Lures and flies:</b> ${lures}<br><b>Line:</b> ${lines}<br><b>Snares:</b> ${run.inv.snares} in the bag, ${run.snares.length} set · <b>Arrows:</b> ${run.inv.arrows}</p>
+  <h3>Bag</h3><p class="note"><b>Bait:</b> ${bait}<br><b>Lures and flies:</b> ${lures}<br><b>Line:</b> ${lines}<br><b>Snares:</b> ${run.inv.snares} in the bag, ${run.snares.length} set · <b>Arrows:</b> ${run.inv.arrows}<br><b>Salt:</b> ${run.inv.salt} · <b>Chum:</b> ${run.inv.chum} · <b>Recipes:</b> ${run.recipes.length}</p>
   ${kit?`<h3>Kit</h3><div class="acts">${kit}</div>`:""}
   <div class="controls"><button class="big ghost" id="kBack" type="button" style="flex:1">Back</button></div>`);
   document.querySelectorAll("[data-eq]").forEach(sel=>sel.onchange=()=>{run.equip[sel.dataset.eq]=sel.value;kitScreen(onBack);});
@@ -1516,6 +1640,7 @@ function tavernMenu(){
   </div>
   <h3>Trade</h3><div class="acts">
     <button class="act" id="tSell" type="button"><span>Sell your catch<small>${run.keep.length?run.keep.length+" fish in your keep net":"Your keep net is empty"}</small></span></button>
+    <button class="act" id="tCook" type="button"><span>Talk to the cook<small>Learn recipes. ${run.recipes.length} of ${Object.keys(RECIPES).length} known.</small></span></button>
     <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
   </div>
@@ -1528,7 +1653,7 @@ function tavernMenu(){
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
-  $("#tSell").onclick=sellScreen;$("#tShop").onclick=()=>shopScreen("bait");
+  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tShop").onclick=()=>shopScreen("bait");
   $("#tBoard").onclick=()=>memorialView(tavernMenu);
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
 }
@@ -1791,6 +1916,7 @@ function howTo(onBack){
   <h3>Staying alive</h3><p>Watch food, warmth, energy, health and water. Light fires, cook your catch and boil water at camp. Only a night at the Willowmere Arms saves your game.</p>
   <h3>Events</h3><p>Things happen while you travel, rest and sleep out: wolves, boar, bears, foxes, strangers and finds. Pick a choice, roll a d20 and add your bonuses to beat the number. Skills add +1 for every 10 levels, a campfire scares animals off, a storm lantern helps after dark, and being exhausted or hurt counts against you. A natural 20 always works and a natural 1 always fails.</p>
   <h3>Hunting and foraging</h3><p>At camp you can forage for herbs, berries, wild veg and mushrooms, dig for bait (foraging level 5), set snares and check back after a few hours, or go tracking (hunting level 5). A hunting bow from the tackle shop gives +5 when tracking once you reach hunting level 10, and deer, boar and stags really need one. Game and foraged food go in your larder, spoil over time, and are for eating, not selling.</p>
+  <h3>Cooking</h3><p>Tap Cook on a fish at camp. Everything starts with gutting and filleting, a d20 roll that gets better with cooking level: a good job sells for more and feeds you more, a botched one less. Cook and eat on the spot, or cook, salt (level 15) or smoke (level 25, portable smoker) to keep and sell. Campfire fish sells for a little more than raw, salted 1.5×, smoked 1.8×, and recipe dishes with foraged ingredients 2× to 5×. You start knowing two recipes; learn more from Maggie, the cook at the Willowmere Arms, strangers at your fire and abandoned camps. Spoiled fish makes chum: throw it in at camp and bites come much quicker for two hours.</p>
   <h3>Skills</h3><p>Fishing, hunting, foraging and cooking each level from 1 to 50. Cooking your catch at camp trains cooking, and events train hunting and foraging. See them all under Menu, Skills.</p>
   <h3>Keyboard</h3><p>Space or W to strike and reel, A and D to move the rod, N to net, Esc for the menu.</p>
   </div><div class="controls"><button class="big ghost" id="hBack" type="button" style="flex:1">Back</button></div>`);
