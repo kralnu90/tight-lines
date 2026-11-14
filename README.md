@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.15.0** · experimental build
+**Current version: 0.16.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -19,6 +19,10 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **23 fish**, each fighting its own way: 7 river, 9 lake and 7 coast species, from roach and mackerel to pike, carp, conger eel and tope.
 - **Four fishing methods** that play differently: float, ledger, spinning and fly.
 - **Conditions matter:** season, time of day, weather, method, bait and line weight all change what bites. The odds are shown on screen.
+- **Unpredictable bites:** the float dips, shakes, bobs and slides, some fish fake it, and takes can plunge, slide away or lift the float flat. Fly fish splash at your fly and miss.
+- **Weather:** clear, overcast, rain, wind and fog. Wind drifts your float and gusts during the fight; fog brings out the predators.
+- **Fish journal:** a page per species with your records and every condition you've caught it in.
+- **Traps and pots** from fishing level 20: crayfish, brown crab and lobster.
 - **Survival:** food, warmth, energy, health and water, on a live day and night clock with 10-day seasons.
 - **Camp:** light a fire, cook your catch, boil river water, rest, or sleep until dawn. Camping never saves.
 - **The Willowmere Arms:** the tavern is the only place to save. A night there restores you and refills your water.
@@ -62,7 +66,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | Phase | What it adds | Status |
 | --- | --- | --- |
 | 0 · Fight prototype | Casting, bites, the fight, landing | Done |
-| 1 · Fishing core | River, lake and coast fish, techniques (done); gear grades, journal, level unlocks | In progress |
+| 1 · Fishing core | Fish, spots, techniques, gear grades, weather, journal, level unlocks, traps and pots | Done (tilt controls come with the app) |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules | First pass done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | First pass done |
 | 4 · Towns and trade | Fish Bucks, selling and the tackle shop (done); region map, more towns, request boards, reputation | In progress |
@@ -70,6 +74,15 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.16.0 · Fishing core finished (14 Nov 2026)
+- A less predictable float: dips, trembles, bobs, slides and false bites in random order and timing, and takes that plunge, slide away or lift and lie flat
+- Fly fishing gets near-miss rises that splash at your fly without taking it
+- New weather: wind (drifts your float, gusts in the fight, bass love it) and fog (predators come out, harder to see)
+- Rain makes the reel slippery during a fight
+- Fish journal: a page per species with your records and every season, time, weather, method, bait and spot you've caught it in
+- Methods now unlock by fishing level (5 ledger, 10 spinning, 15 fly). The testing switch is still in Settings
+- Traps and pots from fishing level 20: crayfish inland, brown crab and the odd lobster on the coast
 
 ### 0.15.0 · Deeper cooking (14 Nov 2026)
 - A kitchen for every fish at camp: cook and eat, cook to keep, salt, smoke or cook a recipe
