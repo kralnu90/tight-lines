@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.16.0** · experimental build
+**Current version: 0.17.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -24,6 +24,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Fish journal:** a page per species with your records and every condition you've caught it in.
 - **Traps and pots** from fishing level 20: crayfish, brown crab and lobster.
 - **Survival:** food, warmth, energy, health and water, on a live day and night clock with 10-day seasons.
+- **Injuries:** open wounds, sprained ankles, cracked ribs and being chilled to the bone. They last until they heal, and some need treating. Bandages help, and a room at the tavern dresses everything.
 - **Camp:** light a fire, cook your catch, boil river water, rest, or sleep until dawn. Camping never saves.
 - **The Willowmere Arms:** the tavern is the only place to save. A night there restores you and refills your water.
 - **Four difficulty levels:** Easy is pure fishing with no needs to manage, Medium is the game as designed, Hard toughens the fish and the wild, and Extreme is brutal and always hardcore. Harder levels turn up more rare fish and give more XP.
@@ -67,13 +68,21 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | --- | --- | --- |
 | 0 · Fight prototype | Casting, bites, the fight, landing | Done |
 | 1 · Fishing core | Fish, spots, techniques, gear grades, weather, journal, level unlocks, traps and pots | Done (tilt controls come with the app) |
-| 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules | First pass done |
+| 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules, injuries, tuning | Done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | First pass done |
 | 4 · Towns and trade | Fish Bucks, selling and the tackle shop (done); region map, more towns, request boards, reputation | In progress |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.17.0 · Injuries and survival tuning (14 Nov 2026)
+- Injuries that last: open wounds, sprained ankles, cracked ribs, and being chilled to the bone after hours at zero warmth
+- Wounds stop your health coming back until cleaned on the fire or bandaged, and can get infected if left 12 hours
+- Sprains slow travel and tire you, cracked ribs slow your reeling and healing
+- Bandages in the new Camp tab at the tackle shop (you start with one). A room at the Arms dresses everything and halves healing time
+- Animal encounters, falls and tracking mishaps now cause injuries
+- Survival retuned: food drains about 20% slower, energy drains faster and every fight costs a little, health comes back faster when you're fed, warm and watered, rain is slightly less cold
 
 ### 0.16.0 · Fishing core finished (14 Nov 2026)
 - A less predictable float: dips, trembles, bobs, slides and false bites in random order and timing, and takes that plunge, slide away or lift and lie flat
