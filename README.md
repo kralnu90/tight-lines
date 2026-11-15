@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.29.0** · experimental build
+**Current version: 0.30.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -23,7 +23,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Weather:** clear, overcast, rain, wind and fog. Wind drifts your float and gusts during the fight; fog brings out the predators.
 - **Fish journal:** a page per species with your records and every condition you've caught it in.
 - **Traps and pots** from fishing level 20: crayfish, brown crab and lobster.
-- **Painted river:** Willowmere River is a painted scene that runs through a full day as the clock turns: bright day, golden sunset, a moonlit night with fireflies, and sunrise. Turn it off in Settings for the drawn version.
+- **Painted scenes:** Willowmere River and Willowmere Lake are painted scenes that run through a full day as the clock turns: bright day, golden sunset, a moonlit night with fireflies, and sunrise. Turn them off in Settings for the drawn versions.
 - **Survival:** food, warmth, energy, health and water, on a live day and night clock with 10-day seasons.
 - **Injuries:** open wounds, sprained ankles, cracked ribs and being chilled to the bone. They last until they heal, and some need treating. Bandages help, and a room at the tavern dresses everything.
 - **Camp:** light a fire, cook your catch, boil river water, rest, or sleep until dawn. Camping never saves.
@@ -89,6 +89,10 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 Open the link on your Android phone and install it. The first time, Android asks you to allow installs from your browser or file manager. The app loads the live game, so updates arrive without reinstalling. Saves in the app are separate from saves in your browser.
 
 ## Changelog
+
+### 0.30.0 · The painted lake (15 Nov 2026)
+- Willowmere Lake is now a painted scene too, with reeds and lily pads on the right where the weed beds are, running from day through sunset and a moonlit, misty night with fireflies to sunrise
+- Settings, Painted scenes: turns the painted river and lake on or off together
 
 ### 0.29.0 · The painted river (15 Nov 2026)
 - Willowmere River is now a painted scene that follows the clock through a whole day: daylight, a golden sunset, dusk, a moonlit night with fireflies, and sunrise
