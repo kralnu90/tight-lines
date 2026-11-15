@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.27.0** · experimental build
+**Current version: 0.28.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -16,7 +16,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 - **Real fishing fights:** cast with a timing swing, wait out the nibbles, strike when the float goes under, then play the fish. Hold to reel, move the rod with or against its runs, and watch the line tension. Too much and it snaps; too little and the hook slips.
 - **Three fishing spots and four towns:** Willowmere River, Willowmere Lake and the sea at Saltmarsh Point, plus the riverside village of Willowmere, the lakeside village of Thornmere, the seaside village of Saltwick and the city of Kingsbridge. A region map shows them all with travel times.
-- **27 fish**, each fighting its own way: 7 river, 9 lake, 7 coast and 4 boat species, from roach and mackerel to pike, carp, conger eel, tope and ling.
+- **34 fish**, each fighting its own way: 7 river, 9 lake, 7 coast, 4 boat and 7 deep-sea species, from roach and mackerel to pike, conger eel, tope, halibut and bluefin tuna.
 - **Four fishing methods** that play differently: float, ledger, spinning and fly.
 - **Conditions matter:** season, time of day, weather, method, bait and line weight all change what bites. The odds are shown on screen.
 - **Unpredictable bites:** the float dips, shakes, bobs and slides, some fish fake it, and takes can plunge, slide away or lift the float flat. Fly fish splash at your fly and miss.
@@ -44,6 +44,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Storage:** your keep net holds 12 slots and bigger fish take more (salted and smoked fish pack smaller). A big keep net adds 8. Rent a locker at any inn for 10 FB a season, but what you leave there stays in that town.
 - **Vehicles and travel:** every trip is a short drive scene that matches the time, weather and where you're going (tap to skip, or turn it off in Settings). Your old estate car's boot adds 6 slots. Kingsbridge Motors sells a cool box (fresh fish keep half as long again), a fishing van (16 slots) and a campervan with a bed, heater, stove and fridge: sleep warm and safe wherever you park.
 - **Boats:** sail from Saltwick harbour. Hire Jory's boat from fishing level 25 for six hours in Saltwick Bay (thornback ray, black bream, and more tope, cod and conger), and from level 30 out to the Marguerite wreck (ling, ballan wrasse, conger). Buy your own cobble from level 35.
+- **Deep sea:** from fishing level 40, Jory (or your own offshore cruiser) takes you out to the Kettle Deeps. Fights there have a depth meter: pump and wind to haul fish up from 40 to 70 m while they dive back down. Haddock, hake, monkfish and turbot, then big game from level 45: blue shark, Atlantic halibut and bluefin tuna.
 - **Online leaderboard:** see the heaviest fish of every species landed by other players. Your angler's best catch of each species posts automatically when you're online, and waits on your phone until you are. No account or code needed, and you can turn sharing off in Settings.
 
 ## How to play
@@ -77,7 +78,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules, injuries, tuning | Done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | Done |
 | 4 · Towns and trade | Fish Bucks, shops, region map, four towns, request boards, reputation, news and gossip, festivals, seasonal prices, storage | Done |
-| 5 · Progression | Car, van and campervan, boats, bay and wreck fishing (done); deep sea, home base, legendary hunts, pub games | In progress |
+| 5 · Progression | Car, van and campervan, boats, bay and wreck fishing, deep sea (done); home base, legendary hunts, pub games | In progress |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Android app (test build)
@@ -87,6 +88,15 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 Open the link on your Android phone and install it. The first time, Android asks you to allow installs from your browser or file manager. The app loads the live game, so updates arrive without reinstalling. Saves in the app are separate from saves in your browser.
 
 ## Changelog
+
+### 0.28.0 · The deep sea (15 Nov 2026)
+- The Kettle Deeps (fishing level 40): an hour and a half out from Saltwick on Jory's boat
+- Pump and wind: deep-sea fights have a depth meter. Tap Pump to lift the fish, then hold Reel as the rod drops back. Just cranking barely moves it, and it dives back down if you let it
+- Seven deep-sea fish: haddock, hake (soft mouth, so go easy), monkfish (wakes up at the surface), turbot, and from fishing level 45 the big game: blue shark, Atlantic halibut and bluefin tuna
+- Ling turn up in the deeps as well as the wreck
+- Offshore cruiser (fishing level 40, 750 FB): reaches the deeps, 15 FB fuel a trip, and a cabin to sleep in
+- Part exchange your cobble for half its price
+- Keyboard: P or the up arrow to pump
 
 ### 0.27.0 · Boats (15 Nov 2026)
 - Saltwick harbour: hire Jory's boat, or buy your own

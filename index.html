@@ -226,6 +226,7 @@ const SPOTS={
   coast:{name:"Saltmarsh Point",water:"Coast",travel:{tavern:120,river:120,lake:150,saltwick:30},snagSide:-1,snagName:"rocks",snagLose:"Cut off on the rocks",flow:0,salt:true},
   // boat only, from Saltwick harbour
   bay:{name:"Saltwick Bay",water:"Coast",boat:true,travel:{saltwick:30},snagSide:1,snagName:"the anchor rope",snagLose:"Wrapped round the anchor rope",flow:0,salt:true},
+  deep:{name:"The Kettle Deeps",water:"Coast",boat:true,deep:true,only:["haddock","hake","ling","monkfish","turbot","cod","blueshark","halibut","tuna"],travel:{saltwick:90},snagSide:-1,snagName:"the bottom",snagLose:"It buried itself on the bottom",flow:0,salt:true},
   wreck:{name:"The Marguerite wreck",water:"Coast",boat:true,only:["wrasse","ling","conger","pollock","cod","blackbream","bass"],travel:{saltwick:60},snagSide:-1,snagName:"the wreck",snagLose:"Lost in the wreck",flow:0,salt:true}
 };
 const METHODS={
@@ -268,7 +269,15 @@ const FISH=[
   F_({id:"ray",name:"Thornback ray",water:"Coast",rarity:"Common",seasons:["Spring","Summer","Autumn"],times:["Dusk","Night"],methods:["Ledger"],baits:["Squid","Peeler crab","Deadbait"],min:3,max:15,lenK:26,pull:0.85,stam:1.7,speed:0.5,switchy:0.2,sluggish:true,stubborn:true,strikeWin:1.3,nibbles:[1,3],spots:["bay"],fights:"Clamps flat to the seabed like a doormat"}),
   F_({id:"blackbream",name:"Black bream",water:"Coast",rarity:"Uncommon",seasons:["Spring","Summer"],times:["Day"],methods:["Ledger","Float"],baits:["Ragworm","Squid"],min:1,max:4,lenK:30,pull:0.8,stam:1.2,speed:1.3,switchy:0.8,shaky:true,strikeWin:0.7,nibbles:[1,3],spots:["bay","wreck"],fights:"Fast, jagging runs and a lot of nerve"}),
   F_({id:"wrasse",name:"Ballan wrasse",water:"Coast",rarity:"Common",seasons:ALL,times:["Day"],methods:["Float","Ledger"],baits:["Ragworm","Peeler crab"],min:1,max:6,lenK:30,pull:0.85,stam:1.3,speed:1.1,dash:true,strikeWin:0.9,nibbles:[1,2],spots:["wreck"],fights:"Bolts straight back into the kelp"}),
-  F_({id:"ling",name:"Ling",water:"Coast",rarity:"Uncommon",seasons:ALL,times:["Day","Dusk"],methods:["Ledger"],baits:["Deadbait","Squid"],min:10,max:40,lenK:50,pull:1.05,stam:2.4,speed:0.8,switchy:0.5,roll:true,dash:true,eelShape:true,strikeWin:1.2,nibbles:[0,2],spots:["wreck"],fights:"Twists like an eel and tries to get back inside the wreck"}),
+  F_({id:"ling",name:"Ling",water:"Coast",rarity:"Uncommon",seasons:ALL,times:["Day","Dusk"],methods:["Ledger"],baits:["Deadbait","Squid"],min:10,max:40,lenK:50,pull:1.05,stam:2.4,speed:0.8,switchy:0.5,roll:true,dash:true,eelShape:true,strikeWin:1.2,nibbles:[0,2],spots:["wreck","deep"],fights:"Twists like an eel and tries to get back inside the wreck"}),
+  // Deep sea: boat only, with a depth meter. Big game (big:true) needs fishing level 45.
+  F_({id:"haddock",name:"Haddock",water:"Coast",rarity:"Common",seasons:ALL,times:["Day"],methods:["Ledger"],baits:["Squid","Ragworm"],min:2,max:6,lenK:31,pull:0.65,stam:1.0,speed:0.9,strikeWin:0.8,nibbles:[1,3],spots:["deep"],fights:"Quick taps, then light and steady. The deep-sea starter"}),
+  F_({id:"hake",name:"Hake",water:"Coast",rarity:"Common",seasons:["Autumn","Winter"],times:["Dusk","Night"],methods:["Ledger"],baits:["Deadbait","Squid"],min:3,max:15,lenK:33,pull:0.8,stam:1.4,shaky:true,soft:true,strikeWin:0.9,nibbles:[1,2],spots:["deep"],fights:"Head shakes and a soft mouth: crank too hard and the hook tears out"}),
+  F_({id:"monkfish",name:"Monkfish",water:"Coast",rarity:"Uncommon",seasons:["Spring","Summer"],times:["Day","Dusk"],methods:["Ledger"],baits:["Deadbait"],min:10,max:50,lenK:27,pull:0.9,stam:2.0,speed:0.5,sluggish:true,surface:true,strikeWin:1.4,nibbles:[0,1],spots:["deep"],fights:"Dead weight all the way up, then a sudden surge at the surface"}),
+  F_({id:"turbot",name:"Turbot",water:"Coast",rarity:"Rare",seasons:["Summer"],times:["Day"],methods:["Ledger"],baits:["Deadbait","Squid"],min:5,max:25,lenK:25,pull:0.95,stam:2.2,speed:0.6,twist:true,stubborn:true,strikeWin:1.1,nibbles:[0,2],spots:["deep"],fights:"Planes its flat body against the tide"}),
+  F_({id:"blueshark",name:"Blue shark",water:"Coast",rarity:"Rare",seasons:["Summer"],times:["Day","Dusk"],methods:["Ledger"],baits:["Deadbait"],min:40,max:150,lenK:36,pull:1.15,stam:3.0,speed:1.5,longRuns:true,roll:true,big:true,strikeWin:1.2,nibbles:[0,1],spots:["deep"],fights:"Long, fast runs and rolls. Chum brings them in"}),
+  F_({id:"halibut",name:"Atlantic halibut",water:"Coast",rarity:"Very rare",seasons:["Spring"],times:["Day"],methods:["Ledger"],baits:["Deadbait"],min:50,max:300,lenK:28,pull:1.25,stam:3.6,speed:0.7,longRuns:true,stubborn:true,big:true,strikeWin:1.2,nibbles:[0,1],spots:["deep"],fights:"Huge power, and run after run back to the bottom"}),
+  F_({id:"tuna",name:"Bluefin tuna",water:"Coast",rarity:"Very rare",seasons:["Autumn"],times:["Dawn","Day"],methods:["Spinning","Ledger"],baits:["Big lure","Deadbait"],min:100,max:500,lenK:30,pull:1.3,stam:4.0,speed:1.6,longRuns:true,big:true,strikeWin:0.9,nibbles:[0,1],spots:["deep"],fights:"Deep dives and the longest fight in the sea"}),
   F_({id:"lobster",name:"European lobster",water:"Coast",rarity:"Rare",seasons:ALL,times:["Night"],methods:["Pot"],baits:["Pot"],min:1.5,max:8,lenK:22,pull:0.3,stam:0.5,fights:"Tail-flips backwards like a bolt"})
 ];
 const LINES={
@@ -311,8 +320,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.27.0";
+const VERSION="0.28.0";
 const CHANGELOG=[
+  {v:"0.28.0",date:"15 Nov 2026",title:"The deep sea",items:["The Kettle Deeps (fishing level 40): an hour and a half out from Saltwick on Jory's boat", "Pump and wind: deep-sea fights have a depth meter. Tap Pump to lift the fish, then hold Reel as the rod drops back. Just cranking barely moves it, and it dives back down if you let it", "Seven deep-sea fish: haddock, hake (soft mouth, so go easy), monkfish (wakes up at the surface), turbot, and from fishing level 45 the big game: blue shark, Atlantic halibut and bluefin tuna", "Ling turn up in the deeps as well as the wreck", "Offshore cruiser (fishing level 40, 750 FB): reaches the deeps, 15 FB fuel a trip, and a cabin to sleep in", "Part exchange your cobble for half its price", "Keyboard: P or the up arrow to pump"]},
   {v:"0.27.0",date:"15 Nov 2026",title:"Boats",items:["Saltwick harbour: hire Jory's boat, or buy your own", "Saltwick Bay (fishing level 25): open water with more tope, cod and conger than the shore, plus two new fish: thornback ray and black bream", "The Marguerite wreck (fishing level 30): ling and ballan wrasse, two more new fish, plus conger, pollock and cod. Hooked fish dive for the wreck", "Hired trips give you 6 hours of fishing, then Jory brings you back", "Your own cobble (fishing level 35, 320 FB): no time limit, 5 FB fuel a trip", "At sea there's no fire or fresh water. The Boat menu lets you rest, eat, chum and head back", "You fish from the boat itself, and the trip out has its own sea scene", "The testing switch in Settings skips the boat level checks too"]},
   {v:"0.26.1",date:"15 Nov 2026",title:"Travel scene fix",items:["Fixed: the travel scene skipped itself straight away when you tapped a travel button, so it only showed some of the time. It now plays on every trip, on foot or by van"]},
   {v:"0.26.0",date:"15 Nov 2026",title:"The campervan and the open road",items:["Travel scenes: a short drive between places, with the clock ticking on, the sky matching the time of day, rain, fog or wind, the sea or the city skyline on the way, and headlights at night. Tap to skip, or turn them off in Settings", "Your old estate car comes with a boot: 6 more slots of storage", "Kingsbridge Motors in the city: a cool box (fresh fish keep half as long again), the fishing van (16 slots) and the campervan", "The campervan: sleep warm and safe anywhere you park, with far fewer night-time surprises, rest in the warm, and light the gas stove in 5 minutes to cook and boil water. Its fridge keeps fresh fish half as long again", "Part exchange: your old vehicle is worth half what it cost", "Your vehicle shows in the Kit screen"]},
@@ -377,7 +387,7 @@ function fillLines(){const sel=$("#selLine"),cur=sel.value||(run&&run.equip.line
   const owned=Object.keys(LINES).filter(k=>!run||run.inv.lines[k]);
   sel.innerHTML=owned.map(k=>`<option value="${k}">${LINES[k].short}</option>`).join("");sel.value=owned.includes(cur)?cur:owned[0];if(run)run.equip.line=sel.value;}
 // which fish live at this spot: boat spots can list their own, and some fish only live at certain spots
-function fishHere(f){const S=spot(),k=spotKey();if(f.methods.includes("Pot"))return false;if(S.only)return S.only.includes(f.id);return f.water===S.water&&(!f.spots||f.spots.includes(k));}
+function fishHere(f){const S=spot(),k=spotKey();if(f.methods.includes("Pot"))return false;if(f.big&&!lvOk(45))return false;if(S.only)return S.only.includes(f.id);return f.water===S.water&&(!f.spots||f.spots.includes(k));}
 const BOAT_BOOST={tope:1.8,cod:1.6,conger:1.5,bass:1.3,pollock:1.4};
 function biteWeights(c,q){return FISH.filter(fishHere).map(f=>{let w=RARITY[f.rarity];if(spot().boat&&BOAT_BOOST[f.id])w*=BOAT_BOOST[f.id];
   w*=f.seasons.includes(c.season)?2:0.1;
@@ -490,10 +500,12 @@ function panelFight(){
   $("#panel").innerHTML=`
   <div class="meter"><span>Tension</span><div class="bar tension"><div class="needle" id="mT"></div></div><span id="mTv">0%</span></div>
   <div class="meter"><span>Fish</span><div class="bar"><div class="fill" id="mS"></div></div><span id="mSv">100%</span></div>
-  <div class="meter"><span>Line out</span><div class="bar"><div class="fill" id="mD" style="background:var(--muted)"></div></div><span id="mDv">0 m</span></div>
+  <div class="meter"><span>${G.fish&&G.fish.deep?"Depth":"Line out"}</span><div class="bar"><div class="fill" id="mD" style="background:var(--muted)"></div></div><span id="mDv">0 m</span></div>
   <div class="controls"><button class="big ghost" id="btnCut" type="button" aria-label="Cut the line">✂</button><button class="big net" id="btnNet" type="button">Net</button><button class="big reel" id="btnReel" type="button">Hold to reel</button></div>
-  <div class="hint" style="font-size:12px">Drag left and right on the water to move the rod. Move <b>with</b> a run to ease tension, <b>against</b> it to tire the fish.</div>`;
-  bindReel();
+  ${G.fish&&G.fish.deep?`<div class="controls"><button class="big strike" id="btnPump" type="button" style="flex:1">Pump ↑</button></div>
+  <div class="hint" style="font-size:12px">Pump and wind: tap <b>Pump</b> to lift the fish, then <b>hold Reel</b> as the rod drops back. Cranking without pumping barely moves it. When it dives, let it go.</div>`:
+  `<div class="hint" style="font-size:12px">Drag left and right on the water to move the rod. Move <b>with</b> a run to ease tension, <b>against</b> it to tire the fish.</div>`}`;
+  bindReel();if($("#btnPump"))$("#btnPump").addEventListener("pointerdown",e=>{e.preventDefault();pump();});
   $("#btnNet").addEventListener("pointerdown",e=>{e.preventDefault();tryNet();});
   $("#btnCut").addEventListener("click",()=>{if(G.state==="fight")toReady("Line cut. Recast when ready.");});
 }
@@ -565,6 +577,7 @@ function hook(f){
   G.fish={f,w,s,D:fl.D,X:fl.X,S:1,T:0.3,dir:Math.random()<0.5?-1:1,mode:"rest",modeT:0.4,modePull:0.3,
     pullScale:f.pull*(0.75+0.5*s)*1.1,stamPool:f.stam*(0.75+0.6*s)*diff().stam,snapT:0,slackT:0,tangle:0,air:0,t:0,with:0,ang:0,vx:0,vd:0};
   if(f.dash){Object.assign(G.fish,{mode:"dash",dir:side,modeT:2.1,modePull:1.25});}
+  if(spot().deep)Object.assign(G.fish,{deep:true,D:clamp(rand(35,75),15,reelNow().cap*0.6),X:rand(-0.2,0.2),windT:0,lift:0,pumpCD:0,softT:0});
   G.state="fight";G.float=null;G.R=0;G.reeling=false;panelFight();
   const p=toScreen(fl.D,fl.X);G.ripples.push({x:p.x,y:p.y,r:4,a:1,sc:1});
   toast(f.dash?`Fish on! It's heading for the ${spot().snagName}!`:fl.method==="Spinning"?"Whack! Fish on!":"Fish on!",f.dash,1500);
@@ -574,6 +587,7 @@ function nextMode(F){
   if(f.jump&&Math.random()<f.jump*(0.4+F.S)){F.mode="jump";F.modeT=1.1;F.modePull=0.65;toast("It's jumping! Ease off!",true,1100);return;}
   if(f.twist&&Math.random()<0.35){F.mode="twist";F.modeT=rand(1,1.8);F.modePull=0.8;toast("It's turning side-on in the current!",true,1100);return;}
   if(f.roll&&Math.random()<0.35){F.mode="roll";F.modeT=rand(1.2,2);F.modePull=0.7;toast("It's rolling! Keep the line tight",true,1100);return;}
+  if(f.surface&&F.D<10&&!F.surged){F.surged=1;F.mode="bolt";F.modeT=rand(1.2,2);F.modePull=1.5;F.kick=0.45;toast("It's woken up at the surface!",true,1200);return;}
   if(f.surges&&Math.random()<0.25){F.mode="run";F.modeT=rand(0.5,0.9);F.modePull=1.3;toast("Sudden surge!",true,900);return;}
   if(f.shaky&&Math.random()<0.45){F.mode="shake";F.modeT=rand(0.6,1.2);F.modePull=0.75;return;}
   // bolting straight away from the angler: more likely once it's close and still has fight in it
@@ -595,6 +609,10 @@ function lose(msg){
   <div class="controls"><button class="big strike" id="again" type="button">Cast again</button></div>`);
   $("#again").addEventListener("click",()=>toReady());
 }
+// Deep sea: lift the rod to haul the fish up, then wind on the way down
+function pump(){const F=G.fish;if(G.state!=="fight"||!F||!F.deep||F.pumpCD>0)return;
+  F.lift+=1.2+2.4*(1-F.S)+(F.mode==="rest"?1:0);F.windT=1.1;F.kick=Math.max(F.kick||0,0.32);F.pumpCD=0.55;
+  if(run)run.needs.stam=Math.max(0,run.needs.stam-0.25);}
 function tryNet(){
   const F=G.fish;if(!F||G.state!=="fight")return;
   if(F.D>3.2){toast("Too far out to net.",true,900);return;}
@@ -704,7 +722,10 @@ function update(dt){
   F.T+=(Math.max(0,capped)-F.T)*Math.min(1,dt*9);
   let runOut=P*2.8*(0.4+0.6*F.S)*(F.mode==="rest"?0.2:F.mode==="bolt"?2.2:1)*(f.longRuns&&F.mode==="run"?1.6:1);
   if(f.sluggish)runOut*=0.5;if(f.deep&&F.D<12)runOut*=1.5;
-  const reelIn=G.reeling?RL.speed*(1-Math.min(1,P)*0.55)*(run&&run.needs.stam<20?0.65:1)*(conds().weather==="Rain"?0.93:1)*(hurtBy("ribs")?0.8:1):0; // wet hands slip on the reel; cracked ribs hurt
+  let reelIn=G.reeling?RL.speed*(1-Math.min(1,P)*0.55)*(run&&run.needs.stam<20?0.65:1)*(conds().weather==="Rain"?0.93:1)*(hurtBy("ribs")?0.8:1):0; // wet hands slip on the reel; cracked ribs hurt
+  if(F.deep){reelIn*=F.windT>0?1.5:0.3;F.windT=Math.max(0,F.windT-dt);F.pumpCD=Math.max(0,F.pumpCD-dt);runOut*=1.25;
+    if(F.lift>0){const l=Math.min(F.lift,dt*7);F.lift-=l;F.D=Math.max(0.6,F.D-l);}}
+  if(f.soft){if(F.T>0.8){F.softT=(F.softT||0)+dt;if(F.softT>0.6){lose("Its soft mouth tore. The hook pulled out");return;}}else F.softT=Math.max(0,(F.softT||0)-dt);}
   if(run)run.needs.stam=Math.max(0,run.needs.stam-dt*(G.reeling?0.1:0.05));
   const dragOut=target>dragLim?(target-dragLim)*3:0;
   const prevD=F.D;F.D=clamp(F.D+(runOut*0.5+dragOut-reelIn)*dt,0.6,RL.cap+2);F.vd=(F.D-prevD)/dt;F.vx=lat;
@@ -1042,6 +1063,7 @@ window.addEventListener("keydown",e=>{
     if(G.state==="waiting"&&G.float.method!=="Spinning")strike();
     else{G.reeling=true;const rb=$("#btnReel");if(rb)rb.classList.add("on");}}
   if(k==="ArrowLeft"||k==="a"||k==="A")G.keys.left=true;
+  if((k==="ArrowUp"||k==="p"||k==="P")&&G.state==="fight"){e.preventDefault();pump();}
   if(k==="ArrowRight"||k==="d"||k==="D")G.keys.right=true;
   if((k==="n"||k==="N")&&G.state==="fight")tryNet();
   if(k==="Escape"&&G.state==="ready"&&$("#overlay").hidden)pauseMenu();
@@ -2161,27 +2183,33 @@ function drawVehicle(c,kind,x,y,ph,night){
 // Your own cobble from level 35: no time limit, just fuel for each trip.
 const TRIPS={
   bay:{lvl:25,hire:20,hrs:6,desc:"Open water off the harbour. Tope, rays, black bream and cod come to a boat that never reach the shore."},
-  wreck:{lvl:30,hire:35,hrs:6,desc:"The Marguerite went down in the gales of '38. Ling, conger and wrasse live in her now, and they fight to get back inside."}
+  wreck:{lvl:30,hire:35,hrs:6,desc:"The Marguerite went down in the gales of '38. Ling, conger and wrasse live in her now, and they fight to get back inside."},
+  deep:{lvl:40,hire:60,hrs:6,desc:"Ninety metres of cold water an hour and a half out. Haddock, hake, monkfish and turbot, and from fishing level 45 the big game: blue shark, halibut and bluefin tuna."}
 };
-const BOATS={cobble:{n:"Your cobble",price:320,lvl:35,fuel:5,desc:"A sturdy little clinker boat with an outboard. Go out when you like and stay as long as you like. Fuel is 5 FB a trip."}};
+const BOATS={
+  cobble:{n:"Cobble",price:320,lvl:35,fuel:5,reach:["bay","wreck"],desc:"A sturdy little clinker boat with an outboard. Bay and wreck trips whenever you like, as long as you like. Fuel is 5 FB a trip."},
+  cruiser:{n:"Offshore cruiser",price:750,lvl:40,fuel:15,reach:["bay","wreck","deep"],cabin:true,desc:"A proper sea boat with a wheelhouse and a cabin. Goes out to the deeps, and you can sleep aboard. Fuel is 15 FB a trip."}
+};
 function lvOk(n){return save.settings.unlockAll||level()>=n;}
 function onBoat(){return !!(run&&SPOTS[run.loc]&&SPOTS[run.loc].boat);}
 function harbourScreen(){
   const B=run.bucks,own=run.boat&&BOATS[run.boat];
   const trip=k=>{const T=TRIPS[k],S=SPOTS[k],ok=lvOk(T.lvl);
-    return `<div class="act" style="cursor:default"><span>${S.name}<small>${T.desc}<br>${ok?`${fmtMins(S.travel.saltwick)} out. ${own?"":"Jory gives you "+T.hrs+" hours' fishing, then brings you back."}`:`Needs fishing level ${T.lvl}.`}</small></span>
-      <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${own?`<button class="iconbtn" data-own="${k}" type="button" ${ok&&B>=own.fuel?"":"disabled"}>Your boat · ${own.fuel} FB</button>`:""}<button class="iconbtn" data-hire="${k}" type="button" ${ok&&B>=T.hire?"":"disabled"}>Hire · ${T.hire} FB</button></span></div>`;};
+    return `<div class="act" style="cursor:default"><span>${S.name}<small>${T.desc}<br>${ok?`${fmtMins(S.travel.saltwick)} out. Hired: Jory gives you ${T.hrs} hours' fishing, then brings you back.${own&&!own.reach.includes(k)?` Your ${own.n.toLowerCase()} can't go this far out.`:""}`:`Needs fishing level ${T.lvl}.`}</small></span>
+      <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${own&&own.reach.includes(k)?`<button class="iconbtn" data-own="${k}" type="button" ${ok&&B>=own.fuel?"":"disabled"}>Your boat · ${own.fuel} FB</button>`:""}<button class="iconbtn" data-hire="${k}" type="button" ${ok&&B>=T.hire?"":"disabled"}>Hire · ${T.hire} FB</button></span></div>`;};
   showOverlay(`<span class="tag">Saltwick</span><h2>The harbour</h2>
     <p class="note">Lobster pots stacked on the quay and a row of boats knocking together on the tide. Jory, the skipper, is leaning on his wheelhouse with a flask of tea.</p>
     <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Fishing Lv ${level()}</p>
     <h3>Trips</h3><div class="acts">${Object.keys(TRIPS).map(trip).join("")}</div>
-    <h3>Your own boat</h3><div class="acts"><div class="act" style="cursor:default"><span>${BOATS.cobble.n.replace("Your ","A ")} · ${BOATS.cobble.price} FB<small>${BOATS.cobble.desc}${lvOk(BOATS.cobble.lvl)?"":` Needs fishing level ${BOATS.cobble.lvl}.`}</small></span>${own?"<em>Moored here</em>":`<button class="iconbtn" id="hbBuy" type="button" ${lvOk(BOATS.cobble.lvl)&&B>=BOATS.cobble.price?"":"disabled"}>Buy</button>`}</div></div>
+    <h3>Your own boat</h3><div class="acts">${Object.keys(BOATS).map(k=>{const X=BOATS[k],cost=Math.max(0,X.price-(own?Math.floor(own.price/2):0)),mine=run.boat===k,lower=own&&X.price<own.price;
+      return `<div class="act" style="cursor:default"><span>${X.n} · ${X.price} FB<small>${X.desc}${lvOk(X.lvl)?"":` Needs fishing level ${X.lvl}.`}${own&&!mine&&!lower?`<br>With your ${own.n.toLowerCase()} in part exchange: <b>${cost} FB</b>`:""}</small></span>${mine?"<em>Moored here</em>":lower?"":`<button class="iconbtn" data-buyboat="${k}" type="button" ${lvOk(X.lvl)&&B>=cost?"":"disabled"}>Buy</button>`}</div>`;}).join("")}</div>
     <p class="note">Bring heavy line and sea bait: squid, deadbait, ragworm and peeler crab. There's no fire and no fresh water at sea, so eat and drink before you go.${save.settings.unlockAll&&level()<25?" Testing switch on: levels skipped.":""}</p>
     <div class="controls"><button class="big ghost" id="hbBack" type="button" style="flex:1">Back</button></div>`);
   document.querySelectorAll("[data-hire]").forEach(b=>b.onclick=()=>{const k=b.dataset.hire,T=TRIPS[k];if(run.bucks<T.hire)return;run.bucks-=T.hire;
     run.trip={spot:k,hired:true,until:absMin()+SPOTS[k].travel.saltwick+T.hrs*60};travelTo(k);});
   document.querySelectorAll("[data-own]").forEach(b=>b.onclick=()=>{const k=b.dataset.own;if(run.bucks<own.fuel)return;run.bucks-=own.fuel;run.trip={spot:k,hired:false,until:null};travelTo(k);});
-  if($("#hbBuy"))$("#hbBuy").onclick=()=>{run.bucks-=BOATS.cobble.price;run.boat="cobble";renderHud();toast("She's yours. Jory helps you tie her up.",false,2400);harbourScreen();};
+  document.querySelectorAll("[data-buyboat]").forEach(b=>b.onclick=()=>{const k=b.dataset.buyboat,X=BOATS[k],cost=Math.max(0,X.price-(own?Math.floor(own.price/2):0));if(run.bucks<cost)return;
+    run.bucks-=cost;run.boat=k;renderHud();toast(k==="cruiser"?"The offshore cruiser's yours. Jory whistles.":"She's yours. Jory helps you tie her up.",false,2400);harbourScreen();});
   $("#hbBack").onclick=tavernMenu;}
 function endTrip(){run.trip=null;toast("Jory starts the engine. Time's up, he's taking you back.",false,2600);travelTo("saltwick");}
 function boatMenu(){
@@ -2193,6 +2221,7 @@ function boatMenu(){
     <div class="acts">
       <button class="act" id="bRest" type="button"><span>Rest a while<small>Sit down in the bottom of the boat and get your energy back.</small></span><em>1 hour</em></button>
       ${run.inv.chum>0||(run.chumUntil||0)>absMin()?`<button class="act" id="bChum" type="button" ${run.inv.chum>0?"":"disabled"}><span>Throw in chum (${run.inv.chum})<small>A slick off the stern. Bites come much quicker for 2 hours.</small></span><em>5 min</em></button>`:""}
+      ${!T||!T.hired?(BOATS[run.boat]&&BOATS[run.boat].cabin?`<button class="act" id="bSleep" type="button" ${run.min>=18*60||run.min<5*60?"":"disabled"}><span>Sleep in the cabin<small>${run.min>=18*60||run.min<5*60?"Warm and dry, rocking on the swell.":"Only after dusk."}</small></span><em>to 06:00</em></button>`:""):""}
       <button class="act" id="bBack" type="button"><span>Head back to Saltwick<small>${T&&T.hired?"Ask Jory to call it a day.":"Motor back to the harbour."}</small></span><em>${fmtMins(S.travel.saltwick)}</em></button>
     </div>
     <h3>Keep net (${netLabel()})</h3><div class="acts">${fishRows||'<p class="note">Empty so far.</p>'}</div>
@@ -2200,6 +2229,7 @@ function boatMenu(){
     <div class="controls"><button class="big ghost" id="bClose" type="button" style="flex:1">Back to fishing</button></div>`);
   const act=(m,fn,opt)=>{advance(m,opt);if(fn)fn();renderHud();if(checkDeath())return;boatMenu();};
   $("#bRest").onclick=()=>act(60,null,{rest:true});
+  if($("#bSleep"))$("#bSleep").onclick=()=>{const m=run.min>=18*60?(1440-run.min)+360:360-run.min;act(m,()=>toast("You wake at first light to gulls on the cabin roof.",false,2400),{sleep:true,camper:true});};
   if($("#bChum"))$("#bChum").onclick=()=>act(5,()=>{run.inv.chum--;run.chumUntil=absMin()+120;toast("Chum over the side. The gulls go mad.",false,2000);});
   $("#bBack").onclick=()=>{run.trip=null;travelTo("saltwick");};
   document.querySelectorAll("[data-eat]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.eat,1)[0],raw=(k.form||"raw")==="raw";
@@ -2229,7 +2259,7 @@ function drawSeaHazards(g,pal,X,sk){
     const s=Math.max(0,Math.sin(G.t*1.4));ctx.strokeStyle=`rgba(255,255,255,${0.4+0.4*s})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(bx,by+6,W*0.11,3+s*2,0,0,Math.PI);ctx.stroke();ctx.beginPath();ctx.ellipse(bx+W*0.16,by+6,8,2+s,0,0,Math.PI);ctx.stroke();
     // a green wreck buoy
     const wx=W*0.62,wy=g.waterTop+H*0.12+Math.sin(G.t*1.6)*2;ctx.fillStyle="#2f8a4e";ctx.beginPath();ctx.moveTo(wx-6,wy);ctx.lineTo(wx,wy-16);ctx.lineTo(wx+6,wy);ctx.closePath();ctx.fill();ctx.fillStyle="#e8e2cf";ctx.fillRect(wx-5,wy-6,10,2);}
-  else{ // the bay: a few pot buoys and gulls
+  else if(sk==="bay"){ // the bay: a few pot buoys
     [[0.3,0.1,"#e3593c"],[0.7,0.22,"#f1c75b"],[0.12,0.34,"#e3593c"]].forEach(([fx,fy,col],i)=>{const x=W*fx,y=g.waterTop+H*fy+Math.sin(G.t*1.5+i)*1.5,s=0.6+fy*1.6;
       ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,4*s,Math.PI,0);ctx.fill();ctx.strokeStyle="#333";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y-4*s);ctx.lineTo(x,y-11*s);ctx.stroke();});}
   ctx.strokeStyle="rgba(240,240,235,.8)";ctx.lineWidth=1.5;for(let i=0;i<3;i++){const x=((G.t*18+i*140)%(W+60))-30,y=g.waterTop-H*0.06-i*12+Math.sin(G.t*2+i)*4,f=Math.sin(G.t*6+i)*3;
@@ -2458,7 +2488,7 @@ function tavernMenu(){
       return F?`<b style="color:var(--brass)">${F.n} is on!</b> ${F.desc}`:up?`Posters up: ${up.n} ${festDays(up)===1?"tomorrow":"in "+festDays(up)+" days"}.`:"The paper, the regulars, and what other towns are paying.";})()}</small></span></button>
     <button class="act" id="tReq" type="button"><span>Request board<small>${(()=>{const t=townId(),mine=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length;return `${repName(repOf(t))} here.${mine?` <b style="color:var(--brass)">${mine} ready to hand in.</b>`:" Orders, deliveries and rewards."}`;})()}</small></span></button>
     <button class="act" id="tLock" type="button"><span>Locker<small>${(()=>{const t=townId(),L=locker(t);return L?`${L.items.length} item${L.items.length===1?"":"s"} stored here · ${lockerPaid(t)?"paid to day "+L.until:"rent overdue"}.`:`Rent cellar storage here: ${LOCKER_SLOTS} slots for ${LOCKER_RENT} FB a season.`;})()} Keep net ${netLabel()}.</small></span></button>
-    ${townId()==="saltwick"?`<button class="act" id="tHarbour" type="button"><span>The harbour<small>Hire Jory's boat from fishing level 25, or buy your own from 35. Bay and wreck fishing.</small></span></button>`:""}
+    ${townId()==="saltwick"?`<button class="act" id="tHarbour" type="button"><span>The harbour<small>Hire Jory's boat from fishing level 25, or buy your own from 35. Bay, wreck and deep-sea fishing.</small></span></button>`:""}
     ${T.city?`<button class="act" id="tGarage" type="button"><span>Kingsbridge Motors<small>Vans, campervans and cool boxes. You drive ${{estate:"an old estate car",van:"a fishing van",camper:"a campervan"}[run.car.kind]}.</small></span></button>`:""}
     <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
@@ -2736,7 +2766,7 @@ function howTo(onBack){
   <h3>Motion casting</h3><p>Turn it on in Settings and a Hold to cast button appears. Hold it, swing the phone back over your shoulder, then flick it forward and let go. The faster the flick, the further it goes; let go just as the flick peaks for a clean cast; tilt the phone left or right to aim. Use Practise in Settings to see your power and timing and set full power to suit your wrist. Hold on tight!</p>
   <h3>Tilt</h3><p>Prefer to steer with the phone? Turn on tilt controls in Settings, hold the phone how you like and tap Calibrate. In a fight, tilting left and right moves the rod instead of dragging.</p>
   <h3>The fight</h3><p>Fish fight longer than they used to and recover if you let the line go slack. When one <b>bolts away from you</b>, the line jolts tight: stop reeling and move the rod with it, then get back to work when it slows. Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
-  <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each village wants something different, like rock, paper, scissors: Willowmere (riverside) pays well for lake fish, Thornmere (lakeside) for sea fish and Saltwick (seaside) for river fish. Each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything, 50% more for rare fish and 25% more for dishes. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p><h3>Requests, news and storage</h3><p>Every inn has a request board with new orders every two days. Take on up to three, beat the deadline and get paid, sometimes with a recipe or gear on top. Each town remembers you: good standing means better prices and better orders, and missed deadlines cost you. Other towns' prices are hidden, so read the Kingsbridge Courier or buy a round at the bar to hear what's paying where, when the festivals are on, and where rare fish have been seen. Seasonal fish sell for less in season and more out of it. Your keep net holds 12 slots, and bigger fish take more. Rent a locker at any inn to store fish there, but it stays in that town. Your vehicle's boot adds slots too. Kingsbridge Motors in the city sells cool boxes, a fishing van and a campervan you can sleep in safely anywhere.</p><h3>Boats</h3><p>Boats leave from Saltwick harbour. From fishing level 25 you can hire Jory's boat for six hours in Saltwick Bay, and from 30 out to the Marguerite wreck. From 35 you can buy your own cobble and stay out as long as you like for 5 FB of fuel. There's no fire or fresh water at sea, so eat and drink first, and bring sea bait and strong line.</p>
+  <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each village wants something different, like rock, paper, scissors: Willowmere (riverside) pays well for lake fish, Thornmere (lakeside) for sea fish and Saltwick (seaside) for river fish. Each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything, 50% more for rare fish and 25% more for dishes. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p><h3>Requests, news and storage</h3><p>Every inn has a request board with new orders every two days. Take on up to three, beat the deadline and get paid, sometimes with a recipe or gear on top. Each town remembers you: good standing means better prices and better orders, and missed deadlines cost you. Other towns' prices are hidden, so read the Kingsbridge Courier or buy a round at the bar to hear what's paying where, when the festivals are on, and where rare fish have been seen. Seasonal fish sell for less in season and more out of it. Your keep net holds 12 slots, and bigger fish take more. Rent a locker at any inn to store fish there, but it stays in that town. Your vehicle's boot adds slots too. Kingsbridge Motors in the city sells cool boxes, a fishing van and a campervan you can sleep in safely anywhere.</p><h3>Boats</h3><p>Boats leave from Saltwick harbour. From fishing level 25 you can hire Jory's boat for six hours in Saltwick Bay, and from 30 out to the Marguerite wreck. From 40 Jory goes out to the Kettle Deeps. From 35 you can buy your own cobble, and from 40 an offshore cruiser that reaches the deeps and has a cabin to sleep in. In the deeps, fish are hauled up from the bottom: tap Pump to lift, then hold Reel as the rod drops. Big game (blue shark, halibut, bluefin tuna) bites from fishing level 45. There's no fire or fresh water at sea, so eat and drink first, and bring sea bait and strong line.</p>
   <h3>Reading the float</h3><p>Fish don't all bite the same. The float can dip, shake, bob or slide, and some fish fake it with a dip that nearly goes under and pops back up. Strike on any of those and you'll spook it. Strike when it goes under, slides away and sinks, or lifts and lies flat on the surface: tench and bream often lift the bait instead of pulling it down.</p>
   <h3>Weather</h3><p>Rain, wind and fog change what bites. Wind drifts your float and fly, catches the line in gusts during a fight and chills you; bass love a blow, fly fishing doesn't. Fog brings out the predators, pike and zander especially, and makes the float harder to see. Rain makes the reel slippery.</p>
   <h3>Staying alive</h3><p>Watch food, warmth, energy, health and water. Light fires, cook your catch and boil water at camp. Only a night at the Willowmere Arms saves your game.</p>
@@ -2755,7 +2785,7 @@ function settingsScreen(onBack){
   ${run?`<div class="row"><label for="diffSel">Difficulty</label><select id="diffSel" style="background:var(--panel-2);color:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:6px">${DORDER.slice(0,DORDER.indexOf(run.diff||"medium")+1).map(k=>`<option value="${k}" ${k===(run.diff||"medium")?"selected":""}>${DIFFS[k].name}</option>`).join("")}</select></div>
   <p class="note" id="diffNote">${diff().desc} You can lower the difficulty, but never raise it again.</p>`:""}
   <div class="row"><label for="unl">All methods unlocked (testing)</label><input id="unl" type="checkbox" ${save.settings.unlockAll?"checked":""}></div>
-  <p class="note">Ledgering unlocks at fishing level 5, spinning at 10 and fly fishing at 15. Tick this to try them early.</p>
+  <p class="note">Ledgering unlocks at fishing level 5, spinning at 10 and fly fishing at 15. Tick this to try them early. It also skips the level checks for boats, the deeps and big game.</p>
   <div class="row"><label for="evts">Random events</label><input id="evts" type="checkbox" ${save.settings.events!==false?"checked":""}></div>
   <p class="note">Animal encounters, strangers and finds while you travel, rest and sleep out.</p>
   <div class="row"><label for="trAnim">Travel scenes</label><input id="trAnim" type="checkbox" ${save.settings.travelAnim!==false?"checked":""}></div>
