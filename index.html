@@ -302,8 +302,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.20.0";
+const VERSION="0.21.0";
 const CHANGELOG=[
+  {v:"0.21.0",date:"15 Nov 2026",title:"Motion casting",items:["Cast by flicking the phone: hold Cast, swing back, flick forward and let go (Settings, Motion casting)","Flick speed sets the distance, letting go as the flick peaks makes a clean cast, and tilting left or right aims","Practice screen shows your power, timing and flick speed, and sets full power to suit your wrist","Swipe casting still works alongside it"]},
   {v:"0.20.0",date:"15 Nov 2026",title:"Tilt controls",items:["Tilt the phone left and right to move the rod in a fight (Settings, Tilt controls)","Calibrate to however you hold the phone, and set how far you need to tilt for full rod","Works in the browser and in the Android app"]},
   {v:"0.19.0",date:"15 Nov 2026",title:"Saltwick and the map",items:["A region map: see every town and fishing spot with travel times, and tap to travel","Saltwick, a seaside village half an hour from Saltmarsh Point, with the Lantern and Gull inn, its own tackle shop and Bram the cook","The trade triangle starts working: Saltwick pays 30% more for river fish and less for sea fish, Willowmere pays more for lake fish","Each town has its own market, so flooding one doesn't drop prices in the other","Regional dishes sell for 30% more away from home. Two new Saltwick dishes: crab cakes and soused mackerel with fennel","You can save at either inn and wake there"]},
   {v:"0.18.0",date:"15 Nov 2026",title:"Tougher fights",items:["Fish now bolt straight away from you, more often once they're close and still fresh. The line jolts tight, so stop reeling and give line","Fish tire more slowly and get their breath back if you let the line go slack","Fish pull about 10% harder and take more line on their runs","Fights last about half as long again, and big fish on basic gear will break you off more often"]},
@@ -443,7 +444,10 @@ function panelReady(){
   const odds=ws.map(x=>`<span class="chip">${x.f.name} <em>${Math.round(x.w/tot*100)}%</em></span>`).join("");
   $("#panel").innerHTML=`<div class="hint">${HINTS[c.method]}</div>
   <div class="odds" aria-label="Bite odds for these conditions">${odds}</div>
+  ${save.settings.motionCast?`<div class="controls"><button class="big strike" id="btnMCast" type="button" style="flex:1;touch-action:none">Hold to cast</button></div>`:""}
   <div class="controls"><button class="big ghost" id="btnCamp" type="button" style="flex:1">Camp${run&&run.fire>0?" · fire lit":""}</button><button class="big ghost" id="btnKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="btnKeep" type="button" style="flex:1">Net · ${run?run.keep.length:0}</button></div>`;
+  const mb=$("#btnMCast");if(mb){mb.onpointerdown=e=>{e.preventDefault();try{mb.setPointerCapture(e.pointerId);}catch(_){}mcastBegin();mb.textContent="Swing back… flick… let go";};
+    mb.onpointerup=()=>{mb.textContent="Hold to cast";mcastEnd();};mb.onpointercancel=()=>{G.mcast=null;mb.textContent="Hold to cast";};}
   $("#btnCamp").addEventListener("click",campMenu);$("#btnKeep").addEventListener("click",campMenu);$("#btnKit").addEventListener("click",()=>kitScreen(()=>{hideOverlay();toReady();}));
   oddsKey=condKey();
 }
@@ -801,6 +805,7 @@ function draw(){
   gr=ctx.createRadialGradient(W/2,H*0.55,Math.min(W,H)*0.35,W/2,H*0.55,Math.max(W,H)*0.75);gr.addColorStop(0,"rgba(0,0,0,0)");gr.addColorStop(1,"rgba(0,0,0,.28)");
   ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
   if(G.state==="ready"&&G.aim)drawAim();
+  if(G.state==="ready"&&G.mcast)drawMotionCast();
   if(save.settings.debug)drawDebug();
 }
 function drawHazards(g,pal,X,sk){
@@ -1731,7 +1736,7 @@ function mapScreen(onBack){
 const TILT={now:null,seen:false,want:0};
 function tiltAngle(e){const a=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
   if(a===90)return e.beta;if(a===-90||a===270)return -e.beta;return e.gamma;}
-function onTilt(e){if(e.gamma==null&&e.beta==null)return;TILT.seen=true;TILT.now=tiltAngle(e);
+function onTilt(e){if(e.gamma==null&&e.beta==null)return;TILT.seen=true;TILT.now=tiltAngle(e);TILT.beta=e.beta;
   if(save.settings.tilt&&G.state==="fight"){TILT.want=clamp((TILT.now-(save.settings.tiltZero||0))/(save.settings.tiltRange||25),-1,1);}
   const el=document.getElementById("tiltNow");if(el)el.textContent=`${Math.round(TILT.now-(save.settings.tiltZero||0))}°`;}
 function startTilt(){
@@ -1740,6 +1745,57 @@ function startTilt(){
     return DeviceOrientationEvent.requestPermission().then(r=>{if(r==="granted"){go();return true;}return false;}).catch(()=>false);}
   go();return Promise.resolve(true);}
 if(save.settings.tilt)startTilt();
+
+/* ---------- Motion casting: hold Cast, swing the phone back, flick it forward and let go ---------- */
+// Power: how fast the flick was (peak turning speed vs flickMax, in degrees a second).
+// Timing: letting go just after the fastest point of the flick is a clean cast; much earlier or later is messy.
+// Aim: the phone's left-right tilt when you let go.
+const MC={seen:false,rate:0};
+function onMotion(e){const r=e.rotationRate;if(!r)return;MC.seen=true;
+  MC.rate=Math.hypot(r.alpha||0,r.beta||0,r.gamma||0);
+  const m=G.mcast;if(m){const t=performance.now();if(MC.rate>m.peak){m.peak=MC.rate;m.tPeak=t;}
+    if(TILT.beta!=null){m.swing=Math.max(m.swing,Math.abs(TILT.beta-m.beta0));}}}
+function startMotion(){
+  const go=()=>{window.addEventListener("devicemotion",onMotion);startTilt();};
+  if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
+    return DeviceMotionEvent.requestPermission().then(r=>{if(r==="granted"){go();return true;}return false;}).catch(()=>false);}
+  go();return Promise.resolve(true);}
+if(save.settings.motionCast)startMotion();
+function flickMax(){return save.settings.flickMax||480;}
+function mcastBegin(){G.mcast={t0:performance.now(),peak:0,tPeak:0,swing:0,beta0:TILT.beta};}
+// Work out a motion cast from the flick. Returns {p,q,aim} or {why} if it wasn't a cast.
+function mcastResult(m,tRel){
+  if(!MC.seen)return {why:"No motion sensor reading. Motion casting needs a phone."};
+  if(m.peak<flickMax()*0.18)return {why:"Swing it back, then flick it forward as you let go."};
+  const p=clamp(m.peak/flickMax(),0.12,1),d=(tRel-m.tPeak)/1000;
+  const off=Math.abs(d-0.06),q=off<0.04?1:clamp(1-(off-0.04)/0.45,0.15,0.99);
+  const aim=clamp(((TILT.now||0)-(save.settings.tiltZero||0))/30,-1,1)*0.9;
+  return {p,q,aim,d};}
+function mcastEnd(){const m=G.mcast;G.mcast=null;if(!m||G.state!=="ready")return;
+  const r=mcastResult(m,performance.now());if(r.why){toast(r.why,false,1600);return;}
+  startCast(r.q,r.p,r.aim);}
+function drawMotionCast(){const m=G.mcast,bw=W*0.62,bx=(W-bw)/2,by=H-34,p=clamp(Math.max(m.peak,MC.rate)/flickMax(),0,1);
+  ctx.fillStyle="rgba(14,28,25,.78)";ctx.fillRect(bx-8,by-34,bw+16,50);
+  ctx.fillStyle="#2e5a4e";ctx.fillRect(bx,by,bw,8);ctx.fillStyle="#dcaa48";ctx.fillRect(bx,by,bw*p,8);
+  ctx.font="700 12px 'Alegreya Sans', sans-serif";ctx.fillStyle="#f0e7d0";
+  ctx.fillText(m.peak<flickMax()*0.18?"Swing back… then flick and let go":"Let go now!",bx,by-18);
+  ctx.fillStyle="#a7bbad";ctx.font="700 11px 'Alegreya Sans', sans-serif";ctx.fillText(`POWER ${Math.round(p*100)}%`,bx,by-5);}
+// Practice: flick as often as you like and see power, timing and speed; set full power to suit your wrist
+function flickPractice(onBack){
+  let last=null;
+  const draw=()=>{showOverlay(`<h2>Practise casting</h2><p class="note">Hold the button, swing the phone back over your shoulder, then flick it forward and let go just as the flick peaks. Keep a firm grip.</p>
+    <div class="stats"><div><small>Power</small><b>${last&&!last.why?Math.round(last.p*100)+"%":"—"}</b></div><div><small>Timing</small><b>${last&&!last.why?Math.round(last.q*100)+"%":"—"}</b></div><div><small>Speed</small><b>${last?Math.round(last.peak)+"°/s":"—"}</b></div></div>
+    <p class="note" id="fpMsg">${last?(last.why||(last.q>=1?"Perfect timing!":last.d<0.02?"A touch early. Let go a split second later.":"A touch late. Let go as the flick peaks.")):"Full power is set to a "+Math.round(flickMax())+"°/s flick."}</p>
+    <div class="controls"><button class="big strike" id="fpHold" type="button" style="flex:1;touch-action:none">Hold to cast</button></div>
+    <div class="row"><button class="iconbtn" id="fpSet" type="button" ${last&&last.peak>120?"":"disabled"}>Make that flick full power</button><button class="iconbtn" id="fpReset" type="button">Reset</button></div>
+    <div class="controls"><button class="big ghost" id="fpBack" type="button" style="flex:1">Back</button></div>`);
+    const b=$("#fpHold");
+    b.onpointerdown=e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(_){}mcastBegin();b.textContent="Flick!";};
+    b.onpointerup=()=>{const m=G.mcast;G.mcast=null;if(!m)return;const r=mcastResult(m,performance.now());r.peak=m.peak;last=r;draw();};
+    $("#fpSet").onclick=()=>{save.settings.flickMax=Math.round(last.peak*0.95);persist();toast(`Full power set to ${save.settings.flickMax}°/s`,false,1800);last=null;draw();};
+    $("#fpReset").onclick=()=>{delete save.settings.flickMax;persist();last=null;draw();};
+    $("#fpBack").onclick=onBack;};
+  draw();}
 
 /* ---------- Economy: Fish Bucks, selling, shop, kit ---------- */
 const ROOM=6,MEAL=3;
@@ -2145,6 +2201,7 @@ function howTo(onBack){
     <dt>Ledger</dt><dd>Bait on the bottom, cast further. Strike when the rod tip pulls right round.</dd>
     <dt>Spinning</dt><dd>Hold to retrieve. Fish hit a moving lure, and the hook sets itself.</dd>
     <dt>Fly</dt><dd>Short casts. Strike the instant a fish rises. On the river the fly drifts downstream.</dd></dl>
+  <h3>Motion casting</h3><p>Turn it on in Settings and a Hold to cast button appears. Hold it, swing the phone back over your shoulder, then flick it forward and let go. The faster the flick, the further it goes; let go just as the flick peaks for a clean cast; tilt the phone left or right to aim. Use Practise in Settings to see your power and timing and set full power to suit your wrist. Hold on tight!</p>
   <h3>Tilt</h3><p>Prefer to steer with the phone? Turn on tilt controls in Settings, hold the phone how you like and tap Calibrate. In a fight, tilting left and right moves the rod instead of dragging.</p>
   <h3>The fight</h3><p>Fish fight longer than they used to and recover if you let the line go slack. When one <b>bolts away from you</b>, the line jolts tight: stop reeling and move the rod with it, then get back to work when it slows. Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
   <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each town wants something different: Willowmere, a riverside village, pays well for lake fish; Saltwick, a seaside village, pays well for river fish. Each pays less for its own kind. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p>
@@ -2176,6 +2233,10 @@ function settingsScreen(onBack){
   ${run?`<div class="row"><button class="iconbtn" id="skip1" type="button">Skip 1 hour</button><button class="iconbtn" id="skip6" type="button">Skip 6 hours</button></div>`:""}
   <div class="row"><label for="lbShare">Post my best catches to the online leaderboard</label><input id="lbShare" type="checkbox" ${lb.share?"checked":""}></div>
   <p class="note">Shares your angler name and each species' heaviest fish. No account or code needed.</p>
+  <h3>Motion casting</h3>
+  <div class="row"><label for="mcOn">Cast by flicking the phone</label><input id="mcOn" type="checkbox" ${save.settings.motionCast?"checked":""}></div>
+  <p class="note" id="mcMsg">Hold the Cast button, swing the phone back, flick it forward and let go. A faster flick casts further, letting go as the flick peaks makes a clean cast, and tilting left or right aims. Swiping still works too. Keep a firm grip.</p>
+  <div class="row"><button class="iconbtn" id="mcPrac" type="button">Practise and set your flick</button></div>
   <h3>Tilt controls</h3>
   <div class="row"><label for="tiltOn">Tilt the phone to move the rod</label><input id="tiltOn" type="checkbox" ${save.settings.tilt?"checked":""}></div>
   <p class="note" id="tiltMsg">In a fight, tilt left and right instead of dragging. Hold the phone how you normally would and tap Calibrate first. Right now: <b id="tiltNow">${TILT.seen?Math.round(TILT.now-(save.settings.tiltZero||0))+"°":"no reading yet"}</b></p>
@@ -2183,6 +2244,10 @@ function settingsScreen(onBack){
   <div class="row"><button class="iconbtn" id="tiltCal" type="button">Calibrate: hold level, then tap</button></div>
   <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back</button></div>`);
   $("#sens").oninput=e=>{save.settings.sens=+e.target.value;persist();};
+  $("#mcOn").onchange=e=>{const on=e.target.checked;if(!on){save.settings.motionCast=false;persist();return;}
+    startMotion().then(ok=>{if(!ok){e.target.checked=false;$("#mcMsg").textContent="Your phone didn't allow motion access, so motion casting can't work. Check your browser's motion sensor permission.";return;}
+      save.settings.motionCast=true;persist();setTimeout(()=>{if(!MC.seen)$("#mcMsg").textContent="No motion sensor reading. This device may not have one (most computers don't). Give the phone a little shake and check again.";},1500);});};
+  $("#mcPrac").onclick=()=>{startMotion();flickPractice(()=>settingsScreen(onBack));};
   $("#tiltOn").onchange=e=>{const on=e.target.checked;
     if(!on){save.settings.tilt=false;persist();return;}
     startTilt().then(ok=>{if(!ok){e.target.checked=false;$("#tiltMsg").textContent="Your phone didn't allow motion access, so tilt can't work. Check your browser's motion sensor permission.";return;}

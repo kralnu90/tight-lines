@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.20.0** · experimental build
+**Current version: 0.21.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -45,7 +45,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 | Action | Touch | Keyboard |
 | --- | --- | --- |
-| Cast | Drag down on the water, release at the end of the swing | Mouse drag |
+| Cast | Drag down on the water, release at the end of the swing. Or, with motion casting on: hold Cast, swing the phone back, flick forward and let go | Mouse drag |
 | Aim the cast | Drag sideways while swinging back | Mouse drag |
 | Strike (float, ledger, fly) | Tap **Strike** when the float goes under, the rod tip pulls round or a fish rises | Space |
 | Retrieve (spinning) | Hold **Hold to retrieve** | Space or W |
@@ -82,6 +82,12 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 Open the link on your Android phone and install it. The first time, Android asks you to allow installs from your browser or file manager. The app loads the live game, so updates arrive without reinstalling. Saves in the app are separate from saves in your browser.
 
 ## Changelog
+
+### 0.21.0 · Motion casting (15 Nov 2026)
+- Cast by flicking the phone: hold Cast, swing back, flick forward and let go (Settings, Motion casting)
+- Flick speed sets the distance, letting go as the flick peaks makes a clean cast, and tilting left or right aims
+- Practice screen shows your power, timing and flick speed, and sets full power to suit your wrist
+- Swipe casting still works alongside it
 
 ### 0.20.0 · Tilt controls (15 Nov 2026)
 - Tilt the phone left and right to move the rod in a fight (Settings, Tilt controls)
