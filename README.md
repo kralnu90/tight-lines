@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.25.0** · experimental build
+**Current version: 0.26.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -42,6 +42,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Request boards and reputation:** every inn has a board of orders that changes every two days: fresh catches, specimen fish, top-quality fish, rare fish, salted or smoked fish, recipe dishes and parcels to deliver to other towns. Take on three at a time and beat the deadline for Fish Bucks and sometimes a recipe, gear or rare tackle. Each town remembers you: good standing means better prices, better orders and more in the shop, and missed deadlines cost you.
 - **News, gossip and festivals:** prices in other towns are hidden until you hear about them. Read the Kingsbridge Courier or buy a round at the bar for market news, festival dates and old anglers' tips on where rare fish turn up. Storms, gluts, banquets and weddings shift prices for a few days, and five festivals through the year pay big for certain fish and dishes. Seasonal fish sell for less while everyone's catching them and more out of season.
 - **Storage:** your keep net holds 12 slots and bigger fish take more (salted and smoked fish pack smaller). A big keep net adds 8. Rent a locker at any inn for 10 FB a season, but what you leave there stays in that town.
+- **Vehicles and travel:** every trip is a short drive scene that matches the time, weather and where you're going (tap to skip, or turn it off in Settings). Your old estate car's boot adds 6 slots. Kingsbridge Motors sells a cool box (fresh fish keep half as long again), a fishing van (16 slots) and a campervan with a bed, heater, stove and fridge: sleep warm and safe wherever you park.
 - **Online leaderboard:** see the heaviest fish of every species landed by other players. Your angler's best catch of each species posts automatically when you're online, and waits on your phone until you are. No account or code needed, and you can turn sharing off in Settings.
 
 ## How to play
@@ -75,7 +76,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules, injuries, tuning | Done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | Done |
 | 4 · Towns and trade | Fish Bucks, shops, region map, four towns, request boards, reputation, news and gossip, festivals, seasonal prices, storage | Done |
-| 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
+| 5 · Progression | Car, van and campervan (done); boats, deep sea, home base, legendary hunts, pub games | In progress |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Android app (test build)
@@ -85,6 +86,14 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 Open the link on your Android phone and install it. The first time, Android asks you to allow installs from your browser or file manager. The app loads the live game, so updates arrive without reinstalling. Saves in the app are separate from saves in your browser.
 
 ## Changelog
+
+### 0.26.0 · The campervan and the open road (15 Nov 2026)
+- Travel scenes: a short drive between places, with the clock ticking on, the sky matching the time of day, rain, fog or wind, the sea or the city skyline on the way, and headlights at night. Tap to skip, or turn them off in Settings
+- Your old estate car comes with a boot: 6 more slots of storage
+- Kingsbridge Motors in the city: a cool box (fresh fish keep half as long again), the fishing van (16 slots) and the campervan
+- The campervan: sleep warm and safe anywhere you park, with far fewer night-time surprises, rest in the warm, and light the gas stove in 5 minutes to cook and boil water. Its fridge keeps fresh fish half as long again
+- Part exchange: your old vehicle is worth half what it cost
+- Your vehicle shows in the Kit screen
 
 ### 0.25.0 · Storage, and Phase 4 done (15 Nov 2026)
 - Your keep net now holds 12 slots. Fish under 2 lb take 1, and bigger fish take up to 5

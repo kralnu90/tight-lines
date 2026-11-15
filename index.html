@@ -303,8 +303,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.25.0";
+const VERSION="0.26.0";
 const CHANGELOG=[
+  {v:"0.26.0",date:"15 Nov 2026",title:"The campervan and the open road",items:["Travel scenes: a short drive between places, with the clock ticking on, the sky matching the time of day, rain, fog or wind, the sea or the city skyline on the way, and headlights at night. Tap to skip, or turn them off in Settings", "Your old estate car comes with a boot: 6 more slots of storage", "Kingsbridge Motors in the city: a cool box (fresh fish keep half as long again), the fishing van (16 slots) and the campervan", "The campervan: sleep warm and safe anywhere you park, with far fewer night-time surprises, rest in the warm, and light the gas stove in 5 minutes to cook and boil water. Its fridge keeps fresh fish half as long again", "Part exchange: your old vehicle is worth half what it cost", "Your vehicle shows in the Kit screen"]},
   {v:"0.25.0",date:"15 Nov 2026",title:"Storage, and Phase 4 done",items:["Your keep net now holds 12 slots. Fish under 2 lb take 1, and bigger fish take up to 5", "Salted and smoked fish pack down a slot smaller", "Big keep net in the Camp tab of the tackle shop: 8 more slots for 40 FB", "When the net is full, let the new fish go or make room. It stays in your log either way", "Rent a locker at any inn: 24 slots for 10 FB a season. What you leave there stays in that town, and fresh fish still spoil", "Pots and traps let catches go if there's no room", "Phase 4, towns and trade, is finished"]},
   {v:"0.24.0",date:"15 Nov 2026",title:"News, gossip and festivals",items:["News and gossip at every inn: buy the Kingsbridge Courier (1 FB) or a round at the bar (3 FB)", "Other towns' prices are hidden until you hear about them", "Market news that comes and goes: storms keeping the fleet in, bumper years, banquets, weddings, shortages and gluts, each lasting a few days", "Five festivals, always on the same days each year: the Willowmere Spring Fair, Saltwick Mackerel Festival, Kingsbridge Food Fair, Thornmere Pike and Perch Fair and Kingsbridge Midwinter Market", "Festival posters go up in town five days ahead, and the paper lists everything in the next ten days", "Seasonal prices: fish that only run in some seasons sell for 10% less in season and 30% more out of it", "Old anglers at the bar share tips on where and when rare fish turn up", "The sell screen shows every price change: season, festival, market news and your standing"]},
   {v:"0.23.0",date:"15 Nov 2026",title:"Request boards and reputation",items:["A request board at every inn, with new notices every two days", "Orders for fresh catches, specimen fish, 4-star fish, rare fish, salted or smoked fish and recipe dishes, plus parcels to deliver to other towns", "Take on up to 3 at a time. Beat the deadline for Fish Bucks, and sometimes a recipe, gear, lures or bait", "Every town remembers you: Stranger, Known, Regular, Friend, then Local legend", "Good standing raises the price an inn pays (up to +20%), unlocks harder, better-paid orders and adds gear to the shop", "Missing a deadline or giving up a request costs standing, and a distrusted angler gets paid less", "Your requests show in the Kit screen, and fish wanted for a request are marked when you sell", "The legendary hunt notice is up, sealed until fishing level 30"]},
@@ -1073,6 +1074,7 @@ function advance(mins,opt){
     dw+={Spring:-1,Summer:2,Autumn:-1,Winter:-4}[c.season];
     if(run.loc==="coast")dw-=1;
     if(run.fire>0){dw+=18;run.fire=Math.max(0,run.fire-m);}
+    if(opt.camper)dw=Math.max(dw,6);
     if(dw<0){dw*=NM;if(run.inj&&run.inj.chill)dw*=1.3;if(run.inv.gear.jacket)dw*=0.7;if(opt.sleep&&run.inv.gear.bedroll)dw*=0.55;}
     N.warm=clamp(N.warm+dw*h,0,100);
     for(const id in run.market){run.market[id]=Math.max(0,run.market[id]-m/720);}
@@ -1115,11 +1117,14 @@ function renderHud(){
 /* ---------- Camp ---------- */
 function fishAge(k){return (absMin()-k.caught)/1440;}
 function travelTo(dest){
-  const from=run.loc,mins=travelMins(from,dest);
+  const from=run.loc,mins=travelMins(from,dest),m0=absMin();
+  if(netUsed()>netCap()){toast("Your stuff won't all fit in the vehicle. Make some room first.",true,2400);return netManage(G.state==="tavern"?tavernMenu:campMenu);}
   advance(mins);run.fire=0;renderHud();if(checkDeath())return;
   const arrive=()=>{if(isTown(dest)){goTavern(dest);return;}
     run.loc=dest;run.lastSpot=dest;hideOverlay();toReady(`${SPOTS[dest].name}. Tight lines.`);};
-  if(!maybeEvent("road",0.25,arrive))arrive();
+  const go=()=>{if(!maybeEvent("road",0.25,arrive))arrive();};
+  if(save.settings.travelAnim===false)return go();
+  travelScene(from,dest,m0,mins,go);
 }
 function travelButtons(prefix){
   const here=run.loc,opts=[];
@@ -1139,8 +1144,9 @@ function campMenu(){
   <p class="note">${spot().name} · ${clock(run.min)}, ${conds().time.toLowerCase()} · ${conds().weather.toLowerCase()}. ${fire?`Fire burning for ${Math.ceil(run.fire/60)} more hours.`:"No fire."} Camping never saves your game.</p>
   <div class="acts">
     <button class="act" id="aFire" type="button"><span>${fire?"Add wood":"Light a campfire"}<small>Warms you and lets you cook and boil water. Burns about 3 hours.</small></span><em>30 min</em></button>
-    <button class="act" id="aRest" type="button"><span>Rest a while<small>Get your energy back.</small></span><em>1 hour</em></button>
-    <button class="act" id="aSleep" type="button" ${night?"":"disabled"}><span>Sleep until dawn<small>${night?(fire?"The fire will keep you warm for a while.":"No fire. It will be a cold night."):"Only after dusk."}</small></span><em>to 06:00</em></button>
+    ${camperHere()?`<button class="act" id="aStove" type="button"><span>Light the camper stove<small>Cook and boil water without gathering wood, and the heater warms you. Burns 2 hours.</small></span><em>5 min</em></button>`:""}
+    <button class="act" id="aRest" type="button"><span>Rest a while${camperHere()?" in the camper":""}<small>Get your energy back.${camperHere()?" Warm and dry.":""}</small></span><em>1 hour</em></button>
+    <button class="act" id="aSleep" type="button" ${night?"":"disabled"}><span>${camperHere()?"Sleep in the campervan":"Sleep until dawn"}<small>${night?(camperHere()?"Warm, dry and locked in. Far less can happen to you in the night.":fire?"The fire will keep you warm for a while.":"No fire. It will be a cold night."):"Only after dusk."}</small></span><em>to 06:00</em></button>
     ${salt?`<div class="act" style="cursor:default"><span>No fresh water here<small>Sea water is salt. You can't drink it. ${run.water>0?`You carry ${run.water.toFixed(1)} days of water.`:"Head inland to a river or lake."}</small></span></div>`:`
     <button class="act" id="aBoil" type="button" ${fire?"":"disabled"}><span>Boil ${wname} water and drink<small>${fire?"Safe to drink.":"Needs a fire."} ${run.water>0?`You still carry ${run.water.toFixed(1)} days of water.`:""}</small></span><em>30 min</em></button>
     <button class="act" id="aDrink" type="button"><span>Drink straight from the ${wname}<small>${skLv("forage")>=30?"You know where the clean springs are. Almost always safe.":"Quick, but it could make you ill."}</small></span><em>5 min</em></button>`}
@@ -1162,12 +1168,13 @@ function campMenu(){
   <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back to fishing</button></div>`);
   const act=(mins,fn,opt)=>{advance(mins,opt);if(fn)fn();renderHud();if(checkDeath())return;campMenu();};
   $("#aFire").onclick=()=>act(30,()=>{run.fire=Math.min(run.fire+180,480);toast(fire?"You stack on more wood.":"The fire crackles into life.");});
-  $("#aRest").onclick=()=>{advance(60,{rest:true});renderHud();if(checkDeath())return;if(!maybeEvent("camp",0.12,campMenu))campMenu();};
-  $("#aSleep").onclick=()=>{const m=run.min>=18*60?(1440-run.min)+360:360-run.min,half=Math.floor(m/2);
-    advance(half,{sleep:true});renderHud();if(checkDeath())return;
-    const finish=()=>{advance(m-half,{sleep:true});renderHud();if(checkDeath())return;
+  if($("#aStove"))$("#aStove").onclick=()=>act(5,()=>{run.fire=Math.max(run.fire,120);toast("The stove pops alight and the heater ticks on.");});
+  $("#aRest").onclick=()=>{advance(60,{rest:true,camper:camperHere()});renderHud();if(checkDeath())return;if(!maybeEvent("camp",0.12,campMenu))campMenu();};
+  $("#aSleep").onclick=()=>{const cv=camperHere(),m=run.min>=18*60?(1440-run.min)+360:360-run.min,half=Math.floor(m/2);
+    advance(half,{sleep:true,camper:cv});renderHud();if(checkDeath())return;
+    const finish=()=>{advance(m-half,{sleep:true,camper:cv});renderHud();if(checkDeath())return;
       toast(run.needs.warm<30?"You wake up frozen and stiff.":"You wake at first light, rested.",run.needs.warm<30,2400);campMenu();};
-    if(!maybeEvent("night",0.3,finish))finish();};
+    if(!maybeEvent("night",cv?0.1:0.3,finish))finish();};
   if($("#aBoil"))$("#aBoil").onclick=()=>act(30,()=>{run.needs.thirst=100;toast("Boiled and safe.");});
   if($("#aDrink"))$("#aDrink").onclick=()=>act(5,()=>{run.needs.thirst=100;if(Math.random()<(skLv("forage")>=30?0.05:0.35)){run.ill=Math.max(run.ill,12*60);toast("That water was bad. You feel ill.",true,2400);}else toast("Cold and clear. You got away with it.");});
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
@@ -1533,7 +1540,7 @@ const RECIPES={
   feast:{n:"Angler's truffle feast",lv:40,need:["truffle","mush","herb"],fish:2,fm:2.2,mult:5,eat:{warm:40,stam:40,health:30},feast:1}
 };
 const COOK_PRICE={buy:20,region:60,feast:80};
-function keepDays(k){const f=k.form||"raw";let d=FORMS[f].keep;if((f==="salted"||f==="smoked")&&skLv("cook")>=45)d*=2;return d;}
+function keepDays(k){const f=k.form||"raw";let d=FORMS[f].keep;if(f==="raw"&&cooled())d*=1.5;if((f==="salted"||f==="smoked")&&skLv("cook")>=45)d*=2;return d;}
 function itemAge(k){return (absMin()-(k.made||k.caught))/1440;}
 function isSpoiled(k){return itemAge(k)>keepDays(k);}
 const capF=t=>t.charAt(0).toUpperCase()+t.slice(1);
@@ -1963,7 +1970,7 @@ function newsScreen(msg){
 const NET_SLOTS=12,BIGNET=8,LOCKER_SLOTS=24,LOCKER_RENT=10,LOCKER_DAYS=10;
 function slotsOf(k){const w=k.w,s=w<2?1:w<6?2:w<15?3:w<30?4:5,f=k.form||"raw";return f==="salted"||f==="smoked"?Math.max(1,s-1):s;}
 function used(list){return list.reduce((a,k)=>a+slotsOf(k),0);}
-function netCap(){return NET_SLOTS+(run.inv.gear.bignet?BIGNET:0);}
+function netCap(){return NET_SLOTS+(run.inv.gear.bignet?BIGNET:0)+veh().boot;}
 function netUsed(){return used(run.keep);}
 function netFits(k){return netUsed()+slotsOf(k)<=netCap();}
 function netLabel(){return `${netUsed()}/${netCap()} slots`;}
@@ -1973,7 +1980,7 @@ function itemRow(k,i,btns){const sp=isSpoiled(k);
   return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)} <small style="display:inline">${slotsOf(k)} slot${slotsOf(k)>1?"s":""}</small><small>${sp?"Spoiled":`Good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}${qTag(k)&&!sp?" · "+qTag(k):""}</small></span><span style="display:flex;gap:6px">${btns(k,i)}</span></div>`;}
 // When the net is full: let fish go to make room. back() returns to wherever you came from.
 function netManage(back,need,giveUp){
-  showOverlay(`<span class="tag">Keep net</span><h2>Make room</h2><p class="note">Your keep net holds ${netCap()} slots and you're using ${netUsed()}.${need?` You need ${need} free for this one.`:""} Fish under 2 lb take 1 slot, up to 6 lb 2, up to 15 lb 3, up to 30 lb 4, and anything bigger 5. Salted and smoked fish take one less.${run.inv.gear.bignet?"":" A big keep net from the tackle shop holds 8 more."}</p>
+  showOverlay(`<span class="tag">Keep net</span><h2>Make room</h2><p class="note">Your keep net (${NET_SLOTS+(run.inv.gear.bignet?BIGNET:0)}) and ${veh().n.toLowerCase().replace(/^old /,"")} (${veh().boot}) hold ${netCap()} slots and you're using ${netUsed()}.${need?` You need ${need} free for this one.`:""} Fish under 2 lb take 1 slot, up to 6 lb 2, up to 15 lb 3, up to 30 lb 4, and anything bigger 5. Salted and smoked fish take one less.${run.inv.gear.bignet?"":" A big keep net from the tackle shop holds 8 more."}</p>
     <div class="acts">${run.keep.map((k,i)=>itemRow(k,i,(k,i)=>`<button class="iconbtn" data-rel="${i}" type="button">Let it go</button>`)).join("")||'<p class="note">Empty.</p>'}</div>
     <div class="controls">${giveUp?`<button class="big ghost" id="nmGive" type="button" style="flex:1">Let the new one go</button>`:""}<button class="big" id="nmBack" type="button" style="flex:1">Done</button></div>`);
   if(giveUp)$("#nmGive").onclick=giveUp;
@@ -1995,6 +2002,126 @@ function lockerScreen(){
   document.querySelectorAll("[data-in]").forEach(b=>b.onclick=()=>{L.items.push(run.keep.splice(+b.dataset.in,1)[0]);lockerScreen();});
   document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>{run.keep.push(L.items.splice(+b.dataset.out,1)[0]);lockerScreen();});
   $("#lkBack").onclick=tavernMenu;}
+
+/* ---------- Vehicles: the car, van and campervan ---------- */
+// Travel is by road, so your vehicle comes everywhere with you. Its boot adds slots to your storage.
+// Bought at Kingsbridge Motors in the city; your old vehicle goes in part exchange for half its price.
+const VEH={
+  estate:{n:"Old estate car",price:0,boot:6,col:"#7a2e2a",desc:"Rusty, reliable and smells of bait. The boot holds 6 slots."},
+  van:{n:"Fishing van",price:180,boot:16,col:"#d9d2bd",desc:"Rod racks on the roof and room for everything. The back holds 16 slots."},
+  camper:{n:"Campervan",price:450,boot:12,col:"#d9773b",fridge:true,bed:true,desc:"A bed, a heater, a gas stove and a little fridge. Sleep warm and safe wherever you park, light the stove in minutes, and fresh fish keep half as long again. 12 slots."}
+};
+const COOLBOX=30;
+function veh(){return VEH[(run&&run.car&&run.car.kind)||"estate"];}
+function cooled(){return !!(run&&run.car&&(run.car.cool||veh().fridge));}
+function camperHere(){return !!(run&&veh().bed&&!isTown(run.loc));}
+function garageScreen(){
+  const V=veh(),cur=run.car.kind,B=run.bucks,tradeIn=Math.floor(V.price/2);
+  const rows=Object.keys(VEH).filter(k=>k!==cur).map(k=>{const X=VEH[k],cost=Math.max(0,X.price-tradeIn);
+    return `<div class="act" style="cursor:default"><span>${X.n} · ${X.price} FB<small>${X.desc}${X.price<V.price?" A step down, but it's cash back.":""}<br>${X.price>=V.price?`With your ${V.n.toLowerCase()} in part exchange: <b>${cost} FB</b>`:`They'd give you ${tradeIn-X.price} FB back`}</small></span>
+      <button class="iconbtn" data-veh="${k}" type="button" ${B>=cost?"":"disabled"}>${X.price>=V.price?"Buy":"Swap"}</button></div>`;}).join("");
+  showOverlay(`<span class="tag">Kingsbridge</span><h2>Kingsbridge Motors</h2>
+    <p class="note">A yard behind the market full of vans with ladders on the roof. The mechanic wipes his hands and nods at your ${V.n.toLowerCase()}.</p>
+    <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p>
+    <h3>Your vehicle</h3><div class="acts"><div class="act" style="cursor:default"><span>${V.n}<small>${V.desc}${cooled()?" Fresh fish keep half as long again.":""}</small></span></div>
+    ${V.fridge?"":`<div class="act" style="cursor:default"><span>Cool box · ${COOLBOX} FB<small>Packed with ice in the boot. Fresh fish keep half as long again, about 4.5 days. Moves with you if you change vehicle.</small></span>${run.car.cool?"<em>Fitted</em>":`<button class="iconbtn" id="gCool" type="button" ${B>=COOLBOX?"":"disabled"}>Buy</button>`}</div>`}</div>
+    <h3>For sale</h3><div class="acts">${rows}</div>
+    <p class="note">Part exchange: your current vehicle is worth half what it cost.</p>
+    <div class="controls"><button class="big ghost" id="gBack" type="button" style="flex:1">Back</button></div>`);
+  if($("#gCool"))$("#gCool").onclick=()=>{run.bucks-=COOLBOX;run.car.cool=true;renderHud();toast("Cool box fitted and packed with ice.",false,2000);garageScreen();};
+  document.querySelectorAll("[data-veh]").forEach(b=>b.onclick=()=>{const k=b.dataset.veh,X=VEH[k],cost=X.price-tradeIn;if(run.bucks<cost)return;
+    run.bucks-=cost;run.car.kind=k;renderHud();
+    if(netUsed()>netCap())toast(`Your stuff doesn't all fit! Make some room before you head off.`,true,2600);
+    else toast(k==="camper"?"The keys to your own campervan. The open road's yours.":`You drive out in your ${X.n.toLowerCase()}.`,false,2400);garageScreen();});
+  $("#gBack").onclick=tavernMenu;}
+
+/* ---------- Travel scenes: a short drive between places ---------- */
+// The clock, sky, weather and your vehicle all match the trip. Tap to skip. Settings, Travel scenes, turns it off.
+function travelScene(from,dest,m0,mins,done){
+  const dur=clamp(1800+mins*14,2200,4500),kind=(run.car&&run.car.kind)||"estate",V=VEH[kind];
+  const salt=[from,dest].some(k=>k==="coast"||k==="saltwick"),lake=[from,dest].some(k=>k==="lake"||k==="thornmere"),city=[from,dest].includes("city");
+  showOverlay(`<span class="tag">On the road</span><h2>${placeName(dest)}</h2>
+    <p class="note">${placeName(from)} → ${placeName(dest)} · ${fmtMins(mins)} in your ${V.n.toLowerCase()}</p>
+    <canvas id="trCv" width="680" height="380" style="width:100%;border-radius:10px;display:block;background:#1d3a4a"></canvas>
+    <p class="note" style="text-align:center;opacity:.7">Tap to skip</p>`,"event");
+  const cv=$("#trCv"),c=cv.getContext("2d"),Wc=cv.width,Hc=cv.height,t0=performance.now();let over=false;
+  const wx=run.weather,seed=[...Array(40)].map((_,i)=>({x:Math.random()*Wc,y:Math.random()*Hc*0.45,s:Math.random()}));
+  const finish=()=>{if(over)return;over=true;$("#overlay").onclick=null;done();};
+  $("#overlay").onclick=finish;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const mix=(c1,c2,t)=>{const p=s=>[1,3,5].map(i=>parseInt(s.slice(i,i+2),16));const A=p(c1),B=p(c2);return `rgb(${A.map((v,i)=>Math.round(lerp(v,B[i],t))).join(",")})`;};
+  const skyAt=m=>{const h=(m%1440)/60;
+    if(h<5||h>=21)return ["#0b1630","#1c2b4a",0];
+    if(h<7){const t=(h-5)/2;return [mix("#0b1630","#e89a5c",t),mix("#1c2b4a","#f3c98a",t),t];}
+    if(h<17)return ["#5d9fd0","#bfe0ef",1];
+    if(h<19){const t=(h-17)/2;return [mix("#5d9fd0","#7a4f8a",t),mix("#bfe0ef","#e89a5c",t),1-t*0.5];}
+    const t=(h-19)/2;return [mix("#7a4f8a","#0b1630",t),mix("#e89a5c","#1c2b4a",t),0.5-t*0.5];};
+  const hill=(off,base,amp,f,col,yScale)=>{c.fillStyle=col;c.beginPath();c.moveTo(0,Hc);
+    for(let x=0;x<=Wc;x+=8){const X=x+off;c.lineTo(x,base-amp*(Math.sin(X*f)*0.6+Math.sin(X*f*2.3+1.7)*0.4)*yScale);}c.lineTo(Wc,Hc);c.fill();};
+  function frame(now){if(over)return;const t=clamp((now-t0)/dur,0,1),m=m0+mins*t,ph=(now-t0)/1000;
+    const [top,bot,light]=skyAt(m),night=light<0.35,dark=1-light;
+    const g=c.createLinearGradient(0,0,0,Hc*0.7);g.addColorStop(0,top);g.addColorStop(1,bot);c.fillStyle=g;c.fillRect(0,0,Wc,Hc);
+    if(night){c.fillStyle="#fff";seed.forEach(s=>{c.globalAlpha=0.3+0.6*Math.abs(Math.sin(ph*2+s.s*9));c.fillRect(s.x,s.y,2,2);});c.globalAlpha=1;
+      c.fillStyle="#f3efd8";c.beginPath();c.arc(Wc*0.8,70,20,0,7);c.fill();}
+    else{const h=(m%1440)/60,sx=Wc*clamp((h-6)/12,0,1),sy=200-150*Math.sin(Math.PI*clamp((h-6)/12,0,1));c.fillStyle="#fff3c4";c.beginPath();c.arc(sx,sy,24,0,7);c.fill();}
+    // clouds
+    c.fillStyle=wx==="Clear"?"rgba(255,255,255,.55)":"rgba(200,205,210,.75)";
+    for(let i=0;i<(wx==="Clear"?3:6);i++){const x=((i*170-ph*14)%(Wc+200)+Wc+200)%(Wc+200)-100,y=40+i*13%60;c.beginPath();c.ellipse(x,y,46,14,0,0,7);c.ellipse(x+30,y-8,30,12,0,0,7);c.fill();}
+    const off=ph*60;
+    if(salt){c.fillStyle=mix("#2f6f88","#0e2a38",dark);c.fillRect(0,Hc*0.5,Wc,40);c.fillStyle="rgba(255,255,255,.35)";for(let x=0;x<Wc;x+=40)c.fillRect((x-off*0.3)%Wc+(x<0?Wc:0),Hc*0.5+8+((x/40)%3)*9,16,2);}
+    hill(off*0.25,Hc*0.56,30,0.008,mix("#5c7f6a","#1a2a26",dark),1);
+    if(city){c.fillStyle=mix("#6b6f78","#1b1e26",dark);for(let i=0;i<9;i++){const x=Wc*0.55+i*26,h=40+((i*37)%45);c.fillRect(x,Hc*0.6-h,22,h);if(night){c.fillStyle="#f1c75b";c.fillRect(x+6,Hc*0.6-h+10,4,4);c.fillStyle=mix("#6b6f78","#1b1e26",dark);}}}
+    if(lake){c.fillStyle=mix("#3f7891","#0f2633",dark);c.beginPath();c.ellipse(((Wc*0.3-off*0.45)%(Wc*1.6)+Wc*1.6)%(Wc*1.6)-Wc*0.3,Hc*0.64,120,12,0,0,7);c.fill();}
+    hill(off*0.5,Hc*0.68,22,0.014,mix("#3f6b45","#14231a",dark),1);
+    // trees
+    for(let i=0;i<8;i++){const x=((i*110-off*1.1)%(Wc+120)+Wc+120)%(Wc+120)-60,y=Hc*0.72,s=0.8+((i*7)%5)/10;
+      c.fillStyle=mix("#4a3524","#160f0a",dark);c.fillRect(x-3,y-10*s,6,14*s);c.fillStyle=mix("#2f5a33","#0e1d10",dark);c.beginPath();c.moveTo(x-18*s,y-8*s);c.lineTo(x,y-50*s);c.lineTo(x+18*s,y-8*s);c.fill();}
+    // road
+    const ry=Hc*0.78;c.fillStyle=mix("#9a8e74","#2c2924",dark);c.fillRect(0,ry,Wc,Hc-ry);c.fillStyle=mix("#4b4b4f","#18181b",dark);c.fillRect(0,ry+8,Wc,48);
+    c.fillStyle="#e8dfc4";for(let x=-(off*2.2%60);x<Wc;x+=60)c.fillRect(x,ry+30,30,4);
+    // vehicle
+    const bx=Wc*0.28,by=ry+34+Math.sin(ph*18)*1.2,S=1.4;
+    if(night){const hx=bx+128*S,hg=c.createLinearGradient(hx,0,hx+240,0);hg.addColorStop(0,"rgba(255,240,180,.45)");hg.addColorStop(1,"rgba(255,240,180,0)");c.fillStyle=hg;c.beginPath();c.moveTo(hx,by-34);c.lineTo(hx+240,by-70);c.lineTo(hx+240,by+20);c.lineTo(hx,by-22);c.fill();}
+    c.save();c.translate(bx,by);c.scale(S,S);drawVehicle(c,kind,0,0,ph,night);c.restore();
+    // weather
+    if(wx==="Rain"){c.strokeStyle="rgba(200,220,240,.55)";c.lineWidth=2;c.beginPath();for(let i=0;i<70;i++){const x=(i*53+ph*400)%Wc,y=(i*97+ph*700)%Hc;c.moveTo(x,y);c.lineTo(x-6,y+16);}c.stroke();}
+    if(wx==="Fog"){c.fillStyle="rgba(220,225,228,.45)";c.fillRect(0,0,Wc,Hc);}
+    if(wx==="Windy"){c.strokeStyle="rgba(255,255,255,.4)";c.lineWidth=2;for(let i=0;i<6;i++){const x=(Wc-(ph*500+i*170)%(Wc+200)),y=60+i*45;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+40,y-10,x+90,y);c.stroke();}}
+    // clock and progress
+    c.fillStyle="rgba(14,28,25,.75)";c.fillRect(14,14,150,40);c.fillStyle="#f0e7d0";c.font="700 26px 'Alegreya Sans', sans-serif";c.fillText(clock(m%1440),26,44);
+    c.fillStyle="rgba(14,28,25,.6)";c.fillRect(0,Hc-8,Wc,8);c.fillStyle="#dcaa48";c.fillRect(0,Hc-8,Wc*t,8);
+    if(t>=1){setTimeout(finish,250);return;}
+    requestAnimationFrame(frame);}
+  requestAnimationFrame(frame);}
+function drawVehicle(c,kind,x,y,ph,night){
+  const V=VEH[kind],wheel=(wx,r)=>{c.fillStyle="#1b1b1d";c.beginPath();c.arc(wx,y,r,0,7);c.fill();c.fillStyle="#9a9a9e";c.beginPath();c.arc(wx,y,r*0.45,0,7);c.fill();
+    c.strokeStyle="#3a3a3e";c.lineWidth=2;for(let k=0;k<3;k++){const a=ph*14+k*2.09;c.beginPath();c.moveTo(wx,y);c.lineTo(wx+Math.cos(a)*r*0.45,y+Math.sin(a)*r*0.45);c.stroke();}};
+  const shade=night?0.55:1,dim=col=>{if(!night)return col;const n=parseInt(col.slice(1),16);return `rgb(${[16,8,0].map(s=>Math.round(((n>>s)&255)*shade)).join(",")})`;};
+  const glass=night?"#2a3a48":"#a9d3e6";
+  if(kind==="estate"){
+    c.fillStyle=dim(V.col);c.beginPath();c.roundRect(x,y-34,124,26,8);c.fill();
+    c.beginPath();c.moveTo(x+10,y-34);c.lineTo(x+22,y-56);c.lineTo(x+92,y-56);c.lineTo(x+110,y-34);c.fill();
+    c.fillStyle=glass;c.beginPath();c.moveTo(x+26,y-36);c.lineTo(x+34,y-52);c.lineTo(x+60,y-52);c.lineTo(x+60,y-36);c.fill();
+    c.beginPath();c.moveTo(x+64,y-36);c.lineTo(x+64,y-52);c.lineTo(x+90,y-52);c.lineTo(x+104,y-36);c.fill();
+    c.fillStyle="#3a2a14";c.fillRect(x+30,y-62,60,4); // roof rack
+    wheel(x+28,13);wheel(x+98,13);}
+  else if(kind==="van"){
+    c.fillStyle=dim(V.col);c.beginPath();c.roundRect(x,y-66,128,58,6);c.fill();
+    c.fillStyle=glass;c.beginPath();c.moveTo(x+98,y-62);c.lineTo(x+120,y-62);c.lineTo(x+126,y-40);c.lineTo(x+98,y-40);c.fill();
+    c.fillStyle=dim("#2f5a4e");c.fillRect(x+6,y-36,88,8);
+    c.strokeStyle="#5a4a32";c.lineWidth=3;c.beginPath();c.moveTo(x+4,y-72);c.lineTo(x+120,y-78);c.stroke(); // rods on the rack
+    c.fillStyle="#3a2a14";c.fillRect(x+10,y-72,100,4);
+    wheel(x+28,14);wheel(x+104,14);}
+  else{
+    c.fillStyle=dim(V.col);c.beginPath();c.roundRect(x,y-40,130,32,10);c.fill();
+    c.fillStyle=dim("#f1ead4");c.beginPath();c.roundRect(x,y-72,130,34,12);c.fill();
+    c.fillStyle=dim("#f1ead4");c.beginPath();c.moveTo(x+20,y-72);c.lineTo(x+30,y-86);c.lineTo(x+100,y-86);c.lineTo(x+110,y-72);c.fill(); // pop-top
+    c.fillStyle=glass;[[x+10,24],[x+40,24],[x+70,24]].forEach(([wx,w])=>{c.beginPath();c.roundRect(wx,y-66,w,18,4);c.fill();});
+    c.beginPath();c.moveTo(x+102,y-66);c.lineTo(x+122,y-66);c.lineTo(x+128,y-46);c.lineTo(x+102,y-46);c.fill();
+    if(night){c.fillStyle="rgba(241,199,91,.7)";c.fillRect(x+12,y-64,20,14);}
+    c.fillStyle="#fff";c.beginPath();c.arc(x+65,y-24,6,0,7);c.fill();
+    wheel(x+28,13);wheel(x+104,13);}
+  c.fillStyle=night?"#fff3b0":"#f3e7b5";c.fillRect(x+(kind==="van"?124:kind==="camper"?126:118),y-(kind==="van"?24:kind==="camper"?26:26),6,5);}
 
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
@@ -2077,7 +2204,7 @@ function withKit(r){
   if(!r.larder)r.larder=[];if(!r.snares)r.snares=[];if(!r.pots)r.pots=[];if(r.inv.pots===undefined)r.inv.pots=0;
   if(!r.recipes)r.recipes=["thyme","garlic"];if(r.inv.salt===undefined)r.inv.salt=0;if(r.inv.chum===undefined)r.inv.chum=0;
   if(r.inv.snares===undefined)r.inv.snares=2;if(r.inv.arrows===undefined)r.inv.arrows=0;
-  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};if(!r.mkt)r.mkt=[];if(!r.news)r.news={};if(!r.lockers)r.lockers={};
+  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};if(!r.car)r.car={kind:"estate",cool:false};if(!r.mkt)r.mkt=[];if(!r.news)r.news={};if(!r.lockers)r.lockers={};
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
 function fishPrice(k){
@@ -2179,6 +2306,7 @@ function kitScreen(onBack){
   const lines=Object.keys(run.inv.lines).map(k=>LINES[k].short).join(", ");
   const kit=Object.keys(run.inv.gear).filter(id=>GEAR[id].type==="kit").map(id=>`<div class="act" style="cursor:default"><span>${GEAR[id].name}<small>${GEAR[id].desc}</small></span></div>`).join("");
   showOverlay(`<h2>Kit</h2><p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b></p>
+  <h3>Vehicle</h3><div class="acts"><div class="act" style="cursor:default"><span>${veh().n}${run.car.cool&&!veh().fridge?" with a cool box":""}<small>${veh().desc} Storage ${netLabel()} in all.</small></span></div></div>
   <h3>Tackle</h3><div class="acts">${slot("Rod","rod","rod")}${slot("Fly rod","fly","flyrod")}${slot("Reel","reel","reel")}</div>
   <h3>Bag</h3><p class="note"><b>Bait:</b> ${bait}<br><b>Lures and flies:</b> ${lures}<br><b>Line:</b> ${lines}<br><b>Snares:</b> ${run.inv.snares} in the bag, ${run.snares.length} set · <b>Traps:</b> ${run.inv.pots} in the bag, ${run.pots.length} out · <b>Arrows:</b> ${run.inv.arrows}<br><b>Bandages:</b> ${run.inv.bandages} · <b>Salt:</b> ${run.inv.salt} · <b>Chum:</b> ${run.inv.chum} · <b>Recipes:</b> ${run.recipes.length}</p>
   ${kit?`<h3>Kit</h3><div class="acts">${kit}</div>`:""}
@@ -2208,6 +2336,7 @@ function tavernMenu(){
       return F?`<b style="color:var(--brass)">${F.n} is on!</b> ${F.desc}`:up?`Posters up: ${up.n} ${festDays(up)===1?"tomorrow":"in "+festDays(up)+" days"}.`:"The paper, the regulars, and what other towns are paying.";})()}</small></span></button>
     <button class="act" id="tReq" type="button"><span>Request board<small>${(()=>{const t=townId(),mine=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length;return `${repName(repOf(t))} here.${mine?` <b style="color:var(--brass)">${mine} ready to hand in.</b>`:" Orders, deliveries and rewards."}`;})()}</small></span></button>
     <button class="act" id="tLock" type="button"><span>Locker<small>${(()=>{const t=townId(),L=locker(t);return L?`${L.items.length} item${L.items.length===1?"":"s"} stored here · ${lockerPaid(t)?"paid to day "+L.until:"rent overdue"}.`:`Rent cellar storage here: ${LOCKER_SLOTS} slots for ${LOCKER_RENT} FB a season.`;})()} Keep net ${netLabel()}.</small></span></button>
+    ${T.city?`<button class="act" id="tGarage" type="button"><span>Kingsbridge Motors<small>Vans, campervans and cool boxes. You drive ${{estate:"an old estate car",van:"a fishing van",camper:"a campervan"}[run.car.kind]}.</small></span></button>`:""}
     <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
   </div>
@@ -2221,7 +2350,7 @@ function tavernMenu(){
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
-  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tLock").onclick=lockerScreen;$("#tNews").onclick=()=>newsScreen();$("#tShop").onclick=()=>shopScreen("bait");
+  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tLock").onclick=lockerScreen;if($("#tGarage"))$("#tGarage").onclick=garageScreen;$("#tNews").onclick=()=>newsScreen();$("#tShop").onclick=()=>shopScreen("bait");
   $("#tBoard").onclick=()=>memorialView(tavernMenu);
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?tavernMenu:campMenu));
@@ -2484,7 +2613,7 @@ function howTo(onBack){
   <h3>Motion casting</h3><p>Turn it on in Settings and a Hold to cast button appears. Hold it, swing the phone back over your shoulder, then flick it forward and let go. The faster the flick, the further it goes; let go just as the flick peaks for a clean cast; tilt the phone left or right to aim. Use Practise in Settings to see your power and timing and set full power to suit your wrist. Hold on tight!</p>
   <h3>Tilt</h3><p>Prefer to steer with the phone? Turn on tilt controls in Settings, hold the phone how you like and tap Calibrate. In a fight, tilting left and right moves the rod instead of dragging.</p>
   <h3>The fight</h3><p>Fish fight longer than they used to and recover if you let the line go slack. When one <b>bolts away from you</b>, the line jolts tight: stop reeling and move the rod with it, then get back to work when it slows. Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
-  <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each village wants something different, like rock, paper, scissors: Willowmere (riverside) pays well for lake fish, Thornmere (lakeside) for sea fish and Saltwick (seaside) for river fish. Each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything, 50% more for rare fish and 25% more for dishes. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p><h3>Requests, news and storage</h3><p>Every inn has a request board with new orders every two days. Take on up to three, beat the deadline and get paid, sometimes with a recipe or gear on top. Each town remembers you: good standing means better prices and better orders, and missed deadlines cost you. Other towns' prices are hidden, so read the Kingsbridge Courier or buy a round at the bar to hear what's paying where, when the festivals are on, and where rare fish have been seen. Seasonal fish sell for less in season and more out of it. Your keep net holds 12 slots, and bigger fish take more. Rent a locker at any inn to store fish there, but it stays in that town.</p>
+  <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each village wants something different, like rock, paper, scissors: Willowmere (riverside) pays well for lake fish, Thornmere (lakeside) for sea fish and Saltwick (seaside) for river fish. Each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything, 50% more for rare fish and 25% more for dishes. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p><h3>Requests, news and storage</h3><p>Every inn has a request board with new orders every two days. Take on up to three, beat the deadline and get paid, sometimes with a recipe or gear on top. Each town remembers you: good standing means better prices and better orders, and missed deadlines cost you. Other towns' prices are hidden, so read the Kingsbridge Courier or buy a round at the bar to hear what's paying where, when the festivals are on, and where rare fish have been seen. Seasonal fish sell for less in season and more out of it. Your keep net holds 12 slots, and bigger fish take more. Rent a locker at any inn to store fish there, but it stays in that town. Your vehicle's boot adds slots too. Kingsbridge Motors in the city sells cool boxes, a fishing van and a campervan you can sleep in safely anywhere.</p>
   <h3>Reading the float</h3><p>Fish don't all bite the same. The float can dip, shake, bob or slide, and some fish fake it with a dip that nearly goes under and pops back up. Strike on any of those and you'll spook it. Strike when it goes under, slides away and sinks, or lifts and lies flat on the surface: tench and bream often lift the bait instead of pulling it down.</p>
   <h3>Weather</h3><p>Rain, wind and fog change what bites. Wind drifts your float and fly, catches the line in gusts during a fight and chills you; bass love a blow, fly fishing doesn't. Fog brings out the predators, pike and zander especially, and makes the float harder to see. Rain makes the reel slippery.</p>
   <h3>Staying alive</h3><p>Watch food, warmth, energy, health and water. Light fires, cook your catch and boil water at camp. Only a night at the Willowmere Arms saves your game.</p>
@@ -2506,6 +2635,8 @@ function settingsScreen(onBack){
   <p class="note">Ledgering unlocks at fishing level 5, spinning at 10 and fly fishing at 15. Tick this to try them early.</p>
   <div class="row"><label for="evts">Random events</label><input id="evts" type="checkbox" ${save.settings.events!==false?"checked":""}></div>
   <p class="note">Animal encounters, strangers and finds while you travel, rest and sleep out.</p>
+  <div class="row"><label for="trAnim">Travel scenes</label><input id="trAnim" type="checkbox" ${save.settings.travelAnim!==false?"checked":""}></div>
+  <p class="note">A short drive between places. Tap it to skip.</p>
   <div class="row"><label for="dbg">Show test numbers</label><input id="dbg" type="checkbox" ${save.settings.debug?"checked":""}></div>
   ${run&&!run.hardcore?`<div class="row"><span class="note">Switch this save to hardcore: permanent death, no going back.</span><button class="danger-btn" id="toHC" type="button">Go hardcore</button></div>`:""}
   <h3>Testing</h3>
@@ -2536,6 +2667,7 @@ function settingsScreen(onBack){
   $("#tiltCal").onclick=()=>{if(!TILT.seen){startTilt();toast("No tilt reading yet. Turn tilt on and try again.",true,2000);return;}save.settings.tiltZero=TILT.now;persist();toast("Calibrated. That's level.",false,1600);};
   $("#dbg").onchange=e=>{save.settings.debug=e.target.checked;persist();};
   $("#evts").onchange=e=>{save.settings.events=e.target.checked;persist();};
+  $("#trAnim").onchange=e=>{save.settings.travelAnim=e.target.checked;persist();};
   $("#unl").onchange=e=>{save.settings.unlockAll=e.target.checked;persist();if(G.state==="ready")fillMethods();};
   const ds=$("#diffSel");if(ds)ds.onchange=()=>{const k=ds.value;if(k===run.diff)return;
     $("#diffNote").innerHTML=`Lower to <b>${DIFFS[k].name}</b>? You won't be able to raise it again. <button class="danger-btn" id="diffOk" type="button">Confirm</button>`;
