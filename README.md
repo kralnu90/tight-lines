@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.24.0** · experimental build
+**Current version: 0.25.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -41,6 +41,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Three save slots, a log book with star ratings and personal bests, and fishing XP.**
 - **Request boards and reputation:** every inn has a board of orders that changes every two days: fresh catches, specimen fish, top-quality fish, rare fish, salted or smoked fish, recipe dishes and parcels to deliver to other towns. Take on three at a time and beat the deadline for Fish Bucks and sometimes a recipe, gear or rare tackle. Each town remembers you: good standing means better prices, better orders and more in the shop, and missed deadlines cost you.
 - **News, gossip and festivals:** prices in other towns are hidden until you hear about them. Read the Kingsbridge Courier or buy a round at the bar for market news, festival dates and old anglers' tips on where rare fish turn up. Storms, gluts, banquets and weddings shift prices for a few days, and five festivals through the year pay big for certain fish and dishes. Seasonal fish sell for less while everyone's catching them and more out of season.
+- **Storage:** your keep net holds 12 slots and bigger fish take more (salted and smoked fish pack smaller). A big keep net adds 8. Rent a locker at any inn for 10 FB a season, but what you leave there stays in that town.
 - **Online leaderboard:** see the heaviest fish of every species landed by other players. Your angler's best catch of each species posts automatically when you're online, and waits on your phone until you are. No account or code needed, and you can turn sharing off in Settings.
 
 ## How to play
@@ -72,8 +73,8 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 0 · Fight prototype | Casting, bites, the fight, landing | Done |
 | 1 · Fishing core | Fish, spots, techniques, gear grades, weather, journal, level unlocks, traps and pots, tilt controls | Done |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules, injuries, tuning | Done |
-| 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | First pass done |
-| 4 · Towns and trade | Fish Bucks, shops, region map, Saltwick, Thornmere, Kingsbridge, request boards, reputation, gossip, festivals (done); storage | In progress |
+| 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | Done |
+| 4 · Towns and trade | Fish Bucks, shops, region map, four towns, request boards, reputation, news and gossip, festivals, seasonal prices, storage | Done |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
@@ -84,6 +85,15 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 Open the link on your Android phone and install it. The first time, Android asks you to allow installs from your browser or file manager. The app loads the live game, so updates arrive without reinstalling. Saves in the app are separate from saves in your browser.
 
 ## Changelog
+
+### 0.25.0 · Storage, and Phase 4 done (15 Nov 2026)
+- Your keep net now holds 12 slots. Fish under 2 lb take 1, and bigger fish take up to 5
+- Salted and smoked fish pack down a slot smaller
+- Big keep net in the Camp tab of the tackle shop: 8 more slots for 40 FB
+- When the net is full, let the new fish go or make room. It stays in your log either way
+- Rent a locker at any inn: 24 slots for 10 FB a season. What you leave there stays in that town, and fresh fish still spoil
+- Pots and traps let catches go if there's no room
+- Phase 4, towns and trade, is finished
 
 ### 0.24.0 · News, gossip and festivals (15 Nov 2026)
 - News and gossip at every inn: buy the Kingsbridge Courier (1 FB) or a round at the bar (3 FB)

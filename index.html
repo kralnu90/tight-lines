@@ -287,6 +287,7 @@ const GEAR={
   bow:{type:"kit",name:"Hunting bow",grade:"Good",price:60,desc:"+5 when tracking, once you reach hunting level 10. Deer, boar and stags need one. Uses arrows."},
   smoker:{type:"kit",name:"Portable smoker",grade:"Fine",price:80,desc:"Smoke fish over your campfire from cooking level 25. Smoked fish keeps 10 days and sells for 1.8× raw."},
   bbq:{type:"kit",name:"Camp BBQ",grade:"Good",price:50,desc:"Grill recipes from cooking level 30."},
+  bignet:{type:"kit",name:"Big keep net",grade:"Good",price:40,desc:"Holds 8 more slots of fish."},
   bell:{type:"kit",name:"Bear bell",grade:"Basic",price:12,desc:"Animals hear you coming: fewer boar on the path, and +1 in animal encounters on the move."}
 };
 const BAITS={Maggots:[2,10],Bread:[1,10],Worm:[2,10],Sweetcorn:[2,10],Pellets:[3,10],Boilies:[4,10],Deadbait:[4,5],Lugworm:[3,10],Ragworm:[3,10],Squid:[4,5],"Peeler crab":[5,5]};
@@ -302,8 +303,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.24.0";
+const VERSION="0.25.0";
 const CHANGELOG=[
+  {v:"0.25.0",date:"15 Nov 2026",title:"Storage, and Phase 4 done",items:["Your keep net now holds 12 slots. Fish under 2 lb take 1, and bigger fish take up to 5", "Salted and smoked fish pack down a slot smaller", "Big keep net in the Camp tab of the tackle shop: 8 more slots for 40 FB", "When the net is full, let the new fish go or make room. It stays in your log either way", "Rent a locker at any inn: 24 slots for 10 FB a season. What you leave there stays in that town, and fresh fish still spoil", "Pots and traps let catches go if there's no room", "Phase 4, towns and trade, is finished"]},
   {v:"0.24.0",date:"15 Nov 2026",title:"News, gossip and festivals",items:["News and gossip at every inn: buy the Kingsbridge Courier (1 FB) or a round at the bar (3 FB)", "Other towns' prices are hidden until you hear about them", "Market news that comes and goes: storms keeping the fleet in, bumper years, banquets, weddings, shortages and gluts, each lasting a few days", "Five festivals, always on the same days each year: the Willowmere Spring Fair, Saltwick Mackerel Festival, Kingsbridge Food Fair, Thornmere Pike and Perch Fair and Kingsbridge Midwinter Market", "Festival posters go up in town five days ahead, and the paper lists everything in the next ten days", "Seasonal prices: fish that only run in some seasons sell for 10% less in season and 30% more out of it", "Old anglers at the bar share tips on where and when rare fish turn up", "The sell screen shows every price change: season, festival, market news and your standing"]},
   {v:"0.23.0",date:"15 Nov 2026",title:"Request boards and reputation",items:["A request board at every inn, with new notices every two days", "Orders for fresh catches, specimen fish, 4-star fish, rare fish, salted or smoked fish and recipe dishes, plus parcels to deliver to other towns", "Take on up to 3 at a time. Beat the deadline for Fish Bucks, and sometimes a recipe, gear, lures or bait", "Every town remembers you: Stranger, Known, Regular, Friend, then Local legend", "Good standing raises the price an inn pays (up to +20%), unlocks harder, better-paid orders and adds gear to the shop", "Missing a deadline or giving up a request costs standing, and a distrusted angler gets paid less", "Your requests show in the Kit screen, and fish wanted for a request are marked when you sell", "The legendary hunt notice is up, sealed until fishing level 30"]},
   {v:"0.22.0",date:"15 Nov 2026",title:"Thornmere and Kingsbridge",items:["Thornmere, a lakeside village on the north shore of Willowmere Lake, with the Heron's Rest inn, its own tackle shop and Agnes the cook", "Kingsbridge, the city: the Crown inn, a bigger tackle shop and Henri the head chef", "The trade triangle is complete: Thornmere pays 30% more for sea fish and less for lake fish", "The city pays a fair price for every kind of fish, 50% more for rare fish and 25% more for dishes", "Four new regional dishes: Thornmere perch in brown butter and sorrel, Thornmere baked pike with juniper, Kingsbridge eel pie and Kingsbridge potted smoked trout", "Both new towns are on the map, and you can save at either inn"]},
@@ -597,7 +599,7 @@ function landed(){
   let xp=({Common:10,Uncommon:30,Rare:60})[f.rarity]+10*F.s;if(first)xp+=25;xp=Math.max(1,Math.round(xp*diff().xp));
   const before=levelInfo(run.xp).L;run.xp+=xp;const after=levelInfo(run.xp).L;
   run.log.unshift({id:f.id,name:f.name,w:+F.w.toFixed(3),len,stars:st,season:c.season,time:c.time,weather:c.weather,bait:c.bait,method:c.method,spot:spot().name,day:run.day});
-  run.log=run.log.slice(0,300);run.keep.push({id:f.id,name:f.name,w:+F.w.toFixed(3),stars:st,caught:absMin()});renderLevel();
+  run.log=run.log.slice(0,300);const item={id:f.id,name:f.name,w:+F.w.toFixed(3),stars:st,caught:absMin()},fits=netFits(item);if(fits)run.keep.push(item);renderLevel();
   if(diff().needs)run.needs.stam=clamp(run.needs.stam-clamp(1+F.w*0.5,1,8),0,100); // a fight takes it out of you
   const lbBest=lbOn()&&lb.share&&lbRecord(f,F.w,len,st);
   const unlocked=after>before?Object.keys(METHODS).filter(m=>METHODS[m].lvl>before&&METHODS[m].lvl<=after):[];
@@ -606,9 +608,14 @@ function landed(){
   <h2>${f.name}</h2>
   <div class="stars" aria-label="${st} of 5 stars">${stars(st)}</div>
   <div class="stats"><div><small>Weight</small><b>${lbOz(F.w)}</b></div><div><small>Length</small><b>${len} cm</b></div><div><small>XP</small><b>+${xp}</b></div></div>
-  <p class="note">${f.fights}. ${c.method} with ${c.bait.toLowerCase()} at ${spot().name}, ${c.time.toLowerCase()}.${after>before?` <b style="color:var(--brass)">Fishing level ${after}!${unlocked.length?" "+unlocked.join(", ")+" unlocked.":""}</b>`:""} Added to your keep net.${lbBest?` <b style="color:var(--brass)">Your best ${f.name.toLowerCase()} yet, posted to the leaderboard.</b>`:""}</p>
-  <div class="controls"><button class="big strike" id="again" type="button">Cast again</button></div>`);
-  $("#again").addEventListener("click",()=>toReady());
+  <p class="note">${f.fights}. ${c.method} with ${c.bait.toLowerCase()} at ${spot().name}, ${c.time.toLowerCase()}.${after>before?` <b style="color:var(--brass)">Fishing level ${after}!${unlocked.length?" "+unlocked.join(", ")+" unlocked.":""}</b>`:""} ${fits?"Added to your keep net.":`<b style="color:var(--danger)">Your keep net is full (${netLabel()}). This one needs ${slotsOf(item)}.</b>`}${lbBest?` <b style="color:var(--brass)">Your best ${f.name.toLowerCase()} yet, posted to the leaderboard.</b>`:""}</p>
+  <div class="controls">${fits?`<button class="big strike" id="again" type="button">Cast again</button>`:`<button class="big ghost" id="relNew" type="button" style="flex:1">Let it go</button><button class="big strike" id="mkRoom" type="button" style="flex:1">Make room</button>`}</div>`);
+  if(fits){$("#again").addEventListener("click",()=>toReady());return;}
+  const keepNew=()=>{if(netFits(item)){run.keep.push(item);toast(`The ${item.name.toLowerCase()} goes in the net.`,false,1600);toReady();}
+    else netManage(keepNew,slotsOf(item)-(netCap()-netUsed()),relNew);};
+  const relNew=()=>{toast(`You slip the ${item.name.toLowerCase()} back. It's still in your log.`,false,2000);toReady();};
+  $("#relNew").onclick=relNew;
+  $("#mkRoom").onclick=()=>netManage(keepNew,slotsOf(item)-(netCap()-netUsed()),relNew);
 }
 
 /* ---------- Simulation ---------- */
@@ -1149,7 +1156,7 @@ function campMenu(){
     ${potsHere().length?`<button class="act" id="aHaul" type="button"><span>Haul your ${salt?"pots":"traps"} (${potsHere().length})<small>${potsHere().some(p=>absMin()-p.at>=POT_WAIT)?"Should be something in there.":"Too soon. About six hours."}</small></span><em>20 min</em></button>`:""}
     <button class="act" id="aTrack" type="button" ${skLv("hunt")>=5&&!dark?"":"disabled"}><span>Go tracking<small>${skLv("hunt")<5?"Needs hunting level 5.":dark?"You can't read tracks in the dark.":bowReady()?`Bow ready, ${run.inv.arrows} arrows.`:run.inv.gear.bow?(run.inv.arrows?"Your bow needs hunting level 10.":"Your bow has no arrows."):"No bow: small game only, really."}</small></span><em>1.5 h</em></button>
   </div>
-  <h3>Keep net</h3><div class="acts">${fishRows||'<p class="note">Empty. Catch something to eat.</p>'}</div>
+  <h3>Keep net (${netLabel()})</h3><div class="acts">${fishRows||'<p class="note">Empty. Catch something to eat.</p>'}</div>
   ${run.larder.length?`<h3>Larder</h3><div class="acts">${larderRows()}</div>`:""}
   <h3>Travel</h3><div class="acts">${travelButtons("go")}</div>
   <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back to fishing</button></div>`);
@@ -1650,12 +1657,12 @@ function checkPots(done){const ready=potsHere().filter(p=>absMin()-p.at>=POT_WAI
     const id=coast?(Math.random()<0.12?"lobster":"crab"):"crayfish",f=FISH.find(x=>x.id===id);
     const n=id==="crayfish"?1+Math.floor(Math.random()*4):1;
     for(let i=0;i<n;i++){const r=Math.random(),w=+(f.min+(f.max-f.min)*Math.pow(r,2)).toFixed(3),st=r<0.3?2:r<0.6?3:r<0.85?4:5,len=Math.round(f.lenK*Math.pow(w,1/3));
-      run.keep.push({id,name:f.name,w,stars:st,caught:absMin()});
+      const it={id,name:f.name,w,stars:st,caught:absMin()};if(netFits(it))run.keep.push(it);else{got.full=(got.full||0)+1;}
       run.log.unshift({id,name:f.name,w,len,stars:st,season:conds().season,time:conds().time,weather:conds().weather,bait:"Pot",method:"Pot",spot:spot().name,day:run.day});got.push(f.name);}}
   run.log=run.log.slice(0,300);
   const xp=gainSk("fish",got.reduce((a,nm)=>a+(nm==="European lobster"?60:8),0)||3);
   const tally=Object.entries(got.reduce((m,n)=>(m[n]=(m[n]||0)+1,m),{})).map(([n,c])=>c>1?`${c} ${n.toLowerCase()}`:`a ${n.toLowerCase()}`).join(" and ");
-  showOverlay(`<span class="tag">Pots</span><h2>Hauling your ${coast?"pots":"traps"}</h2><p>${got.length?`You've got ${tally}. In the keep net.`:"Empty this time. Re-baited and dropped back in."}</p>
+  showOverlay(`<span class="tag">Pots</span><h2>Hauling your ${coast?"pots":"traps"}</h2><p>${got.length?`You've got ${tally}. ${got.full?`Your keep net is full, so you let ${got.full===got.length?"them":got.full+" of them"} go.`:"In the keep net."}`:"Empty this time. Re-baited and dropped back in."}</p>
     <p class="note">+${xp} fishing XP</p><div class="controls"><button class="big" id="ptOk" type="button" style="flex:1">Back to camp</button></div>`);
   $("#ptOk").onclick=done;}
 
@@ -1950,6 +1957,45 @@ function newsScreen(msg){
     newsScreen(say);};
   $("#nwBack").onclick=tavernMenu;}
 
+/* ---------- Storage: keep net slots and tavern lockers ---------- */
+// Bigger fish take more slots. Salted and smoked fish pack down a slot smaller.
+// Lockers are rented per town and hold what you leave there: no shared storage, so items stay where you left them.
+const NET_SLOTS=12,BIGNET=8,LOCKER_SLOTS=24,LOCKER_RENT=10,LOCKER_DAYS=10;
+function slotsOf(k){const w=k.w,s=w<2?1:w<6?2:w<15?3:w<30?4:5,f=k.form||"raw";return f==="salted"||f==="smoked"?Math.max(1,s-1):s;}
+function used(list){return list.reduce((a,k)=>a+slotsOf(k),0);}
+function netCap(){return NET_SLOTS+(run.inv.gear.bignet?BIGNET:0);}
+function netUsed(){return used(run.keep);}
+function netFits(k){return netUsed()+slotsOf(k)<=netCap();}
+function netLabel(){return `${netUsed()}/${netCap()} slots`;}
+function locker(t){if(!run.lockers)run.lockers={};return run.lockers[t];}
+function lockerPaid(t){const L=locker(t);return !!L&&L.until>=run.day;}
+function itemRow(k,i,btns){const sp=isSpoiled(k);
+  return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)} <small style="display:inline">${slotsOf(k)} slot${slotsOf(k)>1?"s":""}</small><small>${sp?"Spoiled":`Good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}${qTag(k)&&!sp?" · "+qTag(k):""}</small></span><span style="display:flex;gap:6px">${btns(k,i)}</span></div>`;}
+// When the net is full: let fish go to make room. back() returns to wherever you came from.
+function netManage(back,need,giveUp){
+  showOverlay(`<span class="tag">Keep net</span><h2>Make room</h2><p class="note">Your keep net holds ${netCap()} slots and you're using ${netUsed()}.${need?` You need ${need} free for this one.`:""} Fish under 2 lb take 1 slot, up to 6 lb 2, up to 15 lb 3, up to 30 lb 4, and anything bigger 5. Salted and smoked fish take one less.${run.inv.gear.bignet?"":" A big keep net from the tackle shop holds 8 more."}</p>
+    <div class="acts">${run.keep.map((k,i)=>itemRow(k,i,(k,i)=>`<button class="iconbtn" data-rel="${i}" type="button">Let it go</button>`)).join("")||'<p class="note">Empty.</p>'}</div>
+    <div class="controls">${giveUp?`<button class="big ghost" id="nmGive" type="button" style="flex:1">Let the new one go</button>`:""}<button class="big" id="nmBack" type="button" style="flex:1">Done</button></div>`);
+  if(giveUp)$("#nmGive").onclick=giveUp;
+  document.querySelectorAll("[data-rel]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.rel,1)[0];toast(isSpoiled(k)?"Binned.":`The ${k.name.toLowerCase()} goes back in.`,false,1400);netManage(back,need,giveUp);});
+  $("#nmBack").onclick=back;}
+function lockerScreen(){
+  const t=townId(),T=TOWNS[t];let L=locker(t);const paid=lockerPaid(t);
+  const net=run.keep.map((k,i)=>itemRow(k,i,(k,i)=>`<button class="iconbtn" data-in="${i}" type="button" ${paid&&used(L.items)+slotsOf(k)<=LOCKER_SLOTS?"":"disabled"}>Store</button>`)).join("");
+  const box=L?L.items.map((k,i)=>itemRow(k,i,(k,i)=>`<button class="iconbtn" data-out="${i}" type="button" ${netFits(k)?"":"disabled"}>Take</button>`)).join(""):"";
+  showOverlay(`<span class="tag">${T.n}</span><h2>Locker</h2>
+    <p class="note">${capF(T.landlord)} rents out lockers in the cold cellar: ${LOCKER_SLOTS} slots for ${LOCKER_RENT} FB a season (${LOCKER_DAYS} days). What you leave here stays here, and fresh fish still spoil, so it's best for salted and smoked fish.</p>
+    <p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b> · ${L?(paid?`Paid up to the end of day ${L.until}.`:`Rent ran out on day ${L.until}. You can take things out, but not put anything in.`):"You don't rent one here."}</p>
+    <div class="acts"><button class="act" id="lkRent" type="button" ${run.bucks>=LOCKER_RENT?"":"disabled"}><span>${L?"Pay another season":"Rent a locker"} · ${LOCKER_RENT} FB<small>${L&&paid?`Paid to day ${L.until+LOCKER_DAYS}.`:`Paid to the end of day ${run.day+LOCKER_DAYS-1}.`}</small></span></button></div>
+    ${L?`<h3>In the locker (${used(L.items)}/${LOCKER_SLOTS} slots)</h3><div class="acts">${box||'<p class="note">Empty.</p>'}</div>`:""}
+    <h3>Keep net (${netLabel()})</h3><div class="acts">${net||'<p class="note">Empty.</p>'}</div>
+    <div class="controls"><button class="big ghost" id="lkBack" type="button" style="flex:1">Back</button></div>`);
+  $("#lkRent").onclick=()=>{if(run.bucks<LOCKER_RENT)return;run.bucks-=LOCKER_RENT;
+    if(!L)L=run.lockers[t]={until:run.day+LOCKER_DAYS-1,items:[]};else L.until=(paid?L.until:run.day-1)+LOCKER_DAYS;renderHud();toast(`Locker paid to the end of day ${L.until}.`,false,2000);lockerScreen();};
+  document.querySelectorAll("[data-in]").forEach(b=>b.onclick=()=>{L.items.push(run.keep.splice(+b.dataset.in,1)[0]);lockerScreen();});
+  document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>{run.keep.push(L.items.splice(+b.dataset.out,1)[0]);lockerScreen();});
+  $("#lkBack").onclick=tavernMenu;}
+
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
 // tiltRange: degrees of tilt for full rod travel. tiltZero: the "level" angle saved by Calibrate.
@@ -2031,7 +2077,7 @@ function withKit(r){
   if(!r.larder)r.larder=[];if(!r.snares)r.snares=[];if(!r.pots)r.pots=[];if(r.inv.pots===undefined)r.inv.pots=0;
   if(!r.recipes)r.recipes=["thyme","garlic"];if(r.inv.salt===undefined)r.inv.salt=0;if(r.inv.chum===undefined)r.inv.chum=0;
   if(r.inv.snares===undefined)r.inv.snares=2;if(r.inv.arrows===undefined)r.inv.arrows=0;
-  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};if(!r.mkt)r.mkt=[];if(!r.news)r.news={};
+  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};if(!r.mkt)r.mkt=[];if(!r.news)r.news={};if(!r.lockers)r.lockers={};
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
 function fishPrice(k){
@@ -2075,7 +2121,7 @@ function sellScreen(){
 function shopStock(){
   if(!run.shops)run.shops={tavern:run.shop};run.shop=run.shops[townId()]||(run.shops[townId()]={day:0,stock:[]});
   if(run.shop.day!==run.day){
-    const pool=Object.keys(GEAR).filter(id=>GEAR[id].price>0&&id!=="hazelfly"&&id!=="bow"&&id!=="smoker"&&id!=="bbq");
+    const pool=Object.keys(GEAR).filter(id=>GEAR[id].price>0&&id!=="hazelfly"&&id!=="bow"&&id!=="smoker"&&id!=="bbq"&&id!=="bignet");
     for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
     run.shop={day:run.day,stock:pool.slice(0,(town().city?6:4)+(repOf(townId())>=60?1:0))};}
   return ["hazelfly",...run.shop.stock].filter((id,i,a)=>a.indexOf(id)===i);
@@ -2096,7 +2142,7 @@ function shopScreen(tab){
   if(tab==="kitchen")body=`<p class="note">Cooking level ${skLv("cook")}. Salting starts at level 15, smoking at 25 and grilling at 30.</p>
     <div class="act" style="cursor:default"><span>Bandages · ×3<small>Dress a wound so it heals faster, or strap a sprained ankle. You have ${run.inv.bandages}</small></span><button class="iconbtn" data-bk="bandages" type="button" ${B>=6?"":"disabled"}>6 FB</button></div>
     <div class="act" style="cursor:default"><span>Salt · ×4<small>One portion salts one fish. You have ${run.inv.salt}</small></span><button class="iconbtn" data-bk="salt" type="button" ${B>=5?"":"disabled"}>5 FB</button></div>
-    ${["smoker","bbq"].map(id=>`<div class="act" style="cursor:default"><span>${GEAR[id].name} <small style="display:inline;color:${GRADES[GEAR[id].grade]}">${GEAR[id].grade}</small><small>${GEAR[id].desc}</small></span>${run.inv.gear[id]?'<em>Owned</em>':`<button class="iconbtn" data-bk="${id}" type="button" ${B>=GEAR[id].price?"":"disabled"}>${GEAR[id].price} FB</button>`}</div>`).join("")}`;
+    ${["bignet","smoker","bbq"].map(id=>`<div class="act" style="cursor:default"><span>${GEAR[id].name} <small style="display:inline;color:${GRADES[GEAR[id].grade]}">${GEAR[id].grade}</small><small>${GEAR[id].desc}</small></span>${run.inv.gear[id]?'<em>Owned</em>':`<button class="iconbtn" data-bk="${id}" type="button" ${B>=GEAR[id].price?"":"disabled"}>${GEAR[id].price} FB</button>`}</div>`).join("")}`;
   showOverlay(`<h2>Tackle shop · ${town().n}</h2><p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p>
   <div class="controls" style="flex-wrap:wrap">${tabs.map(([k,n])=>`<button class="iconbtn" data-tab="${k}" type="button" style="flex:1;${k===tab?"border-color:var(--brass);color:var(--brass)":""}">${n}</button>`).join("")}</div>
   <div class="acts">${body}</div>
@@ -2161,6 +2207,7 @@ function tavernMenu(){
     <button class="act" id="tNews" type="button"><span>News and gossip<small>${(()=>{const t=townId(),F=festsHere(t)[0];const up=FESTIVALS.filter(x=>x.town===t&&!festOn(x)&&festDays(x)!==null&&festDays(x)<=5)[0];
       return F?`<b style="color:var(--brass)">${F.n} is on!</b> ${F.desc}`:up?`Posters up: ${up.n} ${festDays(up)===1?"tomorrow":"in "+festDays(up)+" days"}.`:"The paper, the regulars, and what other towns are paying.";})()}</small></span></button>
     <button class="act" id="tReq" type="button"><span>Request board<small>${(()=>{const t=townId(),mine=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length;return `${repName(repOf(t))} here.${mine?` <b style="color:var(--brass)">${mine} ready to hand in.</b>`:" Orders, deliveries and rewards."}`;})()}</small></span></button>
+    <button class="act" id="tLock" type="button"><span>Locker<small>${(()=>{const t=townId(),L=locker(t);return L?`${L.items.length} item${L.items.length===1?"":"s"} stored here · ${lockerPaid(t)?"paid to day "+L.until:"rent overdue"}.`:`Rent cellar storage here: ${LOCKER_SLOTS} slots for ${LOCKER_RENT} FB a season.`;})()} Keep net ${netLabel()}.</small></span></button>
     <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
   </div>
@@ -2174,7 +2221,7 @@ function tavernMenu(){
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
-  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tNews").onclick=()=>newsScreen();$("#tShop").onclick=()=>shopScreen("bait");
+  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tLock").onclick=lockerScreen;$("#tNews").onclick=()=>newsScreen();$("#tShop").onclick=()=>shopScreen("bait");
   $("#tBoard").onclick=()=>memorialView(tavernMenu);
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?tavernMenu:campMenu));
@@ -2437,7 +2484,7 @@ function howTo(onBack){
   <h3>Motion casting</h3><p>Turn it on in Settings and a Hold to cast button appears. Hold it, swing the phone back over your shoulder, then flick it forward and let go. The faster the flick, the further it goes; let go just as the flick peaks for a clean cast; tilt the phone left or right to aim. Use Practise in Settings to see your power and timing and set full power to suit your wrist. Hold on tight!</p>
   <h3>Tilt</h3><p>Prefer to steer with the phone? Turn on tilt controls in Settings, hold the phone how you like and tap Calibrate. In a fight, tilting left and right moves the rod instead of dragging.</p>
   <h3>The fight</h3><p>Fish fight longer than they used to and recover if you let the line go slack. When one <b>bolts away from you</b>, the line jolts tight: stop reeling and move the rod with it, then get back to work when it slows. Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
-  <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each village wants something different, like rock, paper, scissors: Willowmere (riverside) pays well for lake fish, Thornmere (lakeside) for sea fish and Saltwick (seaside) for river fish. Each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything, 50% more for rare fish and 25% more for dishes. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p>
+  <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each village wants something different, like rock, paper, scissors: Willowmere (riverside) pays well for lake fish, Thornmere (lakeside) for sea fish and Saltwick (seaside) for river fish. Each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything, 50% more for rare fish and 25% more for dishes. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p><h3>Requests, news and storage</h3><p>Every inn has a request board with new orders every two days. Take on up to three, beat the deadline and get paid, sometimes with a recipe or gear on top. Each town remembers you: good standing means better prices and better orders, and missed deadlines cost you. Other towns' prices are hidden, so read the Kingsbridge Courier or buy a round at the bar to hear what's paying where, when the festivals are on, and where rare fish have been seen. Seasonal fish sell for less in season and more out of it. Your keep net holds 12 slots, and bigger fish take more. Rent a locker at any inn to store fish there, but it stays in that town.</p>
   <h3>Reading the float</h3><p>Fish don't all bite the same. The float can dip, shake, bob or slide, and some fish fake it with a dip that nearly goes under and pops back up. Strike on any of those and you'll spook it. Strike when it goes under, slides away and sinks, or lifts and lies flat on the surface: tench and bream often lift the bait instead of pulling it down.</p>
   <h3>Weather</h3><p>Rain, wind and fog change what bites. Wind drifts your float and fly, catches the line in gusts during a fight and chills you; bass love a blow, fly fishing doesn't. Fog brings out the predators, pike and zander especially, and makes the float harder to see. Rain makes the reel slippery.</p>
   <h3>Staying alive</h3><p>Watch food, warmth, energy, health and water. Light fires, cook your catch and boil water at camp. Only a night at the Willowmere Arms saves your game.</p>
