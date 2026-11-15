@@ -302,8 +302,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.22.0";
+const VERSION="0.23.0";
 const CHANGELOG=[
+  {v:"0.23.0",date:"15 Nov 2026",title:"Request boards and reputation",items:["A request board at every inn, with new notices every two days", "Orders for fresh catches, specimen fish, 4-star fish, rare fish, salted or smoked fish and recipe dishes, plus parcels to deliver to other towns", "Take on up to 3 at a time. Beat the deadline for Fish Bucks, and sometimes a recipe, gear, lures or bait", "Every town remembers you: Stranger, Known, Regular, Friend, then Local legend", "Good standing raises the price an inn pays (up to +20%), unlocks harder, better-paid orders and adds gear to the shop", "Missing a deadline or giving up a request costs standing, and a distrusted angler gets paid less", "Your requests show in the Kit screen, and fish wanted for a request are marked when you sell", "The legendary hunt notice is up, sealed until fishing level 30"]},
   {v:"0.22.0",date:"15 Nov 2026",title:"Thornmere and Kingsbridge",items:["Thornmere, a lakeside village on the north shore of Willowmere Lake, with the Heron's Rest inn, its own tackle shop and Agnes the cook", "Kingsbridge, the city: the Crown inn, a bigger tackle shop and Henri the head chef", "The trade triangle is complete: Thornmere pays 30% more for sea fish and less for lake fish", "The city pays a fair price for every kind of fish, 50% more for rare fish and 25% more for dishes", "Four new regional dishes: Thornmere perch in brown butter and sorrel, Thornmere baked pike with juniper, Kingsbridge eel pie and Kingsbridge potted smoked trout", "Both new towns are on the map, and you can save at either inn"]},
   {v:"0.21.0",date:"15 Nov 2026",title:"Motion casting",items:["Cast by flicking the phone: hold Cast, swing back, flick forward and let go (Settings, Motion casting)","Flick speed sets the distance, letting go as the flick peaks makes a clean cast, and tilting left or right aims","Practice screen shows your power, timing and flick speed, and sets full power to suit your wrist","Swipe casting still works alongside it"]},
   {v:"0.20.0",date:"15 Nov 2026",title:"Tilt controls",items:["Tilt the phone left and right to move the rod in a fight (Settings, Tilt controls)","Calibrate to however you hold the phone, and set how far you need to tilt for full rod","Works in the browser and in the Android app"]},
@@ -1080,6 +1081,7 @@ function advance(mins,opt){
     if(run.inj)tickInjuries(m,opt);
     if(N.health<=0){run.cause=N.warm<=0?"the cold":N.thirst<=0?"thirst":N.food<=0?"hunger":"illness";break;}
   }
+  checkJobs();
 }
 function checkDeath(){if(run&&run.needs.health<=0&&G.state!=="dead"){die();return true;}return false;}
 
@@ -1746,6 +1748,129 @@ function mapScreen(onBack){
   $("#mapBack").onclick=onBack;
 }
 
+/* ---------- Request boards and reputation ---------- */
+// run.rep[town]: standing from -100 to 100. run.boards[town]: {day,reqs}, refreshed every 2 days.
+// run.jobs: accepted requests (up to 3). Kinds: catch (fresh fish), size (over a weight), stars (quality),
+// rare (a rare fish), preserved (salted or smoked), dish (a recipe dish with a given fish), deliver (a parcel to another town).
+const JOB_MAX=3,REP_GAIN=[0,4,7,10],REP_FAIL=[0,5,8,12],REP_DROP=[0,3,5,8];
+function repOf(t){return Math.round((run.rep&&run.rep[t])||0);}
+function addRep(t,n){if(!run.rep)run.rep={};run.rep[t]=clamp((run.rep[t]||0)+n,-100,100);}
+function repName(r){return r<=-20?"Distrusted":r<10?"Stranger":r<30?"Known":r<60?"Regular":r<90?"Friend":"Local legend";}
+function repNext(r){return r<10?10:r<30?30:r<60?60:r<90?90:null;}
+// Standing changes the price the inn pays: up to +20% for a local legend, down to −20% if they distrust you.
+function repMul(t){return 1+clamp(repOf(t),-100,100)/500;}
+function repPerks(r){return r<=-20?"They pay you less and hold back their better orders.":r<10?"Do a few jobs and they'll get to know you.":
+  r<30?"Harder, better-paid orders on the board.":r<60?"Better rewards on the board.":r<90?"An extra piece of gear in the shop every day.":"The best prices in town, and they'd name a pub after you.";}
+function fishById(id){return FISH.find(f=>f.id===id);}
+function basePrice(f){const b={Common:[4,1.5],Uncommon:[12,2],Rare:[30,3],"Very rare":[60,4]}[f.rarity];return b[0]+b[1]*(f.min+f.max)/2;}
+function due(mins){return absMin()+mins;}
+function fmtDue(m){const left=m-absMin();if(left<=0)return "overdue";const d=Math.floor(m/1440)+1;
+  return `by day ${d}, ${clock(m%1440)} · ${left>=120?Math.floor(left/60)+" h":Math.max(1,Math.round(left))+" min"} left`;}
+function jobFish(rarity){
+  const s=conds().season,L=level();
+  return FISH.filter(f=>(!rarity||rarity.includes(f.rarity))&&f.seasons.includes(s)&&f.methods.some(m=>m==="Pot"?L>=20:methodOk(m)));}
+function makeReq(t,tier){
+  const r=repOf(t),bonus=1+Math.max(0,r)/200,ck=skLv("cook"),opts=[];
+  const id=()=>Math.random().toString(36).slice(2,8);
+  const pay=v=>Math.round(v*bonus);
+  if(tier===1){
+    const com=jobFish(["Common"]);
+    if(com.length){const f=pick(com),n=f.max<1?3:f.max<4?2:1;
+      opts.push({kind:"catch",fish:f.id,n,due:due(1440*2),bucks:pay(basePrice(f)*n*1.7+5),txt:`${n>1?n+" fresh ":"A fresh "}${n>1?f.name.toLowerCase():f.name.toLowerCase()}`,sub:"Caught in the last day, any size."});}
+    const others=Object.keys(TOWNS).filter(x=>x!==t),to=pick(others),hrs=travelMins(t,to)/60;
+    opts.push({kind:"deliver",to,due:due(travelMins(t,to)+rand(6,14)*60|0),bucks:pay(6+hrs*5),txt:`A parcel for ${innMid(to)}, ${TOWNS[to].n}`,sub:pick(["Wrapped in brown paper and smells faintly of pipe smoke.","A crate of empty jars. It rattles.","A letter and a pair of mended boots.","Fresh-baked bread. Try not to eat it."])});
+  }
+  if(tier===2){
+    const unc=jobFish(["Common","Uncommon"]).filter(f=>f.max>=1);
+    if(unc.length){const f=pick(unc),w=+(f.min+(f.max-f.min)*rand(0.35,0.55)).toFixed(1);
+      opts.push({kind:"size",fish:f.id,w,due:due(1440*3),bucks:pay(basePrice(f)*2.6+10),txt:`A ${f.name.toLowerCase()} of ${lbOz(w)} or more`,sub:"Not spoiled. Any freshness the cook will take."});}
+    const any=jobFish(["Common","Uncommon"]);
+    if(any.length){const f=pick(any);opts.push({kind:"stars",fish:f.id,s:4,due:due(1440*3),bucks:pay(basePrice(f)*2.2+10),txt:`A 4-star ${f.name.toLowerCase()} or better`,sub:"Quality matters to this buyer. Raw and not spoiled."});}
+    if(ck>=15){const sm=ck>=25&&run.inv.gear.smoker&&Math.random()<0.5,n=sm?1:2;
+      opts.push({kind:"preserved",form:sm?"smoked":"salted",n,due:due(1440*3),bucks:pay(sm?40:34),txt:`${n} ${sm?"smoked":"salted"} fish, any kind`,sub:"For the larder. Must still be good."});}
+  }
+  if(tier===3){
+    const rare=jobFish(["Rare","Very rare"]);
+    if(rare.length){const f=pick(rare);opts.push({kind:"rare",fish:f.id,due:due(1440*4),bucks:pay(basePrice(f)*2.5+25),txt:`A ${f.name.toLowerCase()}, any size`,sub:"A collector's order. Raw and not spoiled."});}
+    const dishes=Object.keys(RECIPES).filter(k=>run.recipes.includes(k)&&!RECIPES[k].feast&&ck>=RECIPES[k].lv);
+    if(dishes.length){const d=pick(dishes),R=RECIPES[d],f=R.fishId?fishById(R.fishId):pick(jobFish(R.water?null:["Common","Uncommon"]).filter(x=>!R.water||x.water===R.water))||null;
+      if(f)opts.push({kind:"dish",dish:d,fish:R.fishId||null,due:due(1440*2),bucks:pay(basePrice(f)*R.mult*1.6+20),txt:recipeTitle(d),sub:"Cooked fresh for a private dinner. Must still be good."});}
+    const big=jobFish(["Uncommon","Rare"]).filter(f=>f.max>=8);
+    if(big.length){const f=pick(big),w=+(f.min+(f.max-f.min)*rand(0.6,0.75)).toFixed(1);
+      opts.push({kind:"size",fish:f.id,w,due:due(1440*4),bucks:pay(basePrice(f)*4+25),txt:`A specimen ${f.name.toLowerCase()} of ${lbOz(w)} or more`,sub:"For a glass case over the bar. Not spoiled."});}
+  }
+  if(!opts.length)return null;
+  const o=pick(opts);o.id=id();o.tier=tier;o.town=t;
+  // things money can't buy, sometimes
+  if(Math.random()<[0,0.1,0.3,0.6][tier]){const x=pick(["recipe","lures","kit","bait"]);
+    if(x==="recipe"&&learnable().length)o.extra={recipe:1};
+    else if(x==="kit"){const k=["lantern","bell","bedroll","jacket","waterskin"].filter(g=>!run.inv.gear[g]);if(k.length)o.extra={kit:pick(k)};}
+    else if(x==="lures")o.extra={lure:pick(["Big lure","Soft lure","Dry fly","Nymph"]),n:3};
+    else o.extra={bait:pick(["Peeler crab","Squid","Boilies","Deadbait"]),n:10};}
+  return o;}
+function learnable(){return Object.keys(RECIPES).filter(r=>!RECIPES[r].region&&!RECIPES[r].feast&&!run.recipes.includes(r));}
+function extraText(x){if(!x)return "";return x.recipe?"a recipe":x.kit?GEAR[x.kit].name.toLowerCase():x.lure?`${x.n} ${x.lure.toLowerCase()}s`:`${x.n} ${x.bait.toLowerCase()}`;}
+function board(t){
+  if(!run.boards)run.boards={};let B=run.boards[t];
+  if(!B||run.day>=B.day+2){
+    const tiers=[1,1,2];if(repOf(t)>-20)tiers.push(repOf(t)>=10?3:2);
+    B=run.boards[t]={day:run.day,reqs:tiers.map(x=>makeReq(t,x)).filter(Boolean)};}
+  return B;}
+// does keep-net item k count towards job j?
+function fitsJob(j,k){const f=k.form||"raw";if(isSpoiled(k))return false;
+  if(j.kind==="catch")return k.id===j.fish&&f==="raw"&&itemAge(k)<1;
+  if(j.kind==="size")return k.id===j.fish&&f==="raw"&&k.w>=j.w;
+  if(j.kind==="stars")return k.id===j.fish&&f==="raw"&&(k.stars||3)>=j.s;
+  if(j.kind==="rare")return k.id===j.fish&&f==="raw";
+  if(j.kind==="preserved")return f===j.form;
+  if(j.kind==="dish")return f==="dish"&&k.dish===j.dish;
+  return false;}
+function jobReady(j){if(j.kind==="deliver")return false;const n=j.n||1;return run.keep.filter(k=>fitsJob(j,k)).length>=n;}
+function payJob(j){
+  const out=[`+${j.bucks} Fish Bucks`];run.bucks+=j.bucks;const x=j.extra;
+  if(x){if(x.recipe){const r=learnRecipe();if(r)out.push(`recipe: ${recipeTitle(r)}`);else{run.bucks+=15;out.push("+15 Fish Bucks");}}
+    if(x.kit){if(!run.inv.gear[x.kit]){run.inv.gear[x.kit]=1;out.push(GEAR[x.kit].name);if(x.kit==="waterskin")run.water=Math.min(maxWater(),run.water+1.5);}else{run.bucks+=20;out.push("+20 Fish Bucks");}}
+    if(x.lure){run.inv.lures[x.lure]=(run.inv.lures[x.lure]||0)+x.n;out.push(`${x.n} ${x.lure.toLowerCase()}s`);}
+    if(x.bait){run.inv.bait[x.bait]=(run.inv.bait[x.bait]||0)+x.n;out.push(`${x.n} ${x.bait.toLowerCase()}`);}}
+  const t=j.kind==="deliver"?j.to:j.town;addRep(j.town,REP_GAIN[j.tier]);if(t!==j.town)addRep(t,1);
+  run.jobs=run.jobs.filter(o=>o.id!==j.id);
+  return out.join(" · ");}
+function handIn(j){
+  const n=j.n||1,idx=run.keep.map((k,i)=>({k,i})).filter(o=>fitsJob(j,o.k)).sort((a,b)=>fishPrice(a.k).p-fishPrice(b.k).p).slice(0,n).map(o=>o.i).sort((a,b)=>b-a);
+  if(idx.length<n)return null;idx.forEach(i=>run.keep.splice(i,1));return payJob(j);}
+// overdue jobs fail and cost standing; called as time passes
+function checkJobs(){if(!run||!run.jobs||!run.jobs.length)return;const now=absMin();
+  for(const j of run.jobs.slice())if(now>j.due){run.jobs=run.jobs.filter(o=>o.id!==j.id);addRep(j.town,-REP_FAIL[j.tier]);
+    if(j.kind==="deliver")addRep(j.to,-2);
+    toast(`Request failed: ${j.txt.toLowerCase()} for ${TOWNS[j.town].n}. Your standing there drops.`,true,3200);}}
+function deliverHere(t){if(!run.jobs)return;for(const j of run.jobs.slice())if(j.kind==="deliver"&&j.to===t&&absMin()<=j.due){
+  const msg=payJob(j);toast(`Parcel delivered to ${innMid(t)}. ${msg}`,false,3200);}}
+function jobRow(j,here){
+  const ready=jobReady(j),handable=here===j.town&&ready;
+  const where=j.kind==="deliver"?`Deliver to ${TOWNS[j.to].n}`:here===j.town?(ready?"You have it":`Bring it here${j.n>1?` (${run.keep.filter(k=>fitsJob(j,k)).length}/${j.n})`:""}`):`Hand in at ${TOWNS[j.town].n}`;
+  return `<div class="act" style="cursor:default"><span>${j.txt}<small>${TOWNS[j.town].n} · ${fmtDue(j.due)} · ${where}<br>Reward ${j.bucks} FB${j.extra?" and "+extraText(j.extra):""}</small></span>
+    <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${handable?`<button class="iconbtn" data-hand="${j.id}" type="button">Hand in</button>`:""}${here===j.town?`<button class="iconbtn" data-drop="${j.id}" type="button">Give up</button>`:""}</span></div>`;}
+function boardScreen(){
+  const t=townId(),T=TOWNS[t],B=board(t),r=repOf(t),nx=repNext(r);if(!run.jobs)run.jobs=[];
+  const full=run.jobs.length>=JOB_MAX;
+  const reqs=B.reqs.map(q=>`<div class="act" style="cursor:default"><span>${q.txt} <small style="display:inline;color:${["","var(--muted)","var(--safe)","var(--brass)"][q.tier]}">${["","Easy","Medium","Hard"][q.tier]}</small><small>${q.sub} ${q.kind==="deliver"?"Due "+fmtDue(q.due).replace(/ ·.*/,"")+".":`Allows ${Math.round((q.due-absMin())/1440)} days.`}<br>Reward ${q.bucks} FB${q.extra?" and "+extraText(q.extra):""}</small></span>
+    <button class="iconbtn" data-take="${q.id}" type="button" ${full?"disabled":""}>Accept</button></div>`).join("");
+  const L=level();
+  showOverlay(`<span class="tag">${T.n}</span><h2>Request board</h2>
+    <p class="note">Notices pinned up by ${T.city?"merchants, chefs and collectors":"locals, the kitchen and passing traders"}. New ones go up every two days. You can take on ${JOB_MAX} at a time. Miss a deadline and ${T.n} won't forget it.</p>
+    <div class="stats"><div><small>Standing</small><b>${repName(r)}</b></div><div><small>Reputation</small><b>${r>0?"+":""}${r}</b></div><div><small>Prices</small><b>${repMul(t)>=1?"+":"−"}${Math.abs(Math.round((repMul(t)-1)*100))}%</b></div></div>
+    <p class="note">${repPerks(r)}${nx!==null?` Next standing at ${nx}.`:""}</p>
+    ${run.jobs.length?`<h3>Your requests (${run.jobs.length}/${JOB_MAX})</h3><div class="acts">${run.jobs.map(j=>jobRow(j,t)).join("")}</div>`:""}
+    <h3>On the board</h3><div class="acts">${reqs||'<p class="note">Nothing pinned up right now. Check back in a day or two.</p>'}
+    <div class="act" style="cursor:default;opacity:.75"><span>Legendary hunt · a sealed notice<small>${L<30?`Only for anglers of fishing level 30 and above. You're level ${L}.`:"The seal's unbroken and the notice is blank for now. Word in the bar is the big hunts start soon."}</small></span></div></div>
+    <div class="controls"><button class="big ghost" id="bdBack" type="button" style="flex:1">Back</button></div>`);
+  document.querySelectorAll("[data-take]").forEach(b=>b.onclick=()=>{const i=B.reqs.findIndex(q=>q.id===b.dataset.take);if(i<0||run.jobs.length>=JOB_MAX)return;
+    const q=B.reqs.splice(i,1)[0];run.jobs.push(q);toast(q.kind==="deliver"?`You take the parcel for ${TOWNS[q.to].n}.`:"Request accepted.",false,1800);boardScreen();});
+  document.querySelectorAll("[data-hand]").forEach(b=>b.onclick=()=>{const j=run.jobs.find(o=>o.id===b.dataset.hand);if(!j)return;const msg=handIn(j);if(msg){renderHud();toast(`Request done! ${msg}`,false,3000);}boardScreen();});
+  document.querySelectorAll("[data-drop]").forEach(b=>b.onclick=()=>{const j=run.jobs.find(o=>o.id===b.dataset.drop);if(!j)return;
+    run.jobs=run.jobs.filter(o=>o.id!==j.id);addRep(j.town,-REP_DROP[j.tier]);toast("You take the notice down. They'll remember that.",true,2200);boardScreen();});
+  $("#bdBack").onclick=tavernMenu;}
+
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
 // tiltRange: degrees of tilt for full rod travel. tiltZero: the "level" angle saved by Calibrate.
@@ -1827,6 +1952,7 @@ function withKit(r){
   if(!r.larder)r.larder=[];if(!r.snares)r.snares=[];if(!r.pots)r.pots=[];if(r.inv.pots===undefined)r.inv.pots=0;
   if(!r.recipes)r.recipes=["thyme","garlic"];if(r.inv.salt===undefined)r.inv.salt=0;if(r.inv.chum===undefined)r.inv.chum=0;
   if(r.inv.snares===undefined)r.inv.snares=2;if(r.inv.arrows===undefined)r.inv.arrows=0;
+  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
 function fishPrice(k){
@@ -1838,8 +1964,9 @@ function fishPrice(k){
   const T=town(),reg=T.city?1:f.water===T.want?1.3:f.water===T.home?0.8:1;
   const cityB=T.city?(["Rare","Very rare"].includes(f.rarity)?CITY_RARE:1)*(form==="dish"?CITY_DISH:1):1;
   const sat=1/(1+0.15*(run.market[mkKey(k.id)]||0));
-  const p=(b[0]+b[1]*k.w)*[0,0.8,0.9,1,1.15,1.35][k.stars||3]*fr*reg*sat*pm*cityB;
-  return {p:Math.max(0,Math.round(p)),fr,reg,sat,water:f.water,form,cityB,rare:["Rare","Very rare"].includes(f.rarity)};}
+  const rm=repMul(townId());
+  const p=(b[0]+b[1]*k.w)*[0,0.8,0.9,1,1.15,1.35][k.stars||3]*fr*reg*sat*pm*cityB*rm;
+  return {p:Math.max(0,Math.round(p)),fr,reg,sat,water:f.water,form,cityB,rm,rare:["Rare","Very rare"].includes(f.rarity)};}
 function sellScreen(){
   const rows=run.keep.map((k,i)=>{const q=fishPrice(k);const tags=[];
     tags.push(q.fr===0?"spoiled":q.form!=="raw"?(q.fr<1?"getting old":"good"):q.fr<1?(q.fr>0.6?"day-old":"stale"):"fresh");
@@ -1847,6 +1974,8 @@ function sellScreen(){
     if(q.reg>1)tags.push(`${q.water.toLowerCase()} fish +30%`);else if(q.reg<1)tags.push(`${q.water.toLowerCase()} fish −20%`);
     if(q.cityB>1){if(q.rare)tags.push("rare fish +50%");if(q.form==="dish")tags.push("city dish trade +25%");}
     if(q.sat<0.95)tags.push(`market −${Math.round((1-q.sat)*100)}%`);
+    if(Math.abs(q.rm-1)>=0.01)tags.push(`standing ${q.rm>1?"+":"−"}${Math.abs(Math.round((q.rm-1)*100))}%`);
+    if(run.jobs&&run.jobs.some(j=>fitsJob(j,k)))tags.push("wanted for a request");
     return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)} <span class="stars" style="font-size:12px">${stars(k.stars||3)}</span><small>${tags.join(" · ")}</small></span>
     ${q.p>0?`<button class="iconbtn" data-sell="${i}" type="button">Sell ${q.p} FB</button>`:`<button class="iconbtn" data-dump="${i}" type="button">Bin it</button>`}</div>`;}).join("");
   const total=run.keep.reduce((a,k)=>a+fishPrice(k).p,0);
@@ -1855,7 +1984,7 @@ function sellScreen(){
   <p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b></p>
   <div class="acts">${rows||'<p class="note">Nothing to sell. Go and catch something.</p>'}</div>
   <div class="controls"><button class="big ghost" id="sBackT" type="button" style="flex:1">Back</button>${total?`<button class="big strike" id="sAll" type="button">Sell all</button>`:""}</div>`);
-  const sell=i=>{const k=run.keep[i];const q=fishPrice(k);run.bucks+=q.p;run.market[mkKey(k.id)]=(run.market[mkKey(k.id)]||0)+1;run.keep.splice(i,1);return q.p;};
+  const sell=i=>{const k=run.keep[i];const q=fishPrice(k);run.bucks+=q.p;if(repOf(townId())<10)addRep(townId(),0.2);run.market[mkKey(k.id)]=(run.market[mkKey(k.id)]||0)+1;run.keep.splice(i,1);return q.p;};
   document.querySelectorAll("[data-sell]").forEach(b=>b.onclick=()=>{const p=sell(+b.dataset.sell);toast(`+${p} Fish Bucks`);renderHud();sellScreen();});
   document.querySelectorAll("[data-dump]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.dump,1);sellScreen();});
   if($("#sAll"))$("#sAll").onclick=()=>{let got=0;for(let i=run.keep.length-1;i>=0;i--){if(fishPrice(run.keep[i]).p>0)got+=sell(i);}toast(`+${got} Fish Bucks`);renderHud();sellScreen();};
@@ -1866,7 +1995,7 @@ function shopStock(){
   if(run.shop.day!==run.day){
     const pool=Object.keys(GEAR).filter(id=>GEAR[id].price>0&&id!=="hazelfly"&&id!=="bow"&&id!=="smoker"&&id!=="bbq");
     for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-    run.shop={day:run.day,stock:pool.slice(0,town().city?6:4)};}
+    run.shop={day:run.day,stock:pool.slice(0,(town().city?6:4)+(repOf(townId())>=60?1:0))};}
   return ["hazelfly",...run.shop.stock].filter((id,i,a)=>a.indexOf(id)===i);
 }
 function shopScreen(tab){
@@ -1925,6 +2054,7 @@ function kitScreen(onBack){
   <h3>Tackle</h3><div class="acts">${slot("Rod","rod","rod")}${slot("Fly rod","fly","flyrod")}${slot("Reel","reel","reel")}</div>
   <h3>Bag</h3><p class="note"><b>Bait:</b> ${bait}<br><b>Lures and flies:</b> ${lures}<br><b>Line:</b> ${lines}<br><b>Snares:</b> ${run.inv.snares} in the bag, ${run.snares.length} set · <b>Traps:</b> ${run.inv.pots} in the bag, ${run.pots.length} out · <b>Arrows:</b> ${run.inv.arrows}<br><b>Bandages:</b> ${run.inv.bandages} · <b>Salt:</b> ${run.inv.salt} · <b>Chum:</b> ${run.inv.chum} · <b>Recipes:</b> ${run.recipes.length}</p>
   ${kit?`<h3>Kit</h3><div class="acts">${kit}</div>`:""}
+  ${run.jobs&&run.jobs.length?`<h3>Requests</h3><div class="acts">${run.jobs.map(j=>jobRow(j,null)).join("")}</div>`:""}
   <div class="controls"><button class="big ghost" id="kBack" type="button" style="flex:1">Back</button></div>`);
   document.querySelectorAll("[data-eq]").forEach(sel=>sel.onchange=()=>{run.equip[sel.dataset.eq]=sel.value;kitScreen(onBack);});
   $("#kBack").onclick=onBack;
@@ -1932,7 +2062,7 @@ function kitScreen(onBack){
 
 /* ---------- Tavern ---------- */
 function goTavern(id){id=id||(isTown(run.loc)?run.loc:"tavern");run.loc=id;run.lastTown=id;G.state="tavern";G.fish=null;G.float=null;G.cast=null;G.reeling=false;setCondsEnabled(false);headerButtons(true);
-  $("#panel").innerHTML=`<div class="hint">You're at ${innMid(id)}, ${TOWNS[id].n}.</div>`;renderHud();tavernMenu();}
+  $("#panel").innerHTML=`<div class="hint">You're at ${innMid(id)}, ${TOWNS[id].n}.</div>`;renderHud();deliverHere(id);tavernMenu();}
 function tavernMenu(){
   const T=town(),ROOM=T.room;
   showOverlay(`<span class="tag">${T.n}</span><h2>${T.inn}</h2>
@@ -1946,6 +2076,7 @@ function tavernMenu(){
   <h3>Trade</h3><div class="acts">
     <button class="act" id="tSell" type="button"><span>Sell your catch<small>${run.keep.length?run.keep.length+" fish in your keep net":"Your keep net is empty"}. ${T.n} ${wantText(T)}.</small></span></button>
     <button class="act" id="tCook" type="button"><span>Talk to ${T.cook}, the cook<small>Learn recipes, including ${T.n}'s own dishes. ${run.recipes.length} of ${Object.keys(RECIPES).length} known.</small></span></button>
+    <button class="act" id="tReq" type="button"><span>Request board<small>${(()=>{const t=townId(),mine=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length;return `${repName(repOf(t))} here.${mine?` <b style="color:var(--brass)">${mine} ready to hand in.</b>`:" Orders, deliveries and rewards."}`;})()}</small></span></button>
     <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
   </div>
@@ -1959,7 +2090,7 @@ function tavernMenu(){
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
-  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tShop").onclick=()=>shopScreen("bait");
+  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tShop").onclick=()=>shopScreen("bait");
   $("#tBoard").onclick=()=>memorialView(tavernMenu);
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?tavernMenu:campMenu));

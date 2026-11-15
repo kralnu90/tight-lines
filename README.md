@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.22.0** · experimental build
+**Current version: 0.23.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -39,6 +39,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **Chum:** spoiled fish isn't wasted. Chop it up, throw it in, and bites come much quicker for two hours.
 - **Skills:** fishing, hunting, foraging and cooking each level from 1 to 50, with unlocks every 5 levels. Cooking your catch at camp trains cooking, and events train hunting and foraging.
 - **Three save slots, a log book with star ratings and personal bests, and fishing XP.**
+- **Request boards and reputation:** every inn has a board of orders that changes every two days: fresh catches, specimen fish, top-quality fish, rare fish, salted or smoked fish, recipe dishes and parcels to deliver to other towns. Take on three at a time and beat the deadline for Fish Bucks and sometimes a recipe, gear or rare tackle. Each town remembers you: good standing means better prices, better orders and more in the shop, and missed deadlines cost you.
 - **Online leaderboard:** see the heaviest fish of every species landed by other players. Your angler's best catch of each species posts automatically when you're online, and waits on your phone until you are. No account or code needed, and you can turn sharing off in Settings.
 
 ## How to play
@@ -71,7 +72,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 1 · Fishing core | Fish, spots, techniques, gear grades, weather, journal, level unlocks, traps and pots, tilt controls | Done |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules, injuries, tuning | Done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | First pass done |
-| 4 · Towns and trade | Fish Bucks, shops, region map, Saltwick, Thornmere, Kingsbridge (done); request boards, reputation, gossip, festivals, storage | In progress |
+| 4 · Towns and trade | Fish Bucks, shops, region map, Saltwick, Thornmere, Kingsbridge, request boards, reputation (done); gossip, festivals, storage | In progress |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
@@ -82,6 +83,16 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 Open the link on your Android phone and install it. The first time, Android asks you to allow installs from your browser or file manager. The app loads the live game, so updates arrive without reinstalling. Saves in the app are separate from saves in your browser.
 
 ## Changelog
+
+### 0.23.0 · Request boards and reputation (15 Nov 2026)
+- A request board at every inn, with new notices every two days
+- Orders for fresh catches, specimen fish, 4-star fish, rare fish, salted or smoked fish and recipe dishes, plus parcels to deliver to other towns
+- Take on up to 3 at a time. Beat the deadline for Fish Bucks, and sometimes a recipe, gear, lures or bait
+- Every town remembers you: Stranger, Known, Regular, Friend, then Local legend
+- Good standing raises the price an inn pays (up to +20%), unlocks harder, better-paid orders and adds gear to the shop
+- Missing a deadline or giving up a request costs standing, and a distrusted angler gets paid less
+- Your requests show in the Kit screen, and fish wanted for a request are marked when you sell
+- The legendary hunt notice is up, sealed until fishing level 30
 
 ### 0.22.0 · Thornmere and Kingsbridge (15 Nov 2026)
 - Thornmere, a lakeside village on the north shore of Willowmere Lake, with the Heron's Rest inn, its own tackle shop and Agnes the cook
