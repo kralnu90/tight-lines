@@ -302,8 +302,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.23.0";
+const VERSION="0.24.0";
 const CHANGELOG=[
+  {v:"0.24.0",date:"15 Nov 2026",title:"News, gossip and festivals",items:["News and gossip at every inn: buy the Kingsbridge Courier (1 FB) or a round at the bar (3 FB)", "Other towns' prices are hidden until you hear about them", "Market news that comes and goes: storms keeping the fleet in, bumper years, banquets, weddings, shortages and gluts, each lasting a few days", "Five festivals, always on the same days each year: the Willowmere Spring Fair, Saltwick Mackerel Festival, Kingsbridge Food Fair, Thornmere Pike and Perch Fair and Kingsbridge Midwinter Market", "Festival posters go up in town five days ahead, and the paper lists everything in the next ten days", "Seasonal prices: fish that only run in some seasons sell for 10% less in season and 30% more out of it", "Old anglers at the bar share tips on where and when rare fish turn up", "The sell screen shows every price change: season, festival, market news and your standing"]},
   {v:"0.23.0",date:"15 Nov 2026",title:"Request boards and reputation",items:["A request board at every inn, with new notices every two days", "Orders for fresh catches, specimen fish, 4-star fish, rare fish, salted or smoked fish and recipe dishes, plus parcels to deliver to other towns", "Take on up to 3 at a time. Beat the deadline for Fish Bucks, and sometimes a recipe, gear, lures or bait", "Every town remembers you: Stranger, Known, Regular, Friend, then Local legend", "Good standing raises the price an inn pays (up to +20%), unlocks harder, better-paid orders and adds gear to the shop", "Missing a deadline or giving up a request costs standing, and a distrusted angler gets paid less", "Your requests show in the Kit screen, and fish wanted for a request are marked when you sell", "The legendary hunt notice is up, sealed until fishing level 30"]},
   {v:"0.22.0",date:"15 Nov 2026",title:"Thornmere and Kingsbridge",items:["Thornmere, a lakeside village on the north shore of Willowmere Lake, with the Heron's Rest inn, its own tackle shop and Agnes the cook", "Kingsbridge, the city: the Crown inn, a bigger tackle shop and Henri the head chef", "The trade triangle is complete: Thornmere pays 30% more for sea fish and less for lake fish", "The city pays a fair price for every kind of fish, 50% more for rare fish and 25% more for dishes", "Four new regional dishes: Thornmere perch in brown butter and sorrel, Thornmere baked pike with juniper, Kingsbridge eel pie and Kingsbridge potted smoked trout", "Both new towns are on the map, and you can save at either inn"]},
   {v:"0.21.0",date:"15 Nov 2026",title:"Motion casting",items:["Cast by flicking the phone: hold Cast, swing back, flick forward and let go (Settings, Motion casting)","Flick speed sets the distance, letting go as the flick peaks makes a clean cast, and tilting left or right aims","Practice screen shows your power, timing and flick speed, and sets full power to suit your wrist","Swipe casting still works alongside it"]},
@@ -1053,7 +1054,7 @@ window.addEventListener("pagehide",suspend);
 function advance(mins,opt){
   if(!run||mins<=0)return;opt=opt||{};
   while(mins>0){const m=Math.min(mins,10);mins-=m;const h=m/60;const N=run.needs;
-    run.min+=m;if(run.min>=1440){run.min-=1440;run.day++;if((run.day-1)%10===0)toast(`A new season: ${conds().season}`,false,2200);}
+    run.min+=m;if(run.min>=1440){run.min-=1440;run.day++;if((run.day-1)%10===0)toast(`A new season: ${conds().season}`,false,2200);dailyMarket();}
     run.weatherIn-=m;if(run.weatherIn<=0){run.weather=pickWeather(conds().season);if(run.weather==="Windy")run.windDir=Math.random()<0.5?-1:1;run.weatherIn=rand(180,480);}
     run.away+=m;
     const NM=diff().needs;
@@ -1871,6 +1872,84 @@ function boardScreen(){
     run.jobs=run.jobs.filter(o=>o.id!==j.id);addRep(j.town,-REP_DROP[j.tier]);toast("You take the notice down. They'll remember that.",true,2200);boardScreen();});
   $("#bdBack").onclick=tavernMenu;}
 
+/* ---------- Market news: seasonal prices, festivals, price events, gossip and the newspaper ---------- */
+// Fish that only run in some seasons sell for less while everyone's catching them and more out of season.
+function seasonMul(f){if(f.seasons.length>=4)return 1;return f.seasons.includes(conds().season)?0.9:1.3;}
+// Festivals are fixed in the calendar (day 1–10 of a season), never random, so you can plan for them.
+const FESTIVALS=[
+  {id:"springfair",town:"tavern",season:"Spring",day:6,len:2,n:"Willowmere Spring Fair",water:"River",mult:1.5,dish:1.3,desc:"River fish pay 50% more at the Arms, and dishes 30% more."},
+  {id:"mackerel",town:"saltwick",season:"Summer",day:4,len:2,n:"Saltwick Mackerel Festival",fish:["mackerel"],mult:2,dish:1.3,desc:"Mackerel in any form fetches double, and dishes 30% more."},
+  {id:"foodfair",town:"city",season:"Summer",day:8,len:2,n:"Kingsbridge Food Fair",dish:1.5,desc:"Every dish sells for 50% more at the Crown."},
+  {id:"pikefair",town:"thornmere",season:"Autumn",day:7,len:2,n:"Thornmere Pike and Perch Fair",fish:["pike","perch"],mult:1.8,dish:1.2,desc:"Pike and perch pay 80% more at the Heron's Rest."},
+  {id:"midwinter",town:"city",season:"Winter",day:5,len:2,n:"Kingsbridge Midwinter Market",preserved:1.4,dish:1.5,desc:"Salted and smoked fish pay 40% more and dishes 50% more."}
+];
+function seasonIdx(day){return Math.floor((day-1)/10)%4;}
+// absolute day a festival next starts, from today (or today if it's on)
+function festStart(F){const today=run.day;for(let d=today-F.len+1;d<today+40;d++){if(d<1)continue;if(SEASONS[seasonIdx(d)]===F.season&&((d-1)%10)+1===F.day)return d;}return null;}
+function festOn(F){const s=festStart(F);return s!==null&&run.day>=s&&run.day<s+F.len;}
+function festsHere(t){return FESTIVALS.filter(F=>F.town===t&&festOn(F));}
+function festMul(f,k,t){let m=1;const form=k.form||"raw";
+  for(const F of festsHere(t)){
+    if((F.water&&f.water===F.water)||(F.fish&&F.fish.includes(f.id)))m*=F.mult||1;
+    if(form==="dish"&&F.dish)m*=F.dish;
+    if((form==="salted"||form==="smoked")&&F.preserved)m*=F.preserved;}
+  return m;}
+// Price events come and go each day. They change prices whether you've heard of them or not.
+function mktMul(f,k,t){let m=1;for(const e of (run.mkt||[])){if(e.until<run.day)continue;if(e.town&&e.town!==t)continue;
+  if((e.water&&f.water===e.water)||(e.fish&&e.fish===f.id)||(e.dish&&(k.form||"raw")==="dish"))m*=e.mult;}return m;}
+function dailyMarket(){
+  if(!run.mkt)run.mkt=[];run.mkt=run.mkt.filter(e=>e.until>=run.day);
+  if(run.mkt.length>=3||Math.random()>0.55)return;
+  const s=conds().season,V=["tavern","saltwick","thornmere"],len=2+Math.floor(Math.random()*3),until=run.day+len-1;
+  const inSeason=r=>FISH.filter(f=>r.includes(f.rarity)&&f.seasons.includes(s)&&f.methods[0]!=="Pot");
+  const W={River:"river",Lake:"lake",Coast:"sea"};
+  const opts=[
+    ()=>({town:"saltwick",water:"Coast",mult:1.4,text:"A storm's keeping the Saltwick fleet in harbour. Sea fish are scarce there, and the Lantern and Gull is paying well for them."}),
+    ()=>{const f=pick(inSeason(["Common"]));return f&&{fish:f.id,mult:0.7,text:`A bumper year for ${f.name.toLowerCase()}. Every market from here to Kingsbridge is full of them, and prices are down.`};},
+    ()=>{const f=pick(inSeason(["Uncommon","Rare"]));return f&&{town:"city",fish:f.id,mult:1.6,text:`Henri at the Crown wants ${f.name.toLowerCase()} for a merchants' banquet, and he's paying over the odds.`};},
+    ()=>{const t=pick(V);return {town:t,dish:1,mult:1.4,text:`There's a wedding in ${TOWNS[t].n}, and ${innMid(t)} is buying every fish dish it can get.`};},
+    ()=>{const t=pick(V),w=pick(Object.keys(W).filter(x=>x!==TOWNS[t].want));return {town:t,water:w,mult:1.35,text:`${TOWNS[t].n}'s usual supplier has let them down. They're short of ${W[w]} fish.`};},
+    ()=>{const t=pick(Object.keys(TOWNS)),w=pick(Object.keys(W));return {town:t,water:w,mult:0.75,text:`A fishing club cleaned out the ${W[w]} spots and sold the lot in ${TOWNS[t].n}. ${capF(W[w])} fish are cheap there for now.`};}
+  ];
+  const e=pick(opts)();if(!e)return;
+  if(run.mkt.some(o=>o.town===e.town&&o.water===e.water&&o.fish===e.fish&&!!o.dish===!!e.dish))return;
+  Object.assign(e,{id:Math.random().toString(36).slice(2,8),until,heard:false});run.mkt.push(e);}
+function mktTag(e){const pct=Math.round((e.mult-1)*100);return `${e.town?TOWNS[e.town].n:"Everywhere"}: ${e.water?{River:"river",Lake:"lake",Coast:"sea"}[e.water]+" fish":e.fish?fishById(e.fish).name.toLowerCase():"dishes"} ${pct>0?"+":"−"}${Math.abs(pct)}%, until the end of day ${e.until}`;}
+function festDays(F){const s=festStart(F);return s===null?null:s-run.day;}
+function festLine(F){const d=festDays(F),when=festOn(F)?`<b style="color:var(--brass)">On now</b>, until the end of day ${festStart(F)+F.len-1}`:d===1?"Starts tomorrow":`In ${d} days (day ${festStart(F)})`;
+  return `<div class="act" style="cursor:default"><span>${F.n}<small>${when} · ${TOWNS[F.town].n}. ${F.desc}</small></span></div>`;}
+// Rare fish tips from the regulars: where and when a rare fish has been seen
+function fishTip(){const f=pick(FISH.filter(x=>["Rare","Very rare"].includes(x.rarity)&&x.methods[0]!=="Pot"));
+  const sp=Object.values(SPOTS).find(s=>s.water===f.water);
+  return `"${f.name}? ${pick(["My cousin had one","I saw one landed","Old Tom swears he hooked one"])} at ${sp.name}. ${f.seasons.length>=4?"Any time of year":"In "+f.seasons.join(" or ").toLowerCase()}, ${f.times.map(t=>t.toLowerCase()).join(" or ")}${f.weather?`, and only when it's ${f.weather.map(w=>w.toLowerCase()).join(" or ")}`:""}. ${f.methods.join(" or ")} with ${f.baits.map(b=>b.toLowerCase()).join(" or ")}. Bring strong line."`;}
+function newsScreen(msg){
+  const t=townId(),T=TOWNS[t];if(!run.news)run.news={};if(!run.mkt)run.mkt=[];
+  const paper=run.news.paper===run.day,gossip=run.news.gossip&&run.news.gossip[t]===run.day;
+  const heard=run.mkt.filter(e=>e.until>=run.day&&(e.heard||(!e.town||e.town===t)));
+  const fests=FESTIVALS.filter(F=>{const d=festDays(F);return d!==null&&d<=10&&(paper||F.town===t||festOn(F)&&F.town===t||(run.news.fest||[]).includes(F.id));}).sort((a,b)=>festDays(a)-festDays(b));
+  const tips=(run.news.tips||[]).slice(-3).reverse();
+  showOverlay(`<span class="tag">${T.n}</span><h2>News and gossip</h2>
+    <p class="note">You only know what's happening in other towns' markets if you hear about it. Read the paper or buy a round and listen in.${T.city?"":" Festival posters for this town are up on the wall."}</p>
+    ${msg?`<p class="note" style="color:var(--cream)">${msg}</p>`:""}
+    <div class="acts">
+      <button class="act" id="nwPaper" type="button" ${paper||run.bucks<1?"disabled":""}><span>Buy the Kingsbridge Courier · 1 FB<small>${paper?"You've read today's edition.":"Market news from every town and the festival calendar."}</small></span></button>
+      <button class="act" id="nwRound" type="button" ${gossip||run.bucks<3?"disabled":""}><span>Buy a round and listen in · 3 FB<small>${gossip?"You've heard all the gossip in here today.":"Fishermen's tips, market rumours and who's paying for what."}</small></span><em>30 min</em></button>
+    </div>
+    <h3>Markets you know about</h3><div class="acts">${heard.length?heard.map(e=>`<div class="act" style="cursor:default"><span>${mktTag(e)}<small>${e.text}</small></span></div>`).join(""):'<p class="note">Nothing you\'ve heard of. Prices are as usual, as far as you know.</p>'}</div>
+    <h3>Festivals</h3><div class="acts">${fests.length?fests.map(festLine).join(""):'<p class="note">No festivals you know of in the next 10 days.</p>'}</div>
+    ${tips.length?`<h3>Fishermen's tips</h3><div class="acts">${tips.map(x=>`<p class="note">${x}</p>`).join("")}</div>`:""}
+    <p class="note">Fish that only run in some seasons sell for 10% less while they're in season and 30% more out of it. Salted and smoked fish are how you sell them out of season.</p>
+    <div class="controls"><button class="big ghost" id="nwBack" type="button" style="flex:1">Back</button></div>`);
+  $("#nwPaper").onclick=()=>{run.bucks-=1;run.news.paper=run.day;run.mkt.forEach(e=>e.heard=true);renderHud();newsScreen("You read the Courier cover to cover over a cup of tea.");};
+  $("#nwRound").onclick=()=>{run.bucks-=3;advance(30);renderHud();if(checkDeath())return;if(!run.news.gossip)run.news.gossip={};run.news.gossip[t]=run.day;
+    const unheard=run.mkt.filter(e=>e.until>=run.day&&!e.heard&&e.town!==t),soon=FESTIVALS.filter(F=>{const d=festDays(F);return d!==null&&d<=10&&F.town!==t&&!(run.news.fest||[]).includes(F.id);});
+    const roll=Math.random();let say;
+    if(unheard.length&&roll<0.55){const e=pick(unheard);e.heard=true;say=`A carter at the bar has just come from ${e.town?TOWNS[e.town].n:"all over"}. ${e.text}`;}
+    else if(soon.length&&roll<0.75){const F=pick(soon);(run.news.fest=run.news.fest||[]).push(F.id);say=`Everyone's talking about the ${F.n} in ${festDays(F)<=0?"full swing":festDays(F)+" days"}. ${F.desc}`;}
+    else{const tip=fishTip();(run.news.tips=run.news.tips||[]).push(tip);run.news.tips=run.news.tips.slice(-6);say=`An old angler leans over once his pint's in hand. ${tip}`;}
+    newsScreen(say);};
+  $("#nwBack").onclick=tavernMenu;}
+
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
 // tiltRange: degrees of tilt for full rod travel. tiltZero: the "level" angle saved by Calibrate.
@@ -1952,7 +2031,7 @@ function withKit(r){
   if(!r.larder)r.larder=[];if(!r.snares)r.snares=[];if(!r.pots)r.pots=[];if(r.inv.pots===undefined)r.inv.pots=0;
   if(!r.recipes)r.recipes=["thyme","garlic"];if(r.inv.salt===undefined)r.inv.salt=0;if(r.inv.chum===undefined)r.inv.chum=0;
   if(r.inv.snares===undefined)r.inv.snares=2;if(r.inv.arrows===undefined)r.inv.arrows=0;
-  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};
+  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};if(!r.mkt)r.mkt=[];if(!r.news)r.news={};
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
 function fishPrice(k){
@@ -1964,9 +2043,9 @@ function fishPrice(k){
   const T=town(),reg=T.city?1:f.water===T.want?1.3:f.water===T.home?0.8:1;
   const cityB=T.city?(["Rare","Very rare"].includes(f.rarity)?CITY_RARE:1)*(form==="dish"?CITY_DISH:1):1;
   const sat=1/(1+0.15*(run.market[mkKey(k.id)]||0));
-  const rm=repMul(townId());
-  const p=(b[0]+b[1]*k.w)*[0,0.8,0.9,1,1.15,1.35][k.stars||3]*fr*reg*sat*pm*cityB*rm;
-  return {p:Math.max(0,Math.round(p)),fr,reg,sat,water:f.water,form,cityB,rm,rare:["Rare","Very rare"].includes(f.rarity)};}
+  const tid=townId(),rm=repMul(tid),sm=seasonMul(f),fm=festMul(f,k,tid),mm=mktMul(f,k,tid);
+  const p=(b[0]+b[1]*k.w)*[0,0.8,0.9,1,1.15,1.35][k.stars||3]*fr*reg*sat*pm*cityB*rm*sm*fm*mm;
+  return {p:Math.max(0,Math.round(p)),fr,reg,sat,water:f.water,form,cityB,rm,sm,fm,mm,rare:["Rare","Very rare"].includes(f.rarity)};}
 function sellScreen(){
   const rows=run.keep.map((k,i)=>{const q=fishPrice(k);const tags=[];
     tags.push(q.fr===0?"spoiled":q.form!=="raw"?(q.fr<1?"getting old":"good"):q.fr<1?(q.fr>0.6?"day-old":"stale"):"fresh");
@@ -1974,6 +2053,9 @@ function sellScreen(){
     if(q.reg>1)tags.push(`${q.water.toLowerCase()} fish +30%`);else if(q.reg<1)tags.push(`${q.water.toLowerCase()} fish −20%`);
     if(q.cityB>1){if(q.rare)tags.push("rare fish +50%");if(q.form==="dish")tags.push("city dish trade +25%");}
     if(q.sat<0.95)tags.push(`market −${Math.round((1-q.sat)*100)}%`);
+    if(q.sm>1)tags.push("out of season +30%");else if(q.sm<1)tags.push("in season −10%");
+    if(q.fm>1)tags.push(`festival +${Math.round((q.fm-1)*100)}%`);
+    if(Math.abs(q.mm-1)>=0.01)tags.push(`market news ${q.mm>1?"+":"−"}${Math.abs(Math.round((q.mm-1)*100))}%`);
     if(Math.abs(q.rm-1)>=0.01)tags.push(`standing ${q.rm>1?"+":"−"}${Math.abs(Math.round((q.rm-1)*100))}%`);
     if(run.jobs&&run.jobs.some(j=>fitsJob(j,k)))tags.push("wanted for a request");
     return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)} <span class="stars" style="font-size:12px">${stars(k.stars||3)}</span><small>${tags.join(" · ")}</small></span>
@@ -2076,6 +2158,8 @@ function tavernMenu(){
   <h3>Trade</h3><div class="acts">
     <button class="act" id="tSell" type="button"><span>Sell your catch<small>${run.keep.length?run.keep.length+" fish in your keep net":"Your keep net is empty"}. ${T.n} ${wantText(T)}.</small></span></button>
     <button class="act" id="tCook" type="button"><span>Talk to ${T.cook}, the cook<small>Learn recipes, including ${T.n}'s own dishes. ${run.recipes.length} of ${Object.keys(RECIPES).length} known.</small></span></button>
+    <button class="act" id="tNews" type="button"><span>News and gossip<small>${(()=>{const t=townId(),F=festsHere(t)[0];const up=FESTIVALS.filter(x=>x.town===t&&!festOn(x)&&festDays(x)!==null&&festDays(x)<=5)[0];
+      return F?`<b style="color:var(--brass)">${F.n} is on!</b> ${F.desc}`:up?`Posters up: ${up.n} ${festDays(up)===1?"tomorrow":"in "+festDays(up)+" days"}.`:"The paper, the regulars, and what other towns are paying.";})()}</small></span></button>
     <button class="act" id="tReq" type="button"><span>Request board<small>${(()=>{const t=townId(),mine=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length;return `${repName(repOf(t))} here.${mine?` <b style="color:var(--brass)">${mine} ready to hand in.</b>`:" Orders, deliveries and rewards."}`;})()}</small></span></button>
     <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
@@ -2090,7 +2174,7 @@ function tavernMenu(){
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
-  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tShop").onclick=()=>shopScreen("bait");
+  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tNews").onclick=()=>newsScreen();$("#tShop").onclick=()=>shopScreen("bait");
   $("#tBoard").onclick=()=>memorialView(tavernMenu);
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?tavernMenu:campMenu));
