@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.19.0** · experimental build
+**Current version: 0.20.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -68,14 +68,25 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | Phase | What it adds | Status |
 | --- | --- | --- |
 | 0 · Fight prototype | Casting, bites, the fight, landing | Done |
-| 1 · Fishing core | Fish, spots, techniques, gear grades, weather, journal, level unlocks, traps and pots | Done (tilt controls come with the app) |
+| 1 · Fishing core | Fish, spots, techniques, gear grades, weather, journal, level unlocks, traps and pots, tilt controls | Done |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules, injuries, tuning | Done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | First pass done |
 | 4 · Towns and trade | Fish Bucks, shops, region map, Saltwick (done); lakeside village, city, request boards, reputation, gossip, festivals, storage | In progress |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
+## Android app (test build)
+
+📱 **[Download tight-lines.apk](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
+
+Open the link on your Android phone and install it. The first time, Android asks you to allow installs from your browser or file manager. The app loads the live game, so updates arrive without reinstalling. Saves in the app are separate from saves in your browser.
+
 ## Changelog
+
+### 0.20.0 · Tilt controls (15 Nov 2026)
+- Tilt the phone left and right to move the rod in a fight (Settings, Tilt controls)
+- Calibrate to however you hold the phone, and set how far you need to tilt for full rod
+- Works in the browser and in the Android app
 
 ### 0.19.0 · Saltwick and the map (15 Nov 2026)
 - A region map: see every town and fishing spot with travel times, and tap to travel

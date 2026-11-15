@@ -302,8 +302,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.19.0";
+const VERSION="0.20.0";
 const CHANGELOG=[
+  {v:"0.20.0",date:"15 Nov 2026",title:"Tilt controls",items:["Tilt the phone left and right to move the rod in a fight (Settings, Tilt controls)","Calibrate to however you hold the phone, and set how far you need to tilt for full rod","Works in the browser and in the Android app"]},
   {v:"0.19.0",date:"15 Nov 2026",title:"Saltwick and the map",items:["A region map: see every town and fishing spot with travel times, and tap to travel","Saltwick, a seaside village half an hour from Saltmarsh Point, with the Lantern and Gull inn, its own tackle shop and Bram the cook","The trade triangle starts working: Saltwick pays 30% more for river fish and less for sea fish, Willowmere pays more for lake fish","Each town has its own market, so flooding one doesn't drop prices in the other","Regional dishes sell for 30% more away from home. Two new Saltwick dishes: crab cakes and soused mackerel with fennel","You can save at either inn and wake there"]},
   {v:"0.18.0",date:"15 Nov 2026",title:"Tougher fights",items:["Fish now bolt straight away from you, more often once they're close and still fresh. The line jolts tight, so stop reeling and give line","Fish tire more slowly and get their breath back if you let the line go slack","Fish pull about 10% harder and take more line on their runs","Fights last about half as long again, and big fish on basic gear will break you off more often"]},
   {v:"0.17.0",date:"14 Nov 2026",title:"Injuries and survival tuning",items:["Injuries that last: open wounds, sprained ankles, cracked ribs, and being chilled to the bone after hours at zero warmth","Wounds stop your health coming back until cleaned on the fire or bandaged, and can get infected if left 12 hours","Sprains slow travel and tire you, cracked ribs slow your reeling and healing","Bandages in the new Camp tab at the tackle shop (you start with one). A room at the Arms dresses everything and halves healing time","Animal encounters, falls and tracking mishaps now cause injuries","Survival retuned: food drains about 20% slower, energy drains faster and every fight costs a little, health comes back faster when you're fed, warm and watered, rain is slightly less cold"]},
@@ -613,6 +614,7 @@ function update(dt){
   if(G.t-hudT>0.25){hudT=G.t;renderHud();}
   const kx=(G.keys.right?1:0)-(G.keys.left?1:0);
   if(kx&&G.state==="fight")G.R=clamp(G.R+kx*dt*2.2,-1,1);
+  else if(save.settings.tilt&&TILT.seen&&G.state==="fight")G.R+=(TILT.want*save.settings.sens-G.R)*Math.min(1,dt*12);
   G.ripples.forEach(r=>{r.r+=dt*28;r.a-=dt*0.7;});G.ripples=G.ripples.filter(r=>r.a>0);
 
   if(G.state==="flight"){G.cast.t+=dt/0.7;if(G.cast.t>=1)landFloat();return;}
@@ -979,12 +981,12 @@ cv.addEventListener("pointerdown",e=>{
   const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
   try{cv.setPointerCapture(e.pointerId);}catch(_){}
   if(G.state==="ready"){G.aim={x0:x,y0:y,dx:0,dy:0,t0:performance.now(),id:e.pointerId};}
-  else if(G.state==="fight"){G.R=clamp((x-W/2)/(W*0.32)*save.settings.sens,-1,1);}
+  else if(G.state==="fight"&&!save.settings.tilt){G.R=clamp((x-W/2)/(W*0.32)*save.settings.sens,-1,1);}
 });
 cv.addEventListener("pointermove",e=>{
   const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
   if(G.state==="ready"&&G.aim&&G.aim.id===e.pointerId){G.aim.dx=x-G.aim.x0;G.aim.dy=y-G.aim.y0;}
-  else if(G.state==="fight"&&(e.buttons||e.pointerType==="touch")){G.R=clamp((x-W/2)/(W*0.32)*save.settings.sens,-1,1);}
+  else if(G.state==="fight"&&!save.settings.tilt&&(e.buttons||e.pointerType==="touch")){G.R=clamp((x-W/2)/(W*0.32)*save.settings.sens,-1,1);}
 });
 cv.addEventListener("pointerup",e=>{
   if(G.state==="ready"&&G.aim&&G.aim.id===e.pointerId){
@@ -1723,6 +1725,22 @@ function mapScreen(onBack){
   $("#mapBack").onclick=onBack;
 }
 
+/* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
+// Uses the phone's orientation sensor (works in the browser over https and in the app).
+// tiltRange: degrees of tilt for full rod travel. tiltZero: the "level" angle saved by Calibrate.
+const TILT={now:null,seen:false,want:0};
+function tiltAngle(e){const a=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
+  if(a===90)return e.beta;if(a===-90||a===270)return -e.beta;return e.gamma;}
+function onTilt(e){if(e.gamma==null&&e.beta==null)return;TILT.seen=true;TILT.now=tiltAngle(e);
+  if(save.settings.tilt&&G.state==="fight"){TILT.want=clamp((TILT.now-(save.settings.tiltZero||0))/(save.settings.tiltRange||25),-1,1);}
+  const el=document.getElementById("tiltNow");if(el)el.textContent=`${Math.round(TILT.now-(save.settings.tiltZero||0))}°`;}
+function startTilt(){
+  const go=()=>window.addEventListener("deviceorientation",onTilt);
+  if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+    return DeviceOrientationEvent.requestPermission().then(r=>{if(r==="granted"){go();return true;}return false;}).catch(()=>false);}
+  go();return Promise.resolve(true);}
+if(save.settings.tilt)startTilt();
+
 /* ---------- Economy: Fish Bucks, selling, shop, kit ---------- */
 const ROOM=6,MEAL=3;
 function withKit(r){
@@ -2127,6 +2145,7 @@ function howTo(onBack){
     <dt>Ledger</dt><dd>Bait on the bottom, cast further. Strike when the rod tip pulls right round.</dd>
     <dt>Spinning</dt><dd>Hold to retrieve. Fish hit a moving lure, and the hook sets itself.</dd>
     <dt>Fly</dt><dd>Short casts. Strike the instant a fish rises. On the river the fly drifts downstream.</dd></dl>
+  <h3>Tilt</h3><p>Prefer to steer with the phone? Turn on tilt controls in Settings, hold the phone how you like and tap Calibrate. In a fight, tilting left and right moves the rod instead of dragging.</p>
   <h3>The fight</h3><p>Fish fight longer than they used to and recover if you let the line go slack. When one <b>bolts away from you</b>, the line jolts tight: stop reeling and move the rod with it, then get back to work when it slows. Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
   <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each town wants something different: Willowmere, a riverside village, pays well for lake fish; Saltwick, a seaside village, pays well for river fish. Each pays less for its own kind. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p>
   <h3>Reading the float</h3><p>Fish don't all bite the same. The float can dip, shake, bob or slide, and some fish fake it with a dip that nearly goes under and pops back up. Strike on any of those and you'll spook it. Strike when it goes under, slides away and sinks, or lifts and lies flat on the surface: tench and bream often lift the bait instead of pulling it down.</p>
@@ -2157,9 +2176,19 @@ function settingsScreen(onBack){
   ${run?`<div class="row"><button class="iconbtn" id="skip1" type="button">Skip 1 hour</button><button class="iconbtn" id="skip6" type="button">Skip 6 hours</button></div>`:""}
   <div class="row"><label for="lbShare">Post my best catches to the online leaderboard</label><input id="lbShare" type="checkbox" ${lb.share?"checked":""}></div>
   <p class="note">Shares your angler name and each species' heaviest fish. No account or code needed.</p>
-  <p class="note">Tilt controls will come with the app build.</p>
+  <h3>Tilt controls</h3>
+  <div class="row"><label for="tiltOn">Tilt the phone to move the rod</label><input id="tiltOn" type="checkbox" ${save.settings.tilt?"checked":""}></div>
+  <p class="note" id="tiltMsg">In a fight, tilt left and right instead of dragging. Hold the phone how you normally would and tap Calibrate first. Right now: <b id="tiltNow">${TILT.seen?Math.round(TILT.now-(save.settings.tiltZero||0))+"°":"no reading yet"}</b></p>
+  <div class="row"><label for="tiltRange">Tilt needed for full rod <b id="tiltRv">${save.settings.tiltRange||25}°</b></label><input id="tiltRange" type="range" min="10" max="45" step="1" value="${save.settings.tiltRange||25}"></div>
+  <div class="row"><button class="iconbtn" id="tiltCal" type="button">Calibrate: hold level, then tap</button></div>
   <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back</button></div>`);
   $("#sens").oninput=e=>{save.settings.sens=+e.target.value;persist();};
+  $("#tiltOn").onchange=e=>{const on=e.target.checked;
+    if(!on){save.settings.tilt=false;persist();return;}
+    startTilt().then(ok=>{if(!ok){e.target.checked=false;$("#tiltMsg").textContent="Your phone didn't allow motion access, so tilt can't work. Check your browser's motion sensor permission.";return;}
+      save.settings.tilt=true;persist();setTimeout(()=>{if(!TILT.seen)$("#tiltMsg").textContent="No tilt sensor reading. This device may not have one (most computers don't).";},1500);});};
+  $("#tiltRange").oninput=e=>{save.settings.tiltRange=+e.target.value;$("#tiltRv").textContent=e.target.value+"°";persist();};
+  $("#tiltCal").onclick=()=>{if(!TILT.seen){startTilt();toast("No tilt reading yet. Turn tilt on and try again.",true,2000);return;}save.settings.tiltZero=TILT.now;persist();toast("Calibrated. That's level.",false,1600);};
   $("#dbg").onchange=e=>{save.settings.debug=e.target.checked;persist();};
   $("#evts").onchange=e=>{save.settings.events=e.target.checked;persist();};
   $("#unl").onchange=e=>{save.settings.unlockAll=e.target.checked;persist();if(G.state==="ready")fillMethods();};

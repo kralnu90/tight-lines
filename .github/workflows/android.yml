@@ -1,0 +1,79 @@
+# Builds the Tight Lines Android app (a test APK) on GitHub's servers and publishes it
+# as the "android-latest" release. The app is a thin shell around the live game at
+# kralnugames.com/tight-lines/, so game updates reach it without a new APK.
+# Run it from the Actions tab (Run workflow), or it runs itself when this file or the icons change.
+name: Build Android app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/android.yml"
+      - "icons/**"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Make the app shell
+        run: |
+          mkdir app && cd app
+          npm init -y > /dev/null
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          mkdir www
+          cp ../index.html ../manifest.webmanifest ../sw.js ../version.json www/
+          cp -r ../icons www/
+          cat > capacitor.config.json <<'JSON'
+          {
+            "appId": "com.kralnugames.tightlines",
+            "appName": "Tight Lines",
+            "webDir": "www",
+            "server": { "url": "https://kralnugames.com/tight-lines/", "androidScheme": "https" },
+            "android": { "allowMixedContent": false }
+          }
+          JSON
+          npx cap add android
+
+      - name: Portrait only, and the Tight Lines icon
+        run: |
+          cd app/android/app/src/main
+          sed -i 's/<activity\b/<activity android:screenOrientation="portrait"/' AndroidManifest.xml
+          command -v convert > /dev/null || (sudo apt-get update && sudo apt-get install -y imagemagick)
+          rm -rf res/mipmap-anydpi-v26
+          for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+            dir=res/mipmap-${d%%:*}; px=${d##*:}
+            convert ../../../../../icons/icon-512.png -resize ${px}x${px} $dir/ic_launcher.png
+            cp $dir/ic_launcher.png $dir/ic_launcher_round.png
+          done
+
+      - name: Build the APK
+        run: |
+          cd app/android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../../tight-lines.apk
+
+      - name: Publish it as the android-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --yes --cleanup-tag || true
+          gh release create android-latest tight-lines.apk \
+            --prerelease \
+            --title "Tight Lines for Android (test build)" \
+            --notes "Test build of the Tight Lines Android app. Download tight-lines.apk on your phone and open it to install. Android will ask you to allow installs from your browser or file manager the first time. The app loads the live game, so game updates arrive without reinstalling. Built from ${GITHUB_SHA::7}."
