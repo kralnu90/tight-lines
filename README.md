@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.17.0** · experimental build
+**Current version: 0.18.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -55,6 +55,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | Menu | Tap **Menu** | Esc |
 
 **Tips**
+- When a fish bolts away from you, stop reeling and move the rod with it until it slows.
 - Move the rod *with* a running fish to ease the tension. Move it *against* the run to tire the fish faster, but tension rises.
 - Chub, tench, pollock and conger bolt for the snags, weed or rocks. Turn them away fast.
 - When a trout or salmon jumps, stop reeling.
@@ -75,6 +76,12 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Changelog
+
+### 0.18.0 · Tougher fights (15 Nov 2026)
+- Fish now bolt straight away from you, more often once they're close and still fresh. The line jolts tight, so stop reeling and give line
+- Fish tire more slowly and get their breath back if you let the line go slack
+- Fish pull about 10% harder and take more line on their runs
+- Fights last about half as long again, and big fish on basic gear will break you off more often
 
 ### 0.17.0 · Injuries and survival tuning (14 Nov 2026)
 - Injuries that last: open wounds, sprained ankles, cracked ribs, and being chilled to the bone after hours at zero warmth

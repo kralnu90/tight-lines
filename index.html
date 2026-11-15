@@ -298,8 +298,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.17.0";
+const VERSION="0.18.0";
 const CHANGELOG=[
+  {v:"0.18.0",date:"15 Nov 2026",title:"Tougher fights",items:["Fish now bolt straight away from you, more often once they're close and still fresh. The line jolts tight, so stop reeling and give line","Fish tire more slowly and get their breath back if you let the line go slack","Fish pull about 10% harder and take more line on their runs","Fights last about half as long again, and big fish on basic gear will break you off more often"]},
   {v:"0.17.0",date:"14 Nov 2026",title:"Injuries and survival tuning",items:["Injuries that last: open wounds, sprained ankles, cracked ribs, and being chilled to the bone after hours at zero warmth","Wounds stop your health coming back until cleaned on the fire or bandaged, and can get infected if left 12 hours","Sprains slow travel and tire you, cracked ribs slow your reeling and healing","Bandages in the new Camp tab at the tackle shop (you start with one). A room at the Arms dresses everything and halves healing time","Animal encounters, falls and tracking mishaps now cause injuries","Survival retuned: food drains about 20% slower, energy drains faster and every fight costs a little, health comes back faster when you're fed, warm and watered, rain is slightly less cold"]},
   {v:"0.16.0",date:"14 Nov 2026",title:"Fishing core finished",items:["A less predictable float: dips, trembles, bobs, slides and false bites in random order and timing, and takes that plunge, slide away or lift and lie flat","Fly fishing gets near-miss rises that splash at your fly without taking it","New weather: wind (drifts your float, gusts in the fight, bass love it) and fog (predators come out, harder to see)","Rain makes the reel slippery during a fight","Fish journal: a page per species with your records and every season, time, weather, method, bait and spot you've caught it in","Methods now unlock by fishing level (5 ledger, 10 spinning, 15 fly). The testing switch is still in Settings","Traps and pots from fishing level 20: crayfish inland, brown crab and the odd lobster on the coast"]},
   {v:"0.15.0",date:"14 Nov 2026",title:"Deeper cooking",items:["A kitchen for every fish at camp: cook and eat, cook to keep, salt, smoke or cook a recipe","Prep dice rolls: gutting and filleting can go well (worth more, feeds more) or get botched","13 recipes using foraged ingredients: pan dishes, Dutch oven stews and chowders, BBQ grills, two Willowmere regional dishes and the Angler's truffle feast","Maggie, the cook at the Willowmere Arms, teaches recipes for coin or a rare fish; strangers and abandoned camps can share them too","Salting (level 15) and smoking (level 25, portable smoker) keep fish for 15 and 10 days and sell for 1.5× and 1.8×","Cooked, preserved and recipe fish all sell, priced by form, prep quality and recipe","Spoiled fish makes chum: throw it in for much quicker bites for 2 hours","New Kitchen tab at the tackle shop: salt, portable smoker and camp BBQ"]},
@@ -533,7 +534,7 @@ function hook(f){
   const r=Math.random();const w=f.min+(f.max-f.min)*Math.pow(r,2);const s=(w-f.min)/(f.max-f.min);
   const fl=G.float;const side=spot().snagSide;
   G.fish={f,w,s,D:fl.D,X:fl.X,S:1,T:0.3,dir:Math.random()<0.5?-1:1,mode:"rest",modeT:0.4,modePull:0.3,
-    pullScale:f.pull*(0.75+0.5*s),stamPool:f.stam*(0.75+0.6*s)*diff().stam,snapT:0,slackT:0,tangle:0,air:0,t:0,with:0,ang:0,vx:0,vd:0};
+    pullScale:f.pull*(0.75+0.5*s)*1.1,stamPool:f.stam*(0.75+0.6*s)*diff().stam,snapT:0,slackT:0,tangle:0,air:0,t:0,with:0,ang:0,vx:0,vd:0};
   if(f.dash){Object.assign(G.fish,{mode:"dash",dir:side,modeT:2.1,modePull:1.25});}
   G.state="fight";G.float=null;G.R=0;G.reeling=false;panelFight();
   const p=toScreen(fl.D,fl.X);G.ripples.push({x:p.x,y:p.y,r:4,a:1,sc:1});
@@ -546,6 +547,8 @@ function nextMode(F){
   if(f.roll&&Math.random()<0.35){F.mode="roll";F.modeT=rand(1.2,2);F.modePull=0.7;toast("It's rolling! Keep the line tight",true,1100);return;}
   if(f.surges&&Math.random()<0.25){F.mode="run";F.modeT=rand(0.5,0.9);F.modePull=1.3;toast("Sudden surge!",true,900);return;}
   if(f.shaky&&Math.random()<0.45){F.mode="shake";F.modeT=rand(0.6,1.2);F.modePull=0.75;return;}
+  // bolting straight away from the angler: more likely once it's close and still has fight in it
+  if(F.S>0.12&&Math.random()<0.28*(F.D<10?1.6:1)*(0.25+0.75*F.S)){F.mode="bolt";F.modeT=rand(1,2.4)*(f.longRuns?1.4:1);F.modePull=rand(1.15,1.45);F.kick=0.45;toast("It's bolting away from you!",true,1000);return;}
   if(Math.random()<0.55*(0.35+0.65*F.S)){F.mode="run";F.modeT=f.dives?rand(0.4,0.9):rand(0.8,2.4);F.modePull=rand(0.7,1.05);
     if(Math.random()<f.switchy)F.dir=-F.dir;return;}
   if(Math.random()<0.35){F.mode="shake";F.modeT=rand(0.5,1);F.modePull=0.6;return;}
@@ -650,7 +653,7 @@ function update(dt){
   const w=clamp(G.R*F.dir,-1,1);F.with=w;
   F.air=0;if(F.mode==="jump"){const k=1-F.modeT/1.1;if(k>0.25&&k<0.8)F.air=Math.sin((k-0.25)/0.55*Math.PI);}
   let lat=F.dir*0.45*f.speed*F.modePull*(0.4+0.6*F.S)*(1+0.75*Math.min(w,0));
-  if(F.mode==="rest")lat*=0.3;if(f.sluggish)lat*=0.5;
+  if(F.mode==="rest")lat*=0.3;if(F.mode==="bolt")lat*=0.25;if(f.sluggish)lat*=0.5;
   F.X+=lat*dt;
   if(F.mode==="dash"){if(w<-0.35)F.modeT-=dt*1.4;if(F.X*side>0.9&&F.t>0.6){lose(spot().snagLose);return;}}
   if(F.X>1){F.X=1;F.dir=-1;}if(F.X<-1){F.X=-1;F.dir=1;}
@@ -659,18 +662,19 @@ function update(dt){
   const RD=rodFor(conds().method),RL=reelNow();
   let target=(pullT+(G.reeling?0.5:0))*(LINES[conds().line]||LINES.Medium).k*RD.tm*diff().tension*save.settings.strict;
   if(conds().weather==="Windy")target+=0.12*Math.max(0,Math.sin(G.t*0.8)*Math.sin(G.t*2.1+1)); // gusts catch the line
+  if(F.kick>0){target+=0.22*(F.kick/0.45);F.kick-=dt;} // the line jolts tight as it bolts
   const dragLim=RL.drag;
   const capped=target>dragLim?dragLim+(target-dragLim)*0.54:target;
   F.T+=(Math.max(0,capped)-F.T)*Math.min(1,dt*9);
-  let runOut=P*2.4*(0.4+0.6*F.S)*(F.mode==="rest"?0.2:1)*(f.longRuns&&F.mode==="run"?1.6:1);
+  let runOut=P*2.8*(0.4+0.6*F.S)*(F.mode==="rest"?0.2:F.mode==="bolt"?2.2:1)*(f.longRuns&&F.mode==="run"?1.6:1);
   if(f.sluggish)runOut*=0.5;if(f.deep&&F.D<12)runOut*=1.5;
   const reelIn=G.reeling?RL.speed*(1-Math.min(1,P)*0.55)*(run&&run.needs.stam<20?0.65:1)*(conds().weather==="Rain"?0.93:1)*(hurtBy("ribs")?0.8:1):0; // wet hands slip on the reel; cracked ribs hurt
   if(run)run.needs.stam=Math.max(0,run.needs.stam-dt*(G.reeling?0.1:0.05));
   const dragOut=target>dragLim?(target-dragLim)*3:0;
   const prevD=F.D;F.D=clamp(F.D+(runOut*0.5+dragOut-reelIn)*dt,0.6,RL.cap+2);F.vd=(F.D-prevD)/dt;F.vx=lat;
   if(F.D>=RL.cap){lose("Spooled. It ran off all your line");return;}
-  const drain=(0.018+F.T*0.07+Math.max(-w,0)*P*0.09+(G.reeling?0.01:0))/F.stamPool;
-  F.S=clamp(F.S-drain*dt+(F.T<0.15?0.01*dt:0)+(f.stubborn&&F.mode==="rest"&&F.S>0.08?0.035*dt:0),0,1);
+  const drain=0.85*(0.018+F.T*0.07+Math.max(-w,0)*P*0.09+(G.reeling?0.01:0))/F.stamPool;
+  F.S=clamp(F.S-drain*dt+(F.T<0.3?0.02*dt:0)+(f.stubborn&&F.mode==="rest"&&F.S>0.08?0.035*dt:0),0,1);
   if(F.T>1){F.snapT+=dt;if(F.snapT>0.24){lose("Snap! The line broke");return;}}else F.snapT=Math.max(0,F.snapT-dt*1.5);
   if(F.air>0.5&&G.reeling&&Math.random()<dt*0.9){lose("It threw the hook mid-jump");return;}
   if(F.T<0.14&&F.D>1.2){F.slackT+=dt;if(F.slackT>1.6){lose("Too much slack. The hook slipped out");return;}}else F.slackT=Math.max(0,F.slackT-dt);
@@ -2058,7 +2062,7 @@ function howTo(onBack){
     <dt>Ledger</dt><dd>Bait on the bottom, cast further. Strike when the rod tip pulls right round.</dd>
     <dt>Spinning</dt><dd>Hold to retrieve. Fish hit a moving lure, and the hook sets itself.</dd>
     <dt>Fly</dt><dd>Short casts. Strike the instant a fish rises. On the river the fly drifts downstream.</dd></dl>
-  <h3>The fight</h3><p>Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
+  <h3>The fight</h3><p>Fish fight longer than they used to and recover if you let the line go slack. When one <b>bolts away from you</b>, the line jolts tight: stop reeling and move the rod with it, then get back to work when it slows. Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
   <h3>Fish Bucks and gear</h3><p>Sell your catch at the Willowmere Arms for Fish Bucks. Bigger, fresher, better-starred fish pay more, and Willowmere is a riverside village, so lake fish fetch more and river fish less. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p>
   <h3>Reading the float</h3><p>Fish don't all bite the same. The float can dip, shake, bob or slide, and some fish fake it with a dip that nearly goes under and pops back up. Strike on any of those and you'll spook it. Strike when it goes under, slides away and sinks, or lifts and lies flat on the surface: tench and bream often lift the bait instead of pulling it down.</p>
   <h3>Weather</h3><p>Rain, wind and fog change what bites. Wind drifts your float and fly, catches the line in gusts during a fight and chills you; bass love a blow, fly fishing doesn't. Fog brings out the predators, pike and zander especially, and makes the float harder to see. Rain makes the reel slippery.</p>
