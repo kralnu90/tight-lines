@@ -320,8 +320,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.28.0";
+const VERSION="0.29.0";
 const CHANGELOG=[
+  {v:"0.29.0",date:"15 Nov 2026",title:"The painted river",items:["Willowmere River is now a painted scene that follows the clock through a whole day: daylight, a golden sunset, dusk, a moonlit night with fireflies, and sunrise", "It changes smoothly as time passes, and rain, wind and fog still show on top", "Settings, Painted river: turn it off to go back to the drawn river"]},
   {v:"0.28.0",date:"15 Nov 2026",title:"The deep sea",items:["The Kettle Deeps (fishing level 40): an hour and a half out from Saltwick on Jory's boat", "Pump and wind: deep-sea fights have a depth meter. Tap Pump to lift the fish, then hold Reel as the rod drops back. Just cranking barely moves it, and it dives back down if you let it", "Seven deep-sea fish: haddock, hake (soft mouth, so go easy), monkfish (wakes up at the surface), turbot, and from fishing level 45 the big game: blue shark, Atlantic halibut and bluefin tuna", "Ling turn up in the deeps as well as the wreck", "Offshore cruiser (fishing level 40, 750 FB): reaches the deeps, 15 FB fuel a trip, and a cabin to sleep in", "Part exchange your cobble for half its price", "Keyboard: P or the up arrow to pump"]},
   {v:"0.27.0",date:"15 Nov 2026",title:"Boats",items:["Saltwick harbour: hire Jory's boat, or buy your own", "Saltwick Bay (fishing level 25): open water with more tope, cod and conger than the shore, plus two new fish: thornback ray and black bream", "The Marguerite wreck (fishing level 30): ling and ballan wrasse, two more new fish, plus conger, pollock and cod. Hooked fish dive for the wreck", "Hired trips give you 6 hours of fishing, then Jory brings you back", "Your own cobble (fishing level 35, 320 FB): no time limit, 5 FB fuel a trip", "At sea there's no fire or fresh water. The Boat menu lets you rest, eat, chum and head back", "You fish from the boat itself, and the trip out has its own sea scene", "The testing switch in Settings skips the boat level checks too"]},
   {v:"0.26.1",date:"15 Nov 2026",title:"Travel scene fix",items:["Fixed: the travel scene skipped itself straight away when you tapped a travel button, so it only showed some of the time. It now plays on every trip, on foot or by van"]},
@@ -405,6 +406,33 @@ function biteWeights(c,q){return FISH.filter(fishHere).map(f=>{let w=RARITY[f.ra
 function pickFish(c,q){const ws=biteWeights(c,q);const tot=ws.reduce((a,b)=>a+b.w,0);let r=Math.random()*tot;
   for(const x of ws){if((r-=x.w)<=0)return x.f;}return ws[0].f;}
 
+/* ---------- Painted river: Kris's day and night video, frame by frame with the clock ---------- */
+// 60 frames from the video (art/river/00–59.jpg). The in-game time picks the frame and blends the next one in,
+// so a full day runs through the video once. Anchors: [hour, second of the 10-second video]; seconds past 10 wrap to the start.
+const RIVER_ART={n:60,w:450,h:800,horizon:330,edge:590,img:[],ok:[],started:false};
+const RIVER_TIMES=[[4,7.6],[5.5,8.6],[7.5,9.9],[9,10],[16.5,11],[18,12],[20,13.6],[21.5,15],[28,17.6]];
+function riverFrame(min){let h=(min%1440)/60;if(h<4)h+=24;let i=0;while(i<RIVER_TIMES.length-2&&h>RIVER_TIMES[i+1][0])i++;
+  const [h0,s0]=RIVER_TIMES[i],[h1,s1]=RIVER_TIMES[i+1],sec=lerp(s0,s1,clamp((h-h0)/(h1-h0),0,1))%10,f=sec*6,a=Math.floor(f)%60;
+  return {a,b:(a+1)%60,t:f-Math.floor(f)};}
+function loadRiverArt(first){if(RIVER_ART.started)return;RIVER_ART.started=true;
+  const order=[...Array(RIVER_ART.n).keys()].sort((x,y)=>Math.abs(x-first)-Math.abs(y-first));
+  for(const i of order){const im=new Image();im.onload=()=>{RIVER_ART.ok[i]=true;bgKey="";};im.src=`art/river/${String(i).padStart(2,"0")}.jpg`;RIVER_ART.img[i]=im;}}
+function riverArtOn(){if(!run||save.settings.riverArt===false||spotKey()!=="river")return false;
+  const F=riverFrame(run.min);loadRiverArt(F.a);return !!(RIVER_ART.ok[F.a]&&RIVER_ART.ok[F.b]);}
+// how the picture is cropped to the stage: fill it, keep the willow on the left, horizon a quarter of the way down
+function riverFit(){const A=RIVER_ART,s=Math.max(W/A.w,H/A.h),vw=W/s,vh=H/s,sy=clamp(A.horizon-0.25*vh,0,A.h-vh);
+  return {s,vw,vh,sx:0,sy,waterTop:(A.horizon-sy)*s,nearY:Math.min(H*0.92,(A.edge-sy)*s)};}
+function drawRiverArt(g,c){const A=RIVER_ART,F=riverFrame(run.min),R=riverFit();
+  ctx.drawImage(A.img[F.a],R.sx,R.sy,R.vw,R.vh,0,0,W,H);
+  if(F.t>0.01){ctx.globalAlpha=F.t;ctx.drawImage(A.img[F.b],R.sx,R.sy,R.vw,R.vh,0,0,W,H);ctx.globalAlpha=1;}
+  const tint={Overcast:"rgba(120,125,132,.28)",Rain:"rgba(55,65,78,.42)",Windy:"rgba(130,138,146,.16)",Fog:"rgba(190,196,200,.2)"}[c.weather];
+  if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,W,H);}
+  // a little life on the water: the current carries faint streaks downstream
+  ctx.strokeStyle="rgba(235,245,250,.16)";ctx.lineWidth=1;
+  for(const st of scen.streaks){const y=lerp(g.waterTop+8,g.nearY-6,((st.x*7.3)%1+1)%1),depth=(y-g.waterTop)/(g.nearY-g.waterTop),x=((st.x+G.t*(10+30*depth))%(W+60))-30;
+    ctx.globalAlpha=0.3+0.7*depth;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+st.l*(0.4+depth),y);ctx.stroke();}
+  ctx.globalAlpha=1;}
+
 /* ---------- Canvas & scenery ---------- */
 const cv=$("#river"),ctx=cv.getContext("2d");
 let W=300,H=400,DPR=1,scen=null;
@@ -414,7 +442,7 @@ const PALETTES={
   Dusk:{rock:"#3e3a48",sky:["#3d2f5d","#e48a5a"],far:"#2f2f43",trees:"#232234",water:["#6b5878","#1b2131"],sea:["#7a6a8c","#232a44"],streak:"rgba(255,200,170,.2)",bank:["#33402e","#1b2418"],sand:["#9c8670","#5a4a3c"],mist:0.12},
   Night:{rock:"#1a1d26",sky:["#0b1430","#24365a"],far:"#121a29",trees:"#090e18",water:["#2b3c58","#0a111d"],sea:["#2a3a58","#0a1220"],streak:"rgba(190,210,255,.16)",bank:["#1b2619","#0b110a"],sand:["#3e3a33","#1d1b17"],mist:0.06}
 };
-function geom(){return {waterTop:H*0.2,nearY:H*0.88};}
+function geom(){if(riverArtOn()){const R=riverFit();return {waterTop:R.waterTop,nearY:R.nearY};}return {waterTop:H*0.2,nearY:H*0.88};}
 function buildScenery(){
   const g=geom(),pts=[],hills=[],reeds=[],streaks=[],pads=[],clouds=[],canopy=[],fronds=[],roots=[],rocks=[],reedBed=[],weed=[],glints=[],tufts=[];
   let y=g.waterTop-10;
@@ -794,11 +822,13 @@ function drawClouds(g,c,X){
     ctx.beginPath();ctx.ellipse(x,y,w*0.5,w*0.16,0,0,Math.PI*2);ctx.ellipse(x-w*0.22,y+2,w*0.28,w*0.14,0,0,Math.PI*2);ctx.ellipse(x+w*0.15,y-w*0.08,w*0.26,w*0.17,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
 }
 function draw(){
-  const g=geom(),c=conds(),pal=PALETTES[c.time],X=EXTRA[c.time],sk=spotKey();
+  const g=geom(),c=conds(),pal=PALETTES[c.time],X=EXTRA[c.time],sk=spotKey(),art=riverArtOn();
+  let gr;
+  if(art)drawRiverArt(g,c);else{
   drawBackdrop(g,c,pal,X,sk);
   drawClouds(g,c,X);
   const sea=sk==="coast"||!!spot().boat,wc=sea?pal.sea:pal.water;
-  let gr=ctx.createLinearGradient(0,g.waterTop,0,g.nearY);gr.addColorStop(0,wc[0]);gr.addColorStop(1,wc[1]);
+  gr=ctx.createLinearGradient(0,g.waterTop,0,g.nearY);gr.addColorStop(0,wc[0]);gr.addColorStop(1,wc[1]);
   ctx.fillStyle=gr;ctx.fillRect(0,g.waterTop+2,W,g.nearY-g.waterTop);
   // reflection of the far bank
   gr=ctx.createLinearGradient(0,g.waterTop+2,0,g.waterTop+H*0.08);gr.addColorStop(0,sea?"rgba(0,0,0,.12)":"rgba(10,25,15,.35)");gr.addColorStop(1,"rgba(0,0,0,0)");
@@ -825,16 +855,17 @@ function draw(){
   if(c.weather==="Clear"&&c.time==="Day"){for(const gl of scen.glints){const a=Math.max(0,Math.sin(G.t*2.3+gl.ph))*0.8;if(a<0.1)continue;
     const y=lerp(g.waterTop+8,g.nearY-12,gl.y);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fillRect(gl.x-2,y,4,1);ctx.fillRect(gl.x,y-1,1,3);}}
   if(spot().boat)drawSeaHazards(g,pal,X,sk);else drawHazards(g,pal,X,sk);
+  }
   if(c.weather==="Rain"){ctx.strokeStyle="rgba(210,225,235,.35)";ctx.lineWidth=1;ctx.beginPath();
     for(let i=0;i<90;i++){const x=((i*71.7+G.t*60)%(W+40))-20,y=((i*131.3+G.t*420)%(H+40))-20;ctx.moveTo(x,y);ctx.lineTo(x-3,y+12);}ctx.stroke();}
   if(c.weather==="Windy"){const wd=run&&run.windDir||1;ctx.strokeStyle="rgba(240,245,245,.5)";ctx.lineWidth=1.4;ctx.lineCap="round";ctx.beginPath();
     for(let i=0;i<34;i++){const k=(i*0.618)%1,y=lerp(g.waterTop+6,g.nearY-8,k),sp=40+(i%5)*16,x=(((i*97.1+G.t*sp*wd)%(W+80))+W+80)%(W+80)-40,len=(10+(i%3)*7)*(0.5+k);ctx.moveTo(x,y);ctx.quadraticCurveTo(x+len*0.5*wd,y-1.5,x+len*wd,y);}ctx.stroke();}
   if(c.weather==="Fog"){const fg=ctx.createLinearGradient(0,0,0,g.nearY);fg.addColorStop(0,"rgba(215,220,222,.82)");fg.addColorStop(0.45,"rgba(215,220,222,.45)");fg.addColorStop(1,"rgba(215,220,222,.08)");ctx.fillStyle=fg;ctx.fillRect(0,0,W,g.nearY);}
-  if(pal.mist>0){gr=ctx.createLinearGradient(0,g.waterTop-10,0,g.waterTop+H*0.18);gr.addColorStop(0,`rgba(255,250,245,${pal.mist})`);gr.addColorStop(1,"rgba(255,250,245,0)");ctx.fillStyle=gr;ctx.fillRect(0,g.waterTop-10,W,H*0.2);}
+  if(pal.mist>0&&!art){gr=ctx.createLinearGradient(0,g.waterTop-10,0,g.waterTop+H*0.18);gr.addColorStop(0,`rgba(255,250,245,${pal.mist})`);gr.addColorStop(1,"rgba(255,250,245,0)");ctx.fillStyle=gr;ctx.fillRect(0,g.waterTop-10,W,H*0.2);}
   for(const r of G.ripples){ctx.strokeStyle=`rgba(255,255,255,${Math.max(0,r.a)*0.7})`;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(r.x,r.y,r.r*r.sc,r.r*0.35*r.sc,0,0,Math.PI*2);ctx.stroke();}
   if(G.state==="fight"&&G.fish)drawFish();
-  // near bank (or the boat you're in)
-  if(spot().boat){drawBoatEdge(g,X,c);}else{
+  // near bank (or the boat you're in); the painted river has its own
+  if(art){}else if(spot().boat){drawBoatEdge(g,X,c);}else{
   const bk=sk==="coast"?pal.sand:pal.bank;
   if(sk==="coast"){ctx.strokeStyle="rgba(255,255,255,.55)";ctx.lineWidth=2;ctx.beginPath();
     for(let x=0;x<=W;x+=10){const yy=g.nearY-2+Math.sin(x*0.05+G.t*2)*2+Math.sin(G.t*0.9)*3;if(x===0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);}ctx.stroke();}
@@ -2788,6 +2819,8 @@ function settingsScreen(onBack){
   <p class="note">Ledgering unlocks at fishing level 5, spinning at 10 and fly fishing at 15. Tick this to try them early. It also skips the level checks for boats, the deeps and big game.</p>
   <div class="row"><label for="evts">Random events</label><input id="evts" type="checkbox" ${save.settings.events!==false?"checked":""}></div>
   <p class="note">Animal encounters, strangers and finds while you travel, rest and sleep out.</p>
+  <div class="row"><label for="rvArt">Painted river</label><input id="rvArt" type="checkbox" ${save.settings.riverArt!==false?"checked":""}></div>
+  <p class="note">The river as a painted scene that changes with the time of day. Turn it off for the drawn version.</p>
   <div class="row"><label for="trAnim">Travel scenes</label><input id="trAnim" type="checkbox" ${save.settings.travelAnim!==false?"checked":""}></div>
   <p class="note">A short drive between places. Tap it to skip.</p>
   <div class="row"><label for="dbg">Show test numbers</label><input id="dbg" type="checkbox" ${save.settings.debug?"checked":""}></div>
@@ -2820,6 +2853,7 @@ function settingsScreen(onBack){
   $("#tiltCal").onclick=()=>{if(!TILT.seen){startTilt();toast("No tilt reading yet. Turn tilt on and try again.",true,2000);return;}save.settings.tiltZero=TILT.now;persist();toast("Calibrated. That's level.",false,1600);};
   $("#dbg").onchange=e=>{save.settings.debug=e.target.checked;persist();};
   $("#evts").onchange=e=>{save.settings.events=e.target.checked;persist();};
+  $("#rvArt").onchange=e=>{save.settings.riverArt=e.target.checked;persist();bgKey="";};
   $("#trAnim").onchange=e=>{save.settings.travelAnim=e.target.checked;persist();};
   $("#unl").onchange=e=>{save.settings.unlockAll=e.target.checked;persist();if(G.state==="ready")fillMethods();};
   const ds=$("#diffSel");if(ds)ds.onchange=()=>{const k=ds.value;if(k===run.diff)return;
