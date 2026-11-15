@@ -223,7 +223,10 @@ const RARITY={Common:100,Uncommon:30,Rare:8,"Very rare":2};
 const SPOTS={
   river:{name:"Willowmere River",water:"River",travel:{tavern:60,lake:60,coast:120,saltwick:120},snagSide:-1,snagName:"snags",snagLose:"Snagged in the tree roots",flow:1},
   lake:{name:"Willowmere Lake",water:"Lake",travel:{tavern:60,river:60,coast:150,saltwick:150},snagSide:1,snagName:"weed",snagLose:"Lost in the weed bed",flow:0},
-  coast:{name:"Saltmarsh Point",water:"Coast",travel:{tavern:120,river:120,lake:150,saltwick:30},snagSide:-1,snagName:"rocks",snagLose:"Cut off on the rocks",flow:0,salt:true}
+  coast:{name:"Saltmarsh Point",water:"Coast",travel:{tavern:120,river:120,lake:150,saltwick:30},snagSide:-1,snagName:"rocks",snagLose:"Cut off on the rocks",flow:0,salt:true},
+  // boat only, from Saltwick harbour
+  bay:{name:"Saltwick Bay",water:"Coast",boat:true,travel:{saltwick:30},snagSide:1,snagName:"the anchor rope",snagLose:"Wrapped round the anchor rope",flow:0,salt:true},
+  wreck:{name:"The Marguerite wreck",water:"Coast",boat:true,only:["wrasse","ling","conger","pollock","cod","blackbream","bass"],travel:{saltwick:60},snagSide:-1,snagName:"the wreck",snagLose:"Lost in the wreck",flow:0,salt:true}
 };
 const METHODS={
   Float:{lvl:1,baits:["Maggots","Bread","Worm","Sweetcorn","Ragworm"]},
@@ -261,6 +264,11 @@ const FISH=[
   F_({id:"tope",name:"Tope",water:"Coast",rarity:"Rare",seasons:["Summer"],times:["Day"],methods:["Ledger"],baits:["Deadbait","Squid"],min:20,max:60,lenK:30,pull:1.1,stam:3.0,speed:1.4,longRuns:true,strikeWin:1.1,nibbles:[0,1],fights:"Long, fast runs"}),
   F_({id:"crayfish",name:"Signal crayfish",water:"River",rarity:"Common",seasons:ALL,times:["Night"],methods:["Pot"],baits:["Pot"],min:0.08,max:0.35,lenK:22,pull:0.3,stam:0.5,fights:"It doesn't. It pinches"}),
   F_({id:"crab",name:"Brown crab",water:"Coast",rarity:"Common",seasons:ALL,times:["Night"],methods:["Pot"],baits:["Pot"],min:1,max:5,lenK:14,pull:0.3,stam:0.5,fights:"Claws first, and it means it"}),
+  // From a boat (Phase 5)
+  F_({id:"ray",name:"Thornback ray",water:"Coast",rarity:"Common",seasons:["Spring","Summer","Autumn"],times:["Dusk","Night"],methods:["Ledger"],baits:["Squid","Peeler crab","Deadbait"],min:3,max:15,lenK:26,pull:0.85,stam:1.7,speed:0.5,switchy:0.2,sluggish:true,stubborn:true,strikeWin:1.3,nibbles:[1,3],spots:["bay"],fights:"Clamps flat to the seabed like a doormat"}),
+  F_({id:"blackbream",name:"Black bream",water:"Coast",rarity:"Uncommon",seasons:["Spring","Summer"],times:["Day"],methods:["Ledger","Float"],baits:["Ragworm","Squid"],min:1,max:4,lenK:30,pull:0.8,stam:1.2,speed:1.3,switchy:0.8,shaky:true,strikeWin:0.7,nibbles:[1,3],spots:["bay","wreck"],fights:"Fast, jagging runs and a lot of nerve"}),
+  F_({id:"wrasse",name:"Ballan wrasse",water:"Coast",rarity:"Common",seasons:ALL,times:["Day"],methods:["Float","Ledger"],baits:["Ragworm","Peeler crab"],min:1,max:6,lenK:30,pull:0.85,stam:1.3,speed:1.1,dash:true,strikeWin:0.9,nibbles:[1,2],spots:["wreck"],fights:"Bolts straight back into the kelp"}),
+  F_({id:"ling",name:"Ling",water:"Coast",rarity:"Uncommon",seasons:ALL,times:["Day","Dusk"],methods:["Ledger"],baits:["Deadbait","Squid"],min:10,max:40,lenK:50,pull:1.05,stam:2.4,speed:0.8,switchy:0.5,roll:true,dash:true,eelShape:true,strikeWin:1.2,nibbles:[0,2],spots:["wreck"],fights:"Twists like an eel and tries to get back inside the wreck"}),
   F_({id:"lobster",name:"European lobster",water:"Coast",rarity:"Rare",seasons:ALL,times:["Night"],methods:["Pot"],baits:["Pot"],min:1.5,max:8,lenK:22,pull:0.3,stam:0.5,fights:"Tail-flips backwards like a bolt"})
 ];
 const LINES={
@@ -303,8 +311,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.26.1";
+const VERSION="0.27.0";
 const CHANGELOG=[
+  {v:"0.27.0",date:"15 Nov 2026",title:"Boats",items:["Saltwick harbour: hire Jory's boat, or buy your own", "Saltwick Bay (fishing level 25): open water with more tope, cod and conger than the shore, plus two new fish: thornback ray and black bream", "The Marguerite wreck (fishing level 30): ling and ballan wrasse, two more new fish, plus conger, pollock and cod. Hooked fish dive for the wreck", "Hired trips give you 6 hours of fishing, then Jory brings you back", "Your own cobble (fishing level 35, 320 FB): no time limit, 5 FB fuel a trip", "At sea there's no fire or fresh water. The Boat menu lets you rest, eat, chum and head back", "You fish from the boat itself, and the trip out has its own sea scene", "The testing switch in Settings skips the boat level checks too"]},
   {v:"0.26.1",date:"15 Nov 2026",title:"Travel scene fix",items:["Fixed: the travel scene skipped itself straight away when you tapped a travel button, so it only showed some of the time. It now plays on every trip, on foot or by van"]},
   {v:"0.26.0",date:"15 Nov 2026",title:"The campervan and the open road",items:["Travel scenes: a short drive between places, with the clock ticking on, the sky matching the time of day, rain, fog or wind, the sea or the city skyline on the way, and headlights at night. Tap to skip, or turn them off in Settings", "Your old estate car comes with a boot: 6 more slots of storage", "Kingsbridge Motors in the city: a cool box (fresh fish keep half as long again), the fishing van (16 slots) and the campervan", "The campervan: sleep warm and safe anywhere you park, with far fewer night-time surprises, rest in the warm, and light the gas stove in 5 minutes to cook and boil water. Its fridge keeps fresh fish half as long again", "Part exchange: your old vehicle is worth half what it cost", "Your vehicle shows in the Kit screen"]},
   {v:"0.25.0",date:"15 Nov 2026",title:"Storage, and Phase 4 done",items:["Your keep net now holds 12 slots. Fish under 2 lb take 1, and bigger fish take up to 5", "Salted and smoked fish pack down a slot smaller", "Big keep net in the Camp tab of the tackle shop: 8 more slots for 40 FB", "When the net is full, let the new fish go or make room. It stays in your log either way", "Rent a locker at any inn: 24 slots for 10 FB a season. What you leave there stays in that town, and fresh fish still spoil", "Pots and traps let catches go if there's no room", "Phase 4, towns and trade, is finished"]},
@@ -367,7 +376,10 @@ function fillBaits(){const sel=$("#selBait"),cur=sel.value;const list=METHODS[$(
 function fillLines(){const sel=$("#selLine"),cur=sel.value||(run&&run.equip.line)||"Medium";
   const owned=Object.keys(LINES).filter(k=>!run||run.inv.lines[k]);
   sel.innerHTML=owned.map(k=>`<option value="${k}">${LINES[k].short}</option>`).join("");sel.value=owned.includes(cur)?cur:owned[0];if(run)run.equip.line=sel.value;}
-function biteWeights(c,q){return FISH.filter(f=>f.water===c.water&&!f.methods.includes("Pot")).map(f=>{let w=RARITY[f.rarity];
+// which fish live at this spot: boat spots can list their own, and some fish only live at certain spots
+function fishHere(f){const S=spot(),k=spotKey();if(f.methods.includes("Pot"))return false;if(S.only)return S.only.includes(f.id);return f.water===S.water&&(!f.spots||f.spots.includes(k));}
+const BOAT_BOOST={tope:1.8,cod:1.6,conger:1.5,bass:1.3,pollock:1.4};
+function biteWeights(c,q){return FISH.filter(fishHere).map(f=>{let w=RARITY[f.rarity];if(spot().boat&&BOAT_BOOST[f.id])w*=BOAT_BOOST[f.id];
   w*=f.seasons.includes(c.season)?2:0.1;
   if(f.times.includes(c.time))w*=1.5;
   const mOk=f.methods.includes(c.method),bOk=f.baits.includes(c.bait);
@@ -455,7 +467,7 @@ function panelReady(){
   <div class="controls"><button class="big ghost" id="btnCamp" type="button" style="flex:1">Camp${run&&run.fire>0?" · fire lit":""}</button><button class="big ghost" id="btnKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="btnKeep" type="button" style="flex:1">Net · ${run?run.keep.length:0}</button></div>`;
   const mb=$("#btnMCast");if(mb){mb.onpointerdown=e=>{e.preventDefault();try{mb.setPointerCapture(e.pointerId);}catch(_){}mcastBegin();mb.textContent="Swing back… flick… let go";};
     mb.onpointerup=()=>{mb.textContent="Hold to cast";mcastEnd();};mb.onpointercancel=()=>{G.mcast=null;mb.textContent="Hold to cast";};}
-  $("#btnCamp").addEventListener("click",campMenu);$("#btnKeep").addEventListener("click",campMenu);$("#btnKit").addEventListener("click",()=>kitScreen(()=>{hideOverlay();toReady();}));
+  $("#btnCamp").addEventListener("click",campMenu);$("#btnKeep").addEventListener("click",campMenu);if(onBoat())$("#btnCamp").textContent="Boat";$("#btnKit").addEventListener("click",()=>kitScreen(()=>{hideOverlay();toReady();}));
   oddsKey=condKey();
 }
 function panelWaiting(){
@@ -626,7 +638,8 @@ function update(dt){
   G.t+=dt;
   if(run&&["ready","flight","waiting","fight"].includes(G.state)&&$("#overlay").hidden){
     advance(dt*TIME_RATE);if(checkDeath())return;
-    if(G.state==="ready"&&condKey()!==oddsKey)panelReady();}
+    if(G.state==="ready"&&condKey()!==oddsKey)panelReady();
+    if(G.state==="ready"&&run.trip&&run.trip.until&&onBoat()&&absMin()>=run.trip.until)endTrip();}
   if(G.t-hudT>0.25){hudT=G.t;renderHud();}
   const kx=(G.keys.right?1:0)-(G.keys.left?1:0);
   if(kx&&G.state==="fight")G.R=clamp(G.R+kx*dt*2.2,-1,1);
@@ -737,6 +750,11 @@ function drawBackdrop(g,c,pal,X,sk){
       b.fillStyle=gl;b.fillRect(sx-sr*4,sy-sr*4,sr*8,sr*8);b.fillStyle=sun[2];b.beginPath();b.arc(sx,sy,sr,0,Math.PI*2);b.fill();}
     if(c.weather!=="Clear"){b.fillStyle=c.weather==="Rain"?"rgba(70,80,90,.5)":c.weather==="Fog"?"rgba(200,205,208,.6)":c.weather==="Windy"?"rgba(130,140,150,.3)":"rgba(120,125,130,.38)";b.fillRect(0,0,W,g.waterTop+2);}
     // distant hazy hills
+    const boatSp=SPOTS[sk]&&SPOTS[sk].boat;
+    if(boatSp){if(sk==="bay"){b.globalAlpha=0.55;b.fillStyle=pal.far;b.beginPath();b.moveTo(-10,g.waterTop+3);b.quadraticCurveTo(W*0.2,g.waterTop-H*0.05,W*0.45,g.waterTop-H*0.02);b.lineTo(W*0.45,g.waterTop+3);b.closePath();b.fill();b.globalAlpha=1;
+      for(let i=0;i<9;i++){const x=W*0.04+i*W*0.035,y=g.waterTop-H*0.012-Math.sin(i*1.3)*H*0.01;b.fillStyle=c.time==="Night"?"#3a3f4a":"#e9e4d6";b.fillRect(x,y-5,8,6);b.fillStyle=c.time==="Night"?"#f1c75b":"#8a3b26";b.fillRect(x,y-7,8,2);}}
+      b.fillStyle="rgba(0,0,0,.12)";b.fillRect(-10,g.waterTop-1,W+20,3);}
+    else{
     b.globalAlpha=sk==="coast"?0.5:0.6;b.fillStyle=pal.far;b.beginPath();b.moveTo(-10,g.waterTop+4);for(const p of scen.hills)b.lineTo(p[0],p[1]+(sk==="river"?H*0.025:0));b.lineTo(W+10,g.waterTop+4);b.closePath();b.fill();b.globalAlpha=1;
     if(sk==="coast"){b.fillStyle=pal.far;b.beginPath();b.moveTo(W*0.6,g.waterTop+2);b.quadraticCurveTo(W*0.8,g.waterTop-H*0.06,W+10,g.waterTop-H*0.035);b.lineTo(W+10,g.waterTop+2);b.closePath();b.fill();
       b.fillStyle=X.rockLo;b.fillRect(W*0.6,g.waterTop,W*0.4+10,3);}
@@ -744,6 +762,7 @@ function drawBackdrop(g,c,pal,X,sk){
       for(const cp of scen.canopy){const cy=g.waterTop-(g.waterTop-cp[1])*k;top=Math.min(top,cy);b.beginPath();b.arc(cp[0],cy,cp[2]*k,0,Math.PI*2);b.fill();}
       b.fillRect(-10,g.waterTop-H*0.03*k,W+20,H*0.03*k+4);
       b.fillStyle="rgba(0,0,0,.18)";b.fillRect(-10,g.waterTop-3,W+20,6);}
+    }
   }
   ctx.drawImage(bgCache,0,0,W,bgCache.height/DPR);
 }
@@ -757,11 +776,11 @@ function draw(){
   const g=geom(),c=conds(),pal=PALETTES[c.time],X=EXTRA[c.time],sk=spotKey();
   drawBackdrop(g,c,pal,X,sk);
   drawClouds(g,c,X);
-  const wc=sk==="coast"?pal.sea:pal.water;
+  const sea=sk==="coast"||!!spot().boat,wc=sea?pal.sea:pal.water;
   let gr=ctx.createLinearGradient(0,g.waterTop,0,g.nearY);gr.addColorStop(0,wc[0]);gr.addColorStop(1,wc[1]);
   ctx.fillStyle=gr;ctx.fillRect(0,g.waterTop+2,W,g.nearY-g.waterTop);
   // reflection of the far bank
-  gr=ctx.createLinearGradient(0,g.waterTop+2,0,g.waterTop+H*0.08);gr.addColorStop(0,sk==="coast"?"rgba(0,0,0,.12)":"rgba(10,25,15,.35)");gr.addColorStop(1,"rgba(0,0,0,0)");
+  gr=ctx.createLinearGradient(0,g.waterTop+2,0,g.waterTop+H*0.08);gr.addColorStop(0,sea?"rgba(0,0,0,.12)":"rgba(10,25,15,.35)");gr.addColorStop(1,"rgba(0,0,0,0)");
   ctx.fillStyle=gr;ctx.fillRect(0,g.waterTop+2,W,H*0.08);
   // sun or moon on the water
   const sx={Dawn:0.2,Dusk:0.78,Night:0.7}[c.time];
@@ -784,7 +803,7 @@ function draw(){
   ctx.globalAlpha=1;
   if(c.weather==="Clear"&&c.time==="Day"){for(const gl of scen.glints){const a=Math.max(0,Math.sin(G.t*2.3+gl.ph))*0.8;if(a<0.1)continue;
     const y=lerp(g.waterTop+8,g.nearY-12,gl.y);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fillRect(gl.x-2,y,4,1);ctx.fillRect(gl.x,y-1,1,3);}}
-  drawHazards(g,pal,X,sk);
+  if(spot().boat)drawSeaHazards(g,pal,X,sk);else drawHazards(g,pal,X,sk);
   if(c.weather==="Rain"){ctx.strokeStyle="rgba(210,225,235,.35)";ctx.lineWidth=1;ctx.beginPath();
     for(let i=0;i<90;i++){const x=((i*71.7+G.t*60)%(W+40))-20,y=((i*131.3+G.t*420)%(H+40))-20;ctx.moveTo(x,y);ctx.lineTo(x-3,y+12);}ctx.stroke();}
   if(c.weather==="Windy"){const wd=run&&run.windDir||1;ctx.strokeStyle="rgba(240,245,245,.5)";ctx.lineWidth=1.4;ctx.lineCap="round";ctx.beginPath();
@@ -793,7 +812,8 @@ function draw(){
   if(pal.mist>0){gr=ctx.createLinearGradient(0,g.waterTop-10,0,g.waterTop+H*0.18);gr.addColorStop(0,`rgba(255,250,245,${pal.mist})`);gr.addColorStop(1,"rgba(255,250,245,0)");ctx.fillStyle=gr;ctx.fillRect(0,g.waterTop-10,W,H*0.2);}
   for(const r of G.ripples){ctx.strokeStyle=`rgba(255,255,255,${Math.max(0,r.a)*0.7})`;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(r.x,r.y,r.r*r.sc,r.r*0.35*r.sc,0,0,Math.PI*2);ctx.stroke();}
   if(G.state==="fight"&&G.fish)drawFish();
-  // near bank
+  // near bank (or the boat you're in)
+  if(spot().boat){drawBoatEdge(g,X,c);}else{
   const bk=sk==="coast"?pal.sand:pal.bank;
   if(sk==="coast"){ctx.strokeStyle="rgba(255,255,255,.55)";ctx.lineWidth=2;ctx.beginPath();
     for(let x=0;x<=W;x+=10){const yy=g.nearY-2+Math.sin(x*0.05+G.t*2)*2+Math.sin(G.t*0.9)*3;if(x===0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);}ctx.stroke();}
@@ -807,6 +827,7 @@ function draw(){
       for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+k*2,y-t[2]*0.5,x+k*4+Math.sin(G.t*1.3+x)*1.2,y-t[2]);ctx.stroke();}}
     ctx.globalAlpha=1;ctx.strokeStyle=bk[0];ctx.lineWidth=1.5;
     for(const r of scen.reeds){const x=r[0],y=g.nearY+2+r[1]*8;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+2,y-r[2]*0.6,x+4+Math.sin(G.t+x)*1.5,y-r[2]);ctx.stroke();}}
+  }
   if(run&&run.fire>0){const fx=W*0.1,fy=g.nearY+H*0.06;
     const fg=ctx.createRadialGradient(fx,fy,2,fx,fy,40);fg.addColorStop(0,"rgba(255,170,80,.35)");fg.addColorStop(1,"rgba(255,170,80,0)");ctx.fillStyle=fg;ctx.fillRect(fx-40,fy-40,80,80);
     ctx.fillStyle="#3a2412";ctx.fillRect(fx-10,fy+4,20,4);
@@ -1123,19 +1144,20 @@ function travelTo(dest){
   advance(mins);run.fire=0;renderHud();if(checkDeath())return;
   const arrive=()=>{if(isTown(dest)){goTavern(dest);return;}
     run.loc=dest;run.lastSpot=dest;hideOverlay();toReady(`${SPOTS[dest].name}. Tight lines.`);};
-  const go=()=>{if(!maybeEvent("road",0.25,arrive))arrive();};
+  const atSea=[from,dest].some(k=>SPOTS[k]&&SPOTS[k].boat);
+  const go=()=>{if(atSea||!maybeEvent("road",0.25,arrive))arrive();};
   if(save.settings.travelAnim===false)return go();
   travelScene(from,dest,m0,mins,go);
 }
 function travelButtons(prefix){
   const here=run.loc,opts=[];
   for(const k of Object.keys(TOWNS))if(k!==here)opts.push([k,`${isTown(here)?"Head to":"Walk to"} ${innMid(k)}, ${TOWNS[k].n}`,`Bed, a hot meal and a save. ${capF(wantText(TOWNS[k]))}.`]);
-  for(const k of Object.keys(SPOTS))if(k!==here)opts.push([k,`${isTown(here)?"Head to":"Move on to"} ${SPOTS[k].name}`,SPOT_BLURB[k]]);
+  for(const k of Object.keys(SPOTS))if(k!==here&&!SPOTS[k].boat)opts.push([k,`${isTown(here)?"Head to":"Move on to"} ${SPOTS[k].name}`,SPOT_BLURB[k]]);
   return `<button class="act" data-map="1" type="button"><span>Open the map<small>See where everything is and how long it takes.</small></span></button>`+
     opts.map(([k,t,d])=>`<button class="act" data-${prefix}="${k}" type="button"><span>${t}<small>${d}</small></span><em>${fmtMins(travelMins(here,k))}</em></button>`).join("");
 }
 function campMenu(){
-  if(G.state!=="ready")return;
+  if(G.state!=="ready")return;if(onBoat())return boatMenu();
   const N=run.needs,fire=run.fire>0,night=run.min>=18*60||run.min<5*60,salt=spot().salt,wname=spot().water.toLowerCase(),dark=conds().time==="Night";
   const fishRows=run.keep.map((k,i)=>{const spoiled=isSpoiled(k),raw=(k.form||"raw")==="raw",left=Math.max(0,keepDays(k)-itemAge(k));
     return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)}<small>${spoiled?"Spoiled. Only good for chum.":`Good for ${left.toFixed(1)} more days`}${qTag(k)&&!spoiled?" · "+qTag(k):""}</small></span>
@@ -1784,7 +1806,7 @@ function fmtDue(m){const left=m-absMin();if(left<=0)return "overdue";const d=Mat
   return `by day ${d}, ${clock(m%1440)} · ${left>=120?Math.floor(left/60)+" h":Math.max(1,Math.round(left))+" min"} left`;}
 function jobFish(rarity){
   const s=conds().season,L=level();
-  return FISH.filter(f=>(!rarity||rarity.includes(f.rarity))&&f.seasons.includes(s)&&f.methods.some(m=>m==="Pot"?L>=20:methodOk(m)));}
+  return FISH.filter(f=>(!rarity||rarity.includes(f.rarity))&&f.seasons.includes(s)&&(!f.spots||lvOk(25))&&f.methods.some(m=>m==="Pot"?L>=20:methodOk(m)));}
 function makeReq(t,tier){
   const r=repOf(t),bonus=1+Math.max(0,r)/200,ck=skLv("cook"),opts=[];
   const id=()=>Math.random().toString(36).slice(2,8);
@@ -2040,9 +2062,10 @@ function garageScreen(){
 // The clock, sky, weather and your vehicle all match the trip. Tap to skip. Settings, Travel scenes, turns it off.
 function travelScene(from,dest,m0,mins,done){
   const dur=clamp(1800+mins*14,2200,4500),kind=(run.car&&run.car.kind)||"estate",V=VEH[kind];
+  const seaTrip=[from,dest].some(k=>SPOTS[k]&&SPOTS[k].boat),ownBoat=!!(run.trip?!run.trip.hired:run.boat);
   const salt=[from,dest].some(k=>k==="coast"||k==="saltwick"),lake=[from,dest].some(k=>k==="lake"||k==="thornmere"),city=[from,dest].includes("city");
   showOverlay(`<span class="tag">On the road</span><h2>${placeName(dest)}</h2>
-    <p class="note">${placeName(from)} → ${placeName(dest)} · ${fmtMins(mins)} in your ${V.n.toLowerCase()}</p>
+    <p class="note">${placeName(from)} → ${placeName(dest)} · ${fmtMins(mins)} ${seaTrip?(ownBoat?"in your own boat":"on Jory's boat"):"in your "+V.n.toLowerCase()}</p>
     <canvas id="trCv" width="680" height="380" style="width:100%;border-radius:10px;display:block;background:#1d3a4a"></canvas>
     <p class="note" style="text-align:center;opacity:.7">Tap to skip</p>`,"event");
   const cv=$("#trCv"),c=cv.getContext("2d"),Wc=cv.width,Hc=cv.height,t0=performance.now();let over=false;
@@ -2070,6 +2093,13 @@ function travelScene(from,dest,m0,mins,done){
     c.fillStyle=wx==="Clear"?"rgba(255,255,255,.55)":"rgba(200,205,210,.75)";
     for(let i=0;i<(wx==="Clear"?3:6);i++){const x=((i*170-ph*14)%(Wc+200)+Wc+200)%(Wc+200)-100,y=40+i*13%60;c.beginPath();c.ellipse(x,y,46,14,0,0,7);c.ellipse(x+30,y-8,30,12,0,0,7);c.fill();}
     const off=ph*60;
+    if(seaTrip){const hz=Hc*0.48;
+      c.fillStyle=mix("#7d8f8a","#16212a",dark);c.beginPath();c.moveTo(0,hz);c.quadraticCurveTo(Wc*0.2,hz-26,Wc*0.4,hz-6);c.lineTo(Wc*0.4,hz);c.fill();
+      const sg=c.createLinearGradient(0,hz,0,Hc);sg.addColorStop(0,mix("#4f8aa8","#14283a",dark));sg.addColorStop(1,mix("#1d4560","#08121c",dark));c.fillStyle=sg;c.fillRect(0,hz,Wc,Hc-hz);
+      c.strokeStyle="rgba(255,255,255,.35)";for(let i=0;i<12;i++){const k=i/12,y=hz+6+Math.pow(k,1.5)*(Hc-hz-10);c.lineWidth=1+k*2;c.beginPath();
+        for(let x=0;x<=Wc;x+=20){const yy=y+Math.sin(x*0.02+i*1.7-ph*(2+k*3))*(2+k*5);x?c.lineTo(x,yy):c.moveTo(x,yy);}c.stroke();}
+      drawTripBoat(c,ownBoat,Wc*0.3,Hc*0.8,ph,night);
+    }else{
     if(salt){c.fillStyle=mix("#2f6f88","#0e2a38",dark);c.fillRect(0,Hc*0.5,Wc,40);c.fillStyle="rgba(255,255,255,.35)";for(let x=0;x<Wc;x+=40)c.fillRect((x-off*0.3)%Wc+(x<0?Wc:0),Hc*0.5+8+((x/40)%3)*9,16,2);}
     hill(off*0.25,Hc*0.56,30,0.008,mix("#5c7f6a","#1a2a26",dark),1);
     if(city){c.fillStyle=mix("#6b6f78","#1b1e26",dark);for(let i=0;i<9;i++){const x=Wc*0.55+i*26,h=40+((i*37)%45);c.fillRect(x,Hc*0.6-h,22,h);if(night){c.fillStyle="#f1c75b";c.fillRect(x+6,Hc*0.6-h+10,4,4);c.fillStyle=mix("#6b6f78","#1b1e26",dark);}}}
@@ -2085,6 +2115,7 @@ function travelScene(from,dest,m0,mins,done){
     const bx=Wc*0.28,by=ry+34+Math.sin(ph*18)*1.2,S=1.4;
     if(night){const hx=bx+128*S,hg=c.createLinearGradient(hx,0,hx+240,0);hg.addColorStop(0,"rgba(255,240,180,.45)");hg.addColorStop(1,"rgba(255,240,180,0)");c.fillStyle=hg;c.beginPath();c.moveTo(hx,by-34);c.lineTo(hx+240,by-70);c.lineTo(hx+240,by+20);c.lineTo(hx,by-22);c.fill();}
     c.save();c.translate(bx,by);c.scale(S,S);drawVehicle(c,kind,0,0,ph,night);c.restore();
+    }
     // weather
     if(wx==="Rain"){c.strokeStyle="rgba(200,220,240,.55)";c.lineWidth=2;c.beginPath();for(let i=0;i<70;i++){const x=(i*53+ph*400)%Wc,y=(i*97+ph*700)%Hc;c.moveTo(x,y);c.lineTo(x-6,y+16);}c.stroke();}
     if(wx==="Fog"){c.fillStyle="rgba(220,225,228,.45)";c.fillRect(0,0,Wc,Hc);}
@@ -2124,6 +2155,95 @@ function drawVehicle(c,kind,x,y,ph,night){
     c.fillStyle="#fff";c.beginPath();c.arc(x+65,y-24,6,0,7);c.fill();
     wheel(x+28,13);wheel(x+104,13);}
   c.fillStyle=night?"#fff3b0":"#f3e7b5";c.fillRect(x+(kind==="van"?124:kind==="camper"?126:118),y-(kind==="van"?24:kind==="camper"?26:26),6,5);}
+
+/* ---------- Boats: hire a skipper, then buy your own ---------- */
+// Boats sail from Saltwick harbour. Hire from fishing level 25 (a set number of hours, then the skipper brings you back).
+// Your own cobble from level 35: no time limit, just fuel for each trip.
+const TRIPS={
+  bay:{lvl:25,hire:20,hrs:6,desc:"Open water off the harbour. Tope, rays, black bream and cod come to a boat that never reach the shore."},
+  wreck:{lvl:30,hire:35,hrs:6,desc:"The Marguerite went down in the gales of '38. Ling, conger and wrasse live in her now, and they fight to get back inside."}
+};
+const BOATS={cobble:{n:"Your cobble",price:320,lvl:35,fuel:5,desc:"A sturdy little clinker boat with an outboard. Go out when you like and stay as long as you like. Fuel is 5 FB a trip."}};
+function lvOk(n){return save.settings.unlockAll||level()>=n;}
+function onBoat(){return !!(run&&SPOTS[run.loc]&&SPOTS[run.loc].boat);}
+function harbourScreen(){
+  const B=run.bucks,own=run.boat&&BOATS[run.boat];
+  const trip=k=>{const T=TRIPS[k],S=SPOTS[k],ok=lvOk(T.lvl);
+    return `<div class="act" style="cursor:default"><span>${S.name}<small>${T.desc}<br>${ok?`${fmtMins(S.travel.saltwick)} out. ${own?"":"Jory gives you "+T.hrs+" hours' fishing, then brings you back."}`:`Needs fishing level ${T.lvl}.`}</small></span>
+      <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${own?`<button class="iconbtn" data-own="${k}" type="button" ${ok&&B>=own.fuel?"":"disabled"}>Your boat · ${own.fuel} FB</button>`:""}<button class="iconbtn" data-hire="${k}" type="button" ${ok&&B>=T.hire?"":"disabled"}>Hire · ${T.hire} FB</button></span></div>`;};
+  showOverlay(`<span class="tag">Saltwick</span><h2>The harbour</h2>
+    <p class="note">Lobster pots stacked on the quay and a row of boats knocking together on the tide. Jory, the skipper, is leaning on his wheelhouse with a flask of tea.</p>
+    <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Fishing Lv ${level()}</p>
+    <h3>Trips</h3><div class="acts">${Object.keys(TRIPS).map(trip).join("")}</div>
+    <h3>Your own boat</h3><div class="acts"><div class="act" style="cursor:default"><span>${BOATS.cobble.n.replace("Your ","A ")} · ${BOATS.cobble.price} FB<small>${BOATS.cobble.desc}${lvOk(BOATS.cobble.lvl)?"":` Needs fishing level ${BOATS.cobble.lvl}.`}</small></span>${own?"<em>Moored here</em>":`<button class="iconbtn" id="hbBuy" type="button" ${lvOk(BOATS.cobble.lvl)&&B>=BOATS.cobble.price?"":"disabled"}>Buy</button>`}</div></div>
+    <p class="note">Bring heavy line and sea bait: squid, deadbait, ragworm and peeler crab. There's no fire and no fresh water at sea, so eat and drink before you go.${save.settings.unlockAll&&level()<25?" Testing switch on: levels skipped.":""}</p>
+    <div class="controls"><button class="big ghost" id="hbBack" type="button" style="flex:1">Back</button></div>`);
+  document.querySelectorAll("[data-hire]").forEach(b=>b.onclick=()=>{const k=b.dataset.hire,T=TRIPS[k];if(run.bucks<T.hire)return;run.bucks-=T.hire;
+    run.trip={spot:k,hired:true,until:absMin()+SPOTS[k].travel.saltwick+T.hrs*60};travelTo(k);});
+  document.querySelectorAll("[data-own]").forEach(b=>b.onclick=()=>{const k=b.dataset.own;if(run.bucks<own.fuel)return;run.bucks-=own.fuel;run.trip={spot:k,hired:false,until:null};travelTo(k);});
+  if($("#hbBuy"))$("#hbBuy").onclick=()=>{run.bucks-=BOATS.cobble.price;run.boat="cobble";renderHud();toast("She's yours. Jory helps you tie her up.",false,2400);harbourScreen();};
+  $("#hbBack").onclick=tavernMenu;}
+function endTrip(){run.trip=null;toast("Jory starts the engine. Time's up, he's taking you back.",false,2600);travelTo("saltwick");}
+function boatMenu(){
+  if(G.state!=="ready")return;const S=spot(),T=run.trip;
+  const fishRows=run.keep.map((k,i)=>{const spoiled=isSpoiled(k),raw=(k.form||"raw")==="raw";
+    return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)}<small>${spoiled?"Spoiled.":`Good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}</small></span>${spoiled?`<button class="iconbtn" data-chum="${i}" type="button">Make chum</button>`:`<button class="iconbtn" data-eat="${i}" type="button">${raw?"Eat raw":"Eat"}</button>`}</div>`;}).join("");
+  showOverlay(`<span class="tag">At sea</span><h2>${S.name}</h2>
+    <p class="note">${clock(run.min)}, ${conds().time.toLowerCase()} · ${conds().weather.toLowerCase()}. ${T&&T.hired?`Jory takes you back at ${clock(T.until%1440)}${T.until-absMin()<60?" (soon)":""}.`:"Your own boat: head back whenever you like."} No fire and no fresh water out here.${run.water>0?` You carry ${run.water.toFixed(1)} days of water.`:""}</p>
+    <div class="acts">
+      <button class="act" id="bRest" type="button"><span>Rest a while<small>Sit down in the bottom of the boat and get your energy back.</small></span><em>1 hour</em></button>
+      ${run.inv.chum>0||(run.chumUntil||0)>absMin()?`<button class="act" id="bChum" type="button" ${run.inv.chum>0?"":"disabled"}><span>Throw in chum (${run.inv.chum})<small>A slick off the stern. Bites come much quicker for 2 hours.</small></span><em>5 min</em></button>`:""}
+      <button class="act" id="bBack" type="button"><span>Head back to Saltwick<small>${T&&T.hired?"Ask Jory to call it a day.":"Motor back to the harbour."}</small></span><em>${fmtMins(S.travel.saltwick)}</em></button>
+    </div>
+    <h3>Keep net (${netLabel()})</h3><div class="acts">${fishRows||'<p class="note">Empty so far.</p>'}</div>
+    ${run.larder.length?`<h3>Larder</h3><div class="acts">${run.larder.map((it,i)=>`<div class="act" style="cursor:default"><span>${FOODS[it.id].n}</span><button class="iconbtn" data-leat="${i}" type="button">Eat</button></div>`).join("")}</div>`:""}
+    <div class="controls"><button class="big ghost" id="bClose" type="button" style="flex:1">Back to fishing</button></div>`);
+  const act=(m,fn,opt)=>{advance(m,opt);if(fn)fn();renderHud();if(checkDeath())return;boatMenu();};
+  $("#bRest").onclick=()=>act(60,null,{rest:true});
+  if($("#bChum"))$("#bChum").onclick=()=>act(5,()=>{run.inv.chum--;run.chumUntil=absMin()+120;toast("Chum over the side. The gulls go mad.",false,2000);});
+  $("#bBack").onclick=()=>{run.trip=null;travelTo("saltwick");};
+  document.querySelectorAll("[data-eat]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.eat,1)[0],raw=(k.form||"raw")==="raw";
+    act(10,()=>{if(raw){run.needs.food=clamp(run.needs.food+6+k.w*4,0,100);if(Math.random()<0.15){run.ill=Math.max(run.ill,8*60);toast("Raw fish didn't agree with you.",true,2200);}else toast(`You eat the ${k.name.toLowerCase()} raw. Sashimi, if anyone asks.`);}else{fxObj(eatFx(k));toast(`You eat the ${prodName(k).toLowerCase()}.`);}});});
+  document.querySelectorAll("[data-chum]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.chum,1);act(10,()=>{run.inv.chum++;toast("Chopped up for chum.");});});
+  document.querySelectorAll("[data-leat]").forEach(b=>b.onclick=()=>{const it=run.larder.splice(+b.dataset.leat,1)[0];act(5,()=>{fxObj(FOODS[it.id].eat);toast(`You eat the ${FOODS[it.id].n.toLowerCase()}.`);});});
+  $("#bClose").onclick=()=>{hideOverlay();panelReady();};}
+// the boat you're standing in, drawn along the bottom of the fishing scene
+function drawBoatEdge(g,X,c){
+  const bob=Math.sin(G.t*1.2)*3,y=g.nearY+6+bob,dark=c.time==="Night"?0.45:c.time==="Day"?1:0.7;
+  const wood=(r,gg,b)=>`rgb(${Math.round(r*dark)},${Math.round(gg*dark)},${Math.round(b*dark)})`;
+  ctx.fillStyle=wood(92,62,38);ctx.beginPath();ctx.moveTo(-10,y+18);ctx.quadraticCurveTo(W/2,y-12,W+10,y+18);ctx.lineTo(W+10,H);ctx.lineTo(-10,H);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=wood(60,40,24);ctx.lineWidth=2;for(let k=1;k<5;k++){ctx.beginPath();ctx.moveTo(-10,y+18+k*14);ctx.quadraticCurveTo(W/2,y-12+k*14,W+10,y+18+k*14);ctx.stroke();}
+  ctx.fillStyle=wood(150,108,64);ctx.beginPath();ctx.moveTo(-10,y+14);ctx.quadraticCurveTo(W/2,y-16,W+10,y+14);ctx.lineTo(W+10,y+22);ctx.quadraticCurveTo(W/2,y-8,-10,y+22);ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,.18)";ctx.fillRect(0,0,0,0);
+  ctx.fillStyle=wood(210,200,180);ctx.beginPath();ctx.arc(W*0.82,y+4,5,0,Math.PI*2);ctx.fill(); // rowlock / cleat
+  ctx.strokeStyle=wood(200,170,110);ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(W*0.82,y+4);ctx.bezierCurveTo(W*0.86,y+30,W*0.92,y+20,W*0.97,y+40);ctx.stroke();
+  ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=1.5;ctx.beginPath();for(let x=0;x<=W;x+=10){const yy=y+12+Math.sin(x*0.06+G.t*2.4)*2-(1-Math.pow((x-W/2)/(W/2),2))*14;x?ctx.lineTo(x,yy):ctx.moveTo(x,yy);}ctx.stroke();}
+function drawSeaHazards(g,pal,X,sk){
+  if(sk==="wreck"){const bx=W*0.14,by=g.waterTop+H*0.3;
+    ctx.fillStyle="rgba(10,20,25,.35)";ctx.beginPath();ctx.ellipse(bx+20,by+8,W*0.16,10,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#5a3a2a";ctx.beginPath();ctx.moveTo(bx-W*0.1,by+6);ctx.lineTo(bx+W*0.02,by-H*0.08);ctx.lineTo(bx+W*0.08,by-H*0.07);ctx.lineTo(bx+W*0.03,by+6);ctx.closePath();ctx.fill(); // bow
+    ctx.fillStyle="#7a4b30";ctx.fillRect(bx-W*0.07,by-H*0.02,W*0.08,3);
+    ctx.strokeStyle="#4a3024";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(bx+W*0.16,by+6);ctx.lineTo(bx+W*0.2,by-H*0.16);ctx.stroke(); // mast
+    ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx+W*0.12,by-H*0.1);ctx.lineTo(bx+W*0.27,by-H*0.12);ctx.stroke();
+    ctx.strokeStyle="rgba(60,40,30,.6)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx+W*0.2,by-H*0.16);ctx.lineTo(bx+W*0.02,by-H*0.08);ctx.stroke();
+    const s=Math.max(0,Math.sin(G.t*1.4));ctx.strokeStyle=`rgba(255,255,255,${0.4+0.4*s})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(bx,by+6,W*0.11,3+s*2,0,0,Math.PI);ctx.stroke();ctx.beginPath();ctx.ellipse(bx+W*0.16,by+6,8,2+s,0,0,Math.PI);ctx.stroke();
+    // a green wreck buoy
+    const wx=W*0.62,wy=g.waterTop+H*0.12+Math.sin(G.t*1.6)*2;ctx.fillStyle="#2f8a4e";ctx.beginPath();ctx.moveTo(wx-6,wy);ctx.lineTo(wx,wy-16);ctx.lineTo(wx+6,wy);ctx.closePath();ctx.fill();ctx.fillStyle="#e8e2cf";ctx.fillRect(wx-5,wy-6,10,2);}
+  else{ // the bay: a few pot buoys and gulls
+    [[0.3,0.1,"#e3593c"],[0.7,0.22,"#f1c75b"],[0.12,0.34,"#e3593c"]].forEach(([fx,fy,col],i)=>{const x=W*fx,y=g.waterTop+H*fy+Math.sin(G.t*1.5+i)*1.5,s=0.6+fy*1.6;
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,4*s,Math.PI,0);ctx.fill();ctx.strokeStyle="#333";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y-4*s);ctx.lineTo(x,y-11*s);ctx.stroke();});}
+  ctx.strokeStyle="rgba(240,240,235,.8)";ctx.lineWidth=1.5;for(let i=0;i<3;i++){const x=((G.t*18+i*140)%(W+60))-30,y=g.waterTop-H*0.06-i*12+Math.sin(G.t*2+i)*4,f=Math.sin(G.t*6+i)*3;
+    ctx.beginPath();ctx.moveTo(x-7,y+f);ctx.quadraticCurveTo(x-3,y-3,x,y);ctx.quadraticCurveTo(x+3,y-3,x+7,y+f);ctx.stroke();}}
+function drawTripBoat(c,own,x,y,ph,night){
+  c.save();c.translate(x,y+Math.sin(ph*3)*4);c.rotate(Math.sin(ph*2.2)*0.04);
+  const hull=own?"#2f5a3f":"#f1ead4",stripe=own?"#b8452c":"#2e5f8a";
+  c.fillStyle=night?"#555":hull;c.beginPath();c.moveTo(-10,-34);c.lineTo(150,-34);c.quadraticCurveTo(140,0,110,4);c.lineTo(10,4);c.quadraticCurveTo(-4,-10,-10,-34);c.fill();
+  c.fillStyle=stripe;c.fillRect(0,-26,140,5);
+  if(own){c.fillStyle="#3a2a14";c.fillRect(-14,-30,10,22);c.fillStyle="#222";c.fillRect(-16,-38,14,10);}
+  else{c.fillStyle=night?"#666":"#e8e2cf";c.fillRect(70,-74,46,40);c.fillStyle=night?"#f1c75b":"#a9d3e6";c.fillRect(76,-68,14,12);c.fillRect(96,-68,14,12);c.fillStyle="#b8452c";c.fillRect(108,-90,6,16);}
+  c.strokeStyle="#5a4a32";c.lineWidth=2;c.beginPath();c.moveTo(30,-34);c.lineTo(10,-80);c.stroke();
+  c.restore();
+  c.strokeStyle="rgba(255,255,255,.6)";c.lineWidth=2;c.beginPath();for(let k=0;k<4;k++){c.moveTo(x-20-k*30,y+2);c.quadraticCurveTo(x-34-k*30,y-4,x-50-k*30,y+2);}c.stroke();}
 
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
@@ -2319,7 +2439,7 @@ function kitScreen(onBack){
 }
 
 /* ---------- Tavern ---------- */
-function goTavern(id){id=id||(isTown(run.loc)?run.loc:"tavern");run.loc=id;run.lastTown=id;G.state="tavern";G.fish=null;G.float=null;G.cast=null;G.reeling=false;setCondsEnabled(false);headerButtons(true);
+function goTavern(id){id=id||(isTown(run.loc)?run.loc:"tavern");run.loc=id;run.trip=null;run.lastTown=id;G.state="tavern";G.fish=null;G.float=null;G.cast=null;G.reeling=false;setCondsEnabled(false);headerButtons(true);
   $("#panel").innerHTML=`<div class="hint">You're at ${innMid(id)}, ${TOWNS[id].n}.</div>`;renderHud();deliverHere(id);tavernMenu();}
 function tavernMenu(){
   const T=town(),ROOM=T.room;
@@ -2338,6 +2458,7 @@ function tavernMenu(){
       return F?`<b style="color:var(--brass)">${F.n} is on!</b> ${F.desc}`:up?`Posters up: ${up.n} ${festDays(up)===1?"tomorrow":"in "+festDays(up)+" days"}.`:"The paper, the regulars, and what other towns are paying.";})()}</small></span></button>
     <button class="act" id="tReq" type="button"><span>Request board<small>${(()=>{const t=townId(),mine=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length;return `${repName(repOf(t))} here.${mine?` <b style="color:var(--brass)">${mine} ready to hand in.</b>`:" Orders, deliveries and rewards."}`;})()}</small></span></button>
     <button class="act" id="tLock" type="button"><span>Locker<small>${(()=>{const t=townId(),L=locker(t);return L?`${L.items.length} item${L.items.length===1?"":"s"} stored here · ${lockerPaid(t)?"paid to day "+L.until:"rent overdue"}.`:`Rent cellar storage here: ${LOCKER_SLOTS} slots for ${LOCKER_RENT} FB a season.`;})()} Keep net ${netLabel()}.</small></span></button>
+    ${townId()==="saltwick"?`<button class="act" id="tHarbour" type="button"><span>The harbour<small>Hire Jory's boat from fishing level 25, or buy your own from 35. Bay and wreck fishing.</small></span></button>`:""}
     ${T.city?`<button class="act" id="tGarage" type="button"><span>Kingsbridge Motors<small>Vans, campervans and cool boxes. You drive ${{estate:"an old estate car",van:"a fishing van",camper:"a campervan"}[run.car.kind]}.</small></span></button>`:""}
     <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
     <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
@@ -2352,7 +2473,7 @@ function tavernMenu(){
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
-  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tLock").onclick=lockerScreen;if($("#tGarage"))$("#tGarage").onclick=garageScreen;$("#tNews").onclick=()=>newsScreen();$("#tShop").onclick=()=>shopScreen("bait");
+  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tLock").onclick=lockerScreen;if($("#tGarage"))$("#tGarage").onclick=garageScreen;if($("#tHarbour"))$("#tHarbour").onclick=harbourScreen;$("#tNews").onclick=()=>newsScreen();$("#tShop").onclick=()=>shopScreen("bait");
   $("#tBoard").onclick=()=>memorialView(tavernMenu);
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?tavernMenu:campMenu));
@@ -2615,7 +2736,7 @@ function howTo(onBack){
   <h3>Motion casting</h3><p>Turn it on in Settings and a Hold to cast button appears. Hold it, swing the phone back over your shoulder, then flick it forward and let go. The faster the flick, the further it goes; let go just as the flick peaks for a clean cast; tilt the phone left or right to aim. Use Practise in Settings to see your power and timing and set full power to suit your wrist. Hold on tight!</p>
   <h3>Tilt</h3><p>Prefer to steer with the phone? Turn on tilt controls in Settings, hold the phone how you like and tap Calibrate. In a fight, tilting left and right moves the rod instead of dragging.</p>
   <h3>The fight</h3><p>Fish fight longer than they used to and recover if you let the line go slack. When one <b>bolts away from you</b>, the line jolts tight: stop reeling and move the rod with it, then get back to work when it slows. Hold Reel to bring it in; let go to let it run. Drag left and right to move the rod: with a run eases tension, against it tires the fish. Too much tension snaps the line; too little and the hook slips. Net it when it's close and tired.</p>
-  <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each village wants something different, like rock, paper, scissors: Willowmere (riverside) pays well for lake fish, Thornmere (lakeside) for sea fish and Saltwick (seaside) for river fish. Each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything, 50% more for rare fish and 25% more for dishes. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p><h3>Requests, news and storage</h3><p>Every inn has a request board with new orders every two days. Take on up to three, beat the deadline and get paid, sometimes with a recipe or gear on top. Each town remembers you: good standing means better prices and better orders, and missed deadlines cost you. Other towns' prices are hidden, so read the Kingsbridge Courier or buy a round at the bar to hear what's paying where, when the festivals are on, and where rare fish have been seen. Seasonal fish sell for less in season and more out of it. Your keep net holds 12 slots, and bigger fish take more. Rent a locker at any inn to store fish there, but it stays in that town. Your vehicle's boot adds slots too. Kingsbridge Motors in the city sells cool boxes, a fishing van and a campervan you can sleep in safely anywhere.</p>
+  <h3>Towns and trade</h3><p>Sell your catch in town for Fish Bucks. Bigger, fresher, better-starred fish pay more. Each village wants something different, like rock, paper, scissors: Willowmere (riverside) pays well for lake fish, Thornmere (lakeside) for sea fish and Saltwick (seaside) for river fish. Each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything, 50% more for rare fish and 25% more for dishes. Regional dishes sell for 30% more away from home. Open the map to see how far everything is. Sell too many of one kind and the price drops for a while. Spend your bucks on bait, lures, line, rods, reels and kit. The shop's gear changes every day.</p><h3>Requests, news and storage</h3><p>Every inn has a request board with new orders every two days. Take on up to three, beat the deadline and get paid, sometimes with a recipe or gear on top. Each town remembers you: good standing means better prices and better orders, and missed deadlines cost you. Other towns' prices are hidden, so read the Kingsbridge Courier or buy a round at the bar to hear what's paying where, when the festivals are on, and where rare fish have been seen. Seasonal fish sell for less in season and more out of it. Your keep net holds 12 slots, and bigger fish take more. Rent a locker at any inn to store fish there, but it stays in that town. Your vehicle's boot adds slots too. Kingsbridge Motors in the city sells cool boxes, a fishing van and a campervan you can sleep in safely anywhere.</p><h3>Boats</h3><p>Boats leave from Saltwick harbour. From fishing level 25 you can hire Jory's boat for six hours in Saltwick Bay, and from 30 out to the Marguerite wreck. From 35 you can buy your own cobble and stay out as long as you like for 5 FB of fuel. There's no fire or fresh water at sea, so eat and drink first, and bring sea bait and strong line.</p>
   <h3>Reading the float</h3><p>Fish don't all bite the same. The float can dip, shake, bob or slide, and some fish fake it with a dip that nearly goes under and pops back up. Strike on any of those and you'll spook it. Strike when it goes under, slides away and sinks, or lifts and lies flat on the surface: tench and bream often lift the bait instead of pulling it down.</p>
   <h3>Weather</h3><p>Rain, wind and fog change what bites. Wind drifts your float and fly, catches the line in gusts during a fight and chills you; bass love a blow, fly fishing doesn't. Fog brings out the predators, pike and zander especially, and makes the float harder to see. Rain makes the reel slippery.</p>
   <h3>Staying alive</h3><p>Watch food, warmth, energy, health and water. Light fires, cook your catch and boil water at camp. Only a night at the Willowmere Arms saves your game.</p>
