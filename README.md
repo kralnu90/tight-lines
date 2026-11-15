@@ -6,7 +6,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 
 ▶ **Play the prototype:** https://kralnugames.com/tight-lines/
 
-**Current version: 0.21.0** · experimental build
+**Current version: 0.22.0** · experimental build
 
 > Tight Lines is in an early, experimental phase. Expect bugs, glitches and changes between updates, and saves may occasionally need to be cleared.
 
@@ -15,7 +15,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 ## What's in the game so far
 
 - **Real fishing fights:** cast with a timing swing, wait out the nibbles, strike when the float goes under, then play the fish. Hold to reel, move the rod with or against its runs, and watch the line tension. Too much and it snaps; too little and the hook slips.
-- **Three fishing spots and two towns:** Willowmere River, Willowmere Lake and the sea at Saltmarsh Point, plus the riverside village of Willowmere and the seaside village of Saltwick. A region map shows them all with travel times.
+- **Three fishing spots and four towns:** Willowmere River, Willowmere Lake and the sea at Saltmarsh Point, plus the riverside village of Willowmere, the lakeside village of Thornmere, the seaside village of Saltwick and the city of Kingsbridge. A region map shows them all with travel times.
 - **23 fish**, each fighting its own way: 7 river, 9 lake and 7 coast species, from roach and mackerel to pike, carp, conger eel and tope.
 - **Four fishing methods** that play differently: float, ledger, spinning and fly.
 - **Conditions matter:** season, time of day, weather, method, bait and line weight all change what bites. The odds are shown on screen.
@@ -29,7 +29,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 - **The Willowmere Arms:** the tavern is the only place to save. A night there restores you and refills your water.
 - **Four difficulty levels:** Easy is pure fishing with no needs to manage, Medium is the game as designed, Hard toughens the fish and the wild, and Extreme is brutal and always hardcore. Harder levels turn up more rare fish and give more XP.
 - **Normal or Hardcore:** die on Normal and you wake at your last tavern save. On Hardcore, death is permanent and your angler goes on the tavern's memory board.
-- **Fish Bucks and trade:** sell your catch at the inn in either town. Size, stars and freshness set the price. Willowmere pays more for lake fish, Saltwick for river fish, and each pays less for its own kind. Regional dishes sell for more away from home, and each town's market drops if you flood it.
+- **Fish Bucks and trade:** sell your catch at the inn in either town. Size, stars and freshness set the price. Willowmere pays more for lake fish, Thornmere for sea fish and Saltwick for river fish, and each pays less for its own kind. Kingsbridge, the city, pays a fair price for everything and top money for rare fish and dishes. Regional dishes sell for more away from home, and each town's market drops if you flood it.
 - **Tackle shop and graded gear:** buy bait, lures, line, rods, reels and kit. Gear comes in Basic, Good, Fine and Master grades, and the shop's gear stock changes daily. Rods, reels and line all change how a fight plays.
 - **Events:** things happen while you travel, rest and sleep out. Wolves, wild boar, bears, a fox thief, a stranger at the fire, an abandoned camp and more. Pick a choice, roll a d20 and add your bonuses: skill level, a campfire, a storm lantern after dark, and penalties for being hurt or exhausted.
 - **Hunting:** set snares and check back after a few hours, or go tracking for rabbits, game birds, roe deer, wild boar and the red stag. A hunting bow gives +5 from hunting level 10.
@@ -71,7 +71,7 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 | 1 · Fishing core | Fish, spots, techniques, gear grades, weather, journal, level unlocks, traps and pots, tilt controls | Done |
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules, injuries, tuning | Done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | First pass done |
-| 4 · Towns and trade | Fish Bucks, shops, region map, Saltwick (done); lakeside village, city, request boards, reputation, gossip, festivals, storage | In progress |
+| 4 · Towns and trade | Fish Bucks, shops, region map, Saltwick, Thornmere, Kingsbridge (done); request boards, reputation, gossip, festivals, storage | In progress |
 | 5 · Progression | Car and camper, boats, deep sea, home base, legendary hunts, pub games | Planned |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
@@ -82,6 +82,14 @@ Fish the rivers, lakes and coast of a busy, trading world. You'll read the condi
 Open the link on your Android phone and install it. The first time, Android asks you to allow installs from your browser or file manager. The app loads the live game, so updates arrive without reinstalling. Saves in the app are separate from saves in your browser.
 
 ## Changelog
+
+### 0.22.0 · Thornmere and Kingsbridge (15 Nov 2026)
+- Thornmere, a lakeside village on the north shore of Willowmere Lake, with the Heron's Rest inn, its own tackle shop and Agnes the cook
+- Kingsbridge, the city: the Crown inn, a bigger tackle shop and Henri the head chef
+- The trade triangle is complete: Thornmere pays 30% more for sea fish and less for lake fish
+- The city pays a fair price for every kind of fish, 50% more for rare fish and 25% more for dishes
+- Four new regional dishes: Thornmere perch in brown butter and sorrel, Thornmere baked pike with juniper, Kingsbridge eel pie and Kingsbridge potted smoked trout
+- Both new towns are on the map, and you can save at either inn
 
 ### 0.21.0 · Motion casting (15 Nov 2026)
 - Cast by flicking the phone: hold Cast, swing back, flick forward and let go (Settings, Motion casting)
