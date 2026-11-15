@@ -320,8 +320,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.30.0";
+const VERSION="0.31.0";
 const CHANGELOG=[
+  {v:"0.31.0",date:"15 Nov 2026",title:"The painted coast",items:["Saltmarsh Point is now a painted scene: the rocky point on the left where fish run for the rocks, islands on the horizon, and driftwood on the beach", "Clear blue day, a golden sunset, a moonlit night under the Milky Way, and sunrise, all following the clock", "All three shore spots are painted now. Settings, Painted scenes, switches them together"]},
   {v:"0.30.0",date:"15 Nov 2026",title:"The painted lake",items:["Willowmere Lake is now a painted scene too, with reeds and lily pads on the right where the weed beds are, running from day through sunset and a moonlit, misty night with fireflies to sunrise", "Settings, Painted scenes: turns the painted river and lake on or off together"]},
   {v:"0.29.0",date:"15 Nov 2026",title:"The painted river",items:["Willowmere River is now a painted scene that follows the clock through a whole day: daylight, a golden sunset, dusk, a moonlit night with fireflies, and sunrise", "It changes smoothly as time passes, and rain, wind and fog still show on top", "Settings, Painted river: turn it off to go back to the drawn river"]},
   {v:"0.28.0",date:"15 Nov 2026",title:"The deep sea",items:["The Kettle Deeps (fishing level 40): an hour and a half out from Saltwick on Jory's boat", "Pump and wind: deep-sea fights have a depth meter. Tap Pump to lift the fish, then hold Reel as the rod drops back. Just cranking barely moves it, and it dives back down if you let it", "Seven deep-sea fish: haddock, hake (soft mouth, so go easy), monkfish (wakes up at the surface), turbot, and from fishing level 45 the big game: blue shark, Atlantic halibut and bluefin tuna", "Ling turn up in the deeps as well as the wreck", "Offshore cruiser (fishing level 40, 750 FB): reaches the deeps, 15 FB fuel a trip, and a cabin to sleep in", "Part exchange your cobble for half its price", "Keyboard: P or the up arrow to pump"]},
@@ -413,7 +414,8 @@ function pickFish(c,q){const ws=biteWeights(c,q);const tot=ws.reduce((a,b)=>a+b.
 // horizon / edge: where the far water line and the near bank sit in the 450×800 frames.
 const SPOT_ART={
   river:{horizon:330,edge:590,img:[],ok:[],started:false},
-  lake:{horizon:272,edge:555,img:[],ok:[],started:false}
+  lake:{horizon:272,edge:555,img:[],ok:[],started:false},
+  coast:{horizon:375,edge:630,img:[],ok:[],started:false}
 };
 const ART_N=60,ART_W=450,ART_H=800;
 const ART_TIMES=[[4,7.6],[5.5,8.6],[7.5,9.9],[9,10],[16.5,11],[18,12],[20,13.6],[21.5,15],[28,17.6]];
@@ -433,7 +435,7 @@ function drawArt(A,g,c){const F=artFrame(run.min),R=artFit(A),sk=spotKey();
   if(F.t>0.01){ctx.globalAlpha=F.t;ctx.drawImage(A.img[F.b],R.sx,R.sy,R.vw,R.vh,0,0,W,H);ctx.globalAlpha=1;}
   const tint={Overcast:"rgba(120,125,132,.28)",Rain:"rgba(55,65,78,.42)",Windy:"rgba(130,138,146,.16)",Fog:"rgba(190,196,200,.2)"}[c.weather];
   if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,W,H);}
-  // a little life on the water: the river's current carries faint streaks downstream; the lake just shimmers
+  // a little life on the water: the river's current carries faint streaks downstream; the lake and sea just shimmer
   ctx.strokeStyle="rgba(235,245,250,.16)";ctx.lineWidth=1;
   for(const st of scen.streaks){const y=lerp(g.waterTop+8,g.nearY-6,((st.x*7.3)%1+1)%1),depth=(y-g.waterTop)/(g.nearY-g.waterTop);
     const x=sk==="river"?((st.x+G.t*(10+30*depth))%(W+60))-30:st.x+Math.sin(G.t*0.3+st.l)*6;
@@ -2827,7 +2829,7 @@ function settingsScreen(onBack){
   <div class="row"><label for="evts">Random events</label><input id="evts" type="checkbox" ${save.settings.events!==false?"checked":""}></div>
   <p class="note">Animal encounters, strangers and finds while you travel, rest and sleep out.</p>
   <div class="row"><label for="rvArt">Painted scenes</label><input id="rvArt" type="checkbox" ${save.settings.riverArt!==false?"checked":""}></div>
-  <p class="note">The river and lake as painted scenes that change with the time of day. Turn it off for the drawn versions.</p>
+  <p class="note">The river, lake and coast as painted scenes that change with the time of day. Turn it off for the drawn versions.</p>
   <div class="row"><label for="trAnim">Travel scenes</label><input id="trAnim" type="checkbox" ${save.settings.travelAnim!==false?"checked":""}></div>
   <p class="note">A short drive between places. Tap it to skip.</p>
   <div class="row"><label for="dbg">Show test numbers</label><input id="dbg" type="checkbox" ${save.settings.debug?"checked":""}></div>
