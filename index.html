@@ -320,8 +320,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.31.2";
+const VERSION="0.32.0";
 const CHANGELOG=[
+  {v:"0.32.0",date:"16 Nov 2026",title:"New rod and floats",items:["A new rod that comes in from the bottom right, so you can see the cork grip, the metal reel seat and a proper fixed-spool reel with a gold-trimmed spool, bail arm and a handle that turns as you reel", "Ring guides that get smaller towards the tip, and a shine down the blank", "Your rod looks like the one you've set up: willow, hollowcane, black carbon with red whipping, the green and gold Kingfisher, and the fly rods", "New floats: a stick float with a yellow tip on the river, a quill with an orange tip on the lake, a weighted orange egg float at sea, and a glowing green night float after dark"]},
   {v:"0.31.2",date:"16 Nov 2026",title:"Tidier water",items:["The moving current lines on the water now stay on open water: off the rocks at Saltmarsh Point, the reeds and lily pads at the lake, and the willow, jetty and bank on the river", "Fixed in both the painted and the drawn scenes"]},
   {v:"0.31.1",date:"16 Nov 2026",title:"Strike fix",items:["Fixed: striking too early or on nothing could open the Camp menu as well, because your tap landed on the Camp button that appeared under your finger. Taps are now ignored for a moment after the panel changes"]},
   {v:"0.31.0",date:"15 Nov 2026",title:"The painted coast",items:["Saltmarsh Point is now a painted scene: the rocky point on the left where fish run for the rocks, islands on the horizon, and driftwood on the beach", "Clear blue day, a golden sunset, a moonlit night under the Milky Way, and sunrise, all following the clock", "All three shore spots are painted now. Settings, Painted scenes, switches them together"]},
@@ -490,8 +491,9 @@ const MAXD=40;
 function toScreen(D,X){const g=geom();const t=clamp(D/MAXD,0,1);
   const y=lerp(g.nearY-20,g.waterTop+16,Math.pow(t,0.85));const spread=W*(0.44-0.18*t);
   return {x:W/2+X*spread,y,scale:1-0.55*t};}
-function rodBase(){return {x:W/2,y:H+12};}
-function rodTip(){return {x:W/2+G.R*W*0.24,y:H*0.7};}
+// the rod comes in from the bottom right, so the cork grip and reel are in view
+function rodBase(){return {x:W*0.68,y:H+6};}
+function rodTip(){return {x:W/2+G.R*W*0.24,y:H*0.6};}
 
 /* ---------- Game state ---------- */
 const G={state:"menu",R:0,reeling:false,aim:null,cast:null,float:null,fish:null,t:0,ripples:[],keys:{},lastNibble:-9};
@@ -1019,17 +1021,42 @@ function drawFish(){
   if(F.mode!=="rest"&&Math.abs(F.with)>0.35){ctx.font="700 12px 'Alegreya Sans', sans-serif";ctx.textAlign="center";
     ctx.fillStyle=F.with<0?"#ffd27a":"#cfe8c4";ctx.fillText(F.with<0?"Side strain: tiring it":"With the run: easing off",s.x,s.y+22*s.scale+10);ctx.textAlign="left";}
 }
+// Floats: a stick float on the river, a quill on the lake, a weighted egg on the sea, and a glowing night float after dark
+function floatStyle(){if(conds().time==="Night")return "led";const k=spotKey();return k==="river"?"stick":k==="lake"?"quill":"egg";}
 function drawFloat(x,y,fs,bob,tilt){
+  const st=floatStyle(),u=fs+0.35;
   // clip at the surface so dips and false bites really pull the float under
   ctx.save();ctx.beginPath();ctx.rect(x-30,y-60*fs-30,60,60*fs+30.5);ctx.clip();
   if(tilt){ctx.translate(x,y+bob-6*fs);ctx.rotate(tilt);ctx.translate(-x,-(y+bob-6*fs));}
-  ctx.strokeStyle="#2b2b2b";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+bob);ctx.lineTo(x,y-16*fs+bob);ctx.stroke();
-  ctx.fillStyle="#e3593c";ctx.beginPath();ctx.ellipse(x,y-15*fs+bob,1.8*fs+0.8,3*fs+1,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#c68a3c";ctx.beginPath();ctx.ellipse(x,y-6*fs+bob,2.6*fs+1,5*fs+1.5,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="rgba(255,255,255,.35)";ctx.fillRect(x-1.5*fs,y-9*fs+bob,1,4*fs);
+  const Y=y+bob,shade=(cx,cy,rx,ry,c1,c2)=>{const g=ctx.createLinearGradient(cx-rx,0,cx+rx,0);g.addColorStop(0,c1);g.addColorStop(0.45,c2);g.addColorStop(1,c1);ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fill();};
+  if(st==="stick"){ // white body, black band, yellow tip
+    ctx.fillStyle="#e8e2d4";ctx.beginPath();ctx.moveTo(x-1.4*u,Y);ctx.quadraticCurveTo(x-2.6*u,Y-7*u,x-1*u,Y-13*u);ctx.lineTo(x+1*u,Y-13*u);ctx.quadraticCurveTo(x+2.6*u,Y-7*u,x+1.4*u,Y);ctx.fill();
+    ctx.fillStyle="#1d1d1f";ctx.fillRect(x-1.1*u,Y-14.5*u,2.2*u,1.6*u);
+    shade(x,Y-18*u,1.3*u,3.4*u,"#c9b512","#f6e93a");
+    ctx.fillStyle="rgba(255,255,255,.45)";ctx.fillRect(x-1.2*u,Y-11*u,0.7*u,7*u);}
+  else if(st==="quill"){ // long brown quill, black and yellow band, orange-red tip
+    shade(x,Y-6*u,1.9*u,8*u,"#7a4a26","#c48a52");
+    ctx.fillStyle="#1d1d1f";ctx.fillRect(x-0.9*u,Y-15*u,1.8*u,1.2*u);ctx.fillStyle="#f2d23a";ctx.fillRect(x-0.9*u,Y-16.6*u,1.8*u,1.6*u);
+    ctx.fillStyle="#ff5a2a";ctx.beginPath();ctx.ellipse(x,Y-20*u,1*u,3.6*u,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.35)";ctx.fillRect(x-1.2*u,Y-11*u,0.6*u,7*u);}
+  else if(st==="egg"){ // weighted orange egg float for the sea
+    ctx.strokeStyle="#2b2b2b";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,Y);ctx.lineTo(x,Y-15*u);ctx.stroke();
+    shade(x,Y-5*u,4*u,5*u,"#d4501c","#ff8a3a");
+    ctx.fillStyle="rgba(255,255,255,.45)";ctx.beginPath();ctx.ellipse(x-1.5*u,Y-7*u,1*u,2*u,-0.3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#ff6a2a";ctx.fillRect(x-0.7*u,Y-17*u,1.4*u,6*u);}
+  else{ // night float: dark body with a glowing green tip
+    shade(x,Y-6*u,2.2*u,7*u,"#141414","#3a3a3a");
+    const gl=ctx.createRadialGradient(x,Y-17*u,0.5,x,Y-17*u,10*u);gl.addColorStop(0,"rgba(120,255,140,.55)");gl.addColorStop(1,"rgba(120,255,140,0)");ctx.fillStyle=gl;ctx.fillRect(x-12*u,Y-29*u,24*u,24*u);
+    shade(x,Y-16*u,1.6*u,4*u,"#3be05a","#b8ffc4");}
   ctx.restore();
-  ctx.strokeStyle="rgba(255,255,255,.35)";ctx.beginPath();ctx.ellipse(x,y,5*fs+2,1.6*fs+0.6,0,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle=st==="led"?"rgba(150,255,170,.35)":"rgba(255,255,255,.35)";ctx.beginPath();ctx.ellipse(x,y,5*fs+2,1.6*fs+0.6,0,0,Math.PI*2);ctx.stroke();
+  if(st==="led"&&bob<6*fs){ctx.fillStyle="rgba(120,255,140,.18)";ctx.beginPath();ctx.ellipse(x,y+3,6*fs+2,2*fs+1,0,0,Math.PI*2);ctx.fill();}
 }
+// Rods look like the one you've got set up: a willow whip, a cane, carbon, the Kingfisher, or a fly rod
+function rodLook(){const m=conds().method,id=run?(m==="Fly"&&run.equip.fly?run.equip.fly:run.equip.rod):"willow";
+  return ({willow:{blank:["#8a6a3e","#b89462"],band:"#6b2e1e",trim:"#c9a45c"},hollowcane:{blank:["#a8884a","#d8bc78"],band:"#2f5a3f",trim:"#e0c070",nodes:1},
+    carbon:{blank:["#151517","#3a3a40"],band:"#b8262e",trim:"#c9c9cf"},kingfisher:{blank:["#10302a","#2f6a5c"],band:"#d9a43a",trim:"#f1c75b"},
+    hazelfly:{blank:["#6b5232","#9a7a4e"],band:"#3a5a2a",trim:"#c9a45c"},splitcane:{blank:["#a0703a","#d6a464"],band:"#7a1e1e",trim:"#e0c070",nodes:1}})[id]||{blank:["#151517","#3a3a40"],band:"#b8262e",trim:"#c9c9cf"};}
 function drawTackle(){
   const b=rodBase();let tip=rodTip();let end=null,tension=0.15,show=true;
   if(G.state==="ready"&&G.aim){const p=aimPower();tip={x:tip.x-G.aim.dx*0.08,y:tip.y+p*H*0.12};show=false;}
@@ -1053,20 +1080,37 @@ function drawTackle(){
   if(end&&show){ctx.strokeStyle=tension>0.9?"rgba(255,170,150,.95)":"rgba(240,236,220,.8)";ctx.lineWidth=1;
     const mx=(tip.x+end.x)/2,my=(tip.y+end.y)/2+(1-clamp(tension,0,1))*40;ctx.beginPath();ctx.moveTo(tip.x,tip.y);ctx.quadraticCurveTo(mx,my,end.x,end.y);ctx.stroke();}
   ctx.lineCap="round";
-  // blank, from thick butt to fine tip
-  const segs=[[0,0.22,7,"#7a5a34"],[0.22,0.5,5,"#3a2716"],[0.5,0.78,3.6,"#4a3220"],[0.78,1,2.2,"#5b3a1c"]];
-  for(const [a,z,wd,col] of segs){ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.beginPath();const p0=at(a);ctx.moveTo(p0.x,p0.y);for(let k=a+0.04;k<=z+0.001;k+=0.04){const p=at(Math.min(k,z));ctx.lineTo(p.x,p.y);}ctx.stroke();}
-  ctx.strokeStyle="rgba(255,255,255,.12)";ctx.lineWidth=1;ctx.beginPath();for(let k=0.24;k<=0.98;k+=0.04){const p=at(k);k<0.25?ctx.moveTo(p.x-1,p.y):ctx.lineTo(p.x-1,p.y);}ctx.stroke();
-  // cork grip rings and line guides
-  ctx.strokeStyle="rgba(60,40,20,.5)";ctx.lineWidth=1;for(let k=0.03;k<0.2;k+=0.035){const p=at(k);ctx.beginPath();ctx.moveTo(p.x-3.5,p.y);ctx.lineTo(p.x+3.5,p.y);ctx.stroke();}
-  ctx.strokeStyle="#c9c3b5";ctx.lineWidth=1;for(const k of [0.5,0.66,0.8,0.91]){const p=at(k);ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,Math.PI*2);ctx.stroke();}
-  ctx.fillStyle="#e3593c";const tp=at(1);ctx.beginPath();ctx.arc(tp.x,tp.y,1.4,0,Math.PI*2);ctx.fill();
-  if(G.state==="waiting"&&G.float.method==="Ledger"){ctx.strokeStyle="#e3593c";ctx.lineWidth=2.5;ctx.beginPath();const q=at(0.86);ctx.moveTo(q.x,q.y);ctx.lineTo(tp.x,tp.y);ctx.stroke();}
-  // reel
-  const rp=at(0.24);ctx.fillStyle="#2a2a2a";ctx.beginPath();ctx.arc(rp.x+7,rp.y+2,7,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle="#dcaa48";ctx.lineWidth=2;ctx.beginPath();ctx.arc(rp.x+7,rp.y+2,7,0,Math.PI*2);ctx.stroke();
-  ctx.strokeStyle="#9a9a9a";ctx.lineWidth=1.5;const ra=G.reeling?G.t*14:0.6;ctx.beginPath();ctx.moveTo(rp.x+7,rp.y+2);ctx.lineTo(rp.x+7+Math.cos(ra)*8,rp.y+2+Math.sin(ra)*8);ctx.stroke();
-  ctx.fillStyle="#d8d0bd";ctx.beginPath();ctx.arc(rp.x+7+Math.cos(ra)*8,rp.y+2+Math.sin(ra)*8,1.8,0,Math.PI*2);ctx.fill();
+  // blank: a tapered rod in its own colours, with a shine down one side
+  const RL=rodLook(),seg=(a,z,wd,col)=>{ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.beginPath();const p0=at(a);ctx.moveTo(p0.x,p0.y);for(let k=a+0.03;k<=z+0.001;k+=0.03){const p=at(Math.min(k,z));ctx.lineTo(p.x,p.y);}ctx.stroke();};
+  for(let k=0.2;k<1;k+=0.1){seg(k,Math.min(1,k+0.1),lerp(6.4,2,(k-0.2)/0.8),RL.blank[0]);}
+  ctx.globalAlpha=0.55;for(let k=0.2;k<1;k+=0.1){seg(k,Math.min(1,k+0.1),lerp(2.6,0.8,(k-0.2)/0.8),RL.blank[1]);}ctx.globalAlpha=1;
+  if(RL.nodes){ctx.strokeStyle="rgba(60,40,20,.55)";ctx.lineWidth=1.2;for(const k of [0.34,0.48,0.62,0.76,0.88]){const p=at(k),q=at(k+0.01),dx=q.y-p.y,dy=-(q.x-p.x),l=Math.hypot(dx,dy)||1,w=lerp(3,1.2,k);ctx.beginPath();ctx.moveTo(p.x-dx/l*w,p.y-dy/l*w);ctx.lineTo(p.x+dx/l*w,p.y+dy/l*w);ctx.stroke();}}
+  // butt cap, cork grip, metal reel seat, then a coloured whipping band
+  seg(0,0.035,10,"#1c1c1e");
+  seg(0.035,0.2,9.4,"#b98a55");ctx.globalAlpha=0.5;seg(0.035,0.2,3.6,"#e2bf8a");ctx.globalAlpha=1;
+  ctx.fillStyle="rgba(90,60,30,.55)";for(let k=0.045;k<0.2;k+=0.012){const p=at(k);ctx.fillRect(p.x+((k*977)%5)-2.5,p.y+((k*631)%3)-1.5,1.2,1);}
+  seg(0.2,0.235,8,"#8a8d94");ctx.globalAlpha=0.6;seg(0.2,0.235,2.4,"#e6e8ec");ctx.globalAlpha=1;
+  seg(0.235,0.25,5.6,"#2a2a2c");seg(0.25,0.262,5.2,RL.band);seg(0.262,0.268,5,RL.trim);
+  // line guides: ring guides with little feet, big near the reel and tiny at the tip
+  for(const [k,r] of [[0.42,3.2],[0.56,2.5],[0.68,2],[0.79,1.6],[0.89,1.3],[0.96,1.1]]){const p=at(k),q=at(k+0.01),ux=q.x-p.x,uy=q.y-p.y,l=Math.hypot(ux,uy)||1,nx=uy/l,ny=-ux/l;
+    const gx=p.x+nx*(r+2),gy=p.y+ny*(r+2);ctx.strokeStyle="#9a9ca2";ctx.lineWidth=0.9;ctx.beginPath();ctx.moveTo(p.x-ux/l*2,p.y-uy/l*2);ctx.lineTo(gx,gy);ctx.lineTo(p.x+ux/l*2,p.y+uy/l*2);ctx.stroke();
+    ctx.strokeStyle="#d8dade";ctx.lineWidth=1.1;ctx.beginPath();ctx.arc(gx,gy,r,0,Math.PI*2);ctx.stroke();ctx.fillStyle=RL.band;ctx.fillRect(p.x-1,p.y-1,2,2);}
+  ctx.fillStyle="#d8dade";const tp=at(1);ctx.beginPath();ctx.arc(tp.x,tp.y,1.5,0,Math.PI*2);ctx.fill();
+  if(G.state==="waiting"&&G.float.method==="Ledger"){ctx.strokeStyle="#ffd23a";ctx.lineWidth=2.4;ctx.beginPath();const q=at(0.9);ctx.moveTo(q.x,q.y);ctx.lineTo(tp.x,tp.y);ctx.stroke();}
+  // reel: a fixed-spool reel hanging under the rod, with a spinning handle
+  {const rp=at(0.215),rq=at(0.24),ang=Math.atan2(rq.y-rp.y,rq.x-rp.x),side=Math.cos(ang+Math.PI/2)>0?1:-1,sc=clamp(W/360,0.9,1.35)*1.5,ra=G.reeling?G.t*14:0.6;
+    ctx.save();ctx.translate(rp.x,rp.y);ctx.rotate(ang);ctx.scale(sc,sc*side);
+    ctx.fillStyle="#4a4c52";ctx.fillRect(-1.5,1,3,7);                                   // stem
+    const bg=ctx.createLinearGradient(0,6,0,20);bg.addColorStop(0,"#9a9ca4");bg.addColorStop(0.5,"#5a5c64");bg.addColorStop(1,"#2e3036");
+    ctx.fillStyle=bg;ctx.beginPath();ctx.ellipse(-2,13,6,6.5,0,0,Math.PI*2);ctx.fill();        // gearbox
+    const sg=ctx.createLinearGradient(0,7,0,19);sg.addColorStop(0,"#e8e8ec");sg.addColorStop(0.5,"#a8aab2");sg.addColorStop(1,"#6a6c74");
+    ctx.fillStyle=sg;ctx.beginPath();ctx.roundRect(3,7.5,10,11,2);ctx.fill();                 // spool
+    ctx.fillStyle="#d9a43a";ctx.fillRect(5,7.5,1.6,11);                                        // gold trim
+    ctx.fillStyle="#f4f1e6";ctx.fillRect(11.5,8.5,1.5,9);                                      // line on the spool lip
+    ctx.strokeStyle="#c9cbd2";ctx.lineWidth=1;ctx.beginPath();ctx.arc(8,13,7.5,-1.9,1.9);ctx.stroke(); // bail arm
+    const hx=-2+Math.cos(ra)*2,hy=13+Math.sin(ra)*9;ctx.strokeStyle="#7a7c84";ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(-2,13);ctx.lineTo(hx,hy);ctx.stroke();
+    ctx.fillStyle="#1c1c1e";ctx.beginPath();ctx.ellipse(hx,hy,2.4,1.6,0,0,Math.PI*2);ctx.fill();  // handle knob
+    ctx.restore();}
   ctx.lineCap="butt";
 }
 function aimPower(){return G.aim?clamp(G.aim.dy/(H*0.4),0,1):0;}

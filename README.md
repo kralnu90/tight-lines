@@ -90,6 +90,12 @@ Open the link on your Android phone and install it. The first time, Android asks
 
 ## Changelog
 
+### 0.32.0 · New rod and floats (16 Nov 2026)
+- A new rod that comes in from the bottom right, so you can see the cork grip, the metal reel seat and a proper fixed-spool reel with a gold-trimmed spool, bail arm and a handle that turns as you reel
+- Ring guides that get smaller towards the tip, and a shine down the blank
+- Your rod looks like the one you've set up: willow, hollowcane, black carbon with red whipping, the green and gold Kingfisher, and the fly rods
+- New floats: a stick float with a yellow tip on the river, a quill with an orange tip on the lake, a weighted orange egg float at sea, and a glowing green night float after dark
+
 ### 0.31.2 · Tidier water (16 Nov 2026)
 - The moving current lines on the water now stay on open water: off the rocks at Saltmarsh Point, the reeds and lily pads at the lake, and the willow, jetty and bank on the river
 - Fixed in both the painted and the drawn scenes
