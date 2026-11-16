@@ -127,6 +127,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .tut-glow{outline:3px solid var(--brass)!important;outline-offset:2px;animation:tutpulse 1.1s ease-in-out infinite}
 @keyframes tutpulse{50%{outline-color:rgba(241,199,91,.25)}}
 @media (prefers-reduced-motion:reduce){.tut-glow{animation:none}}
+.pubcv{flex-shrink:0;width:calc(100% + 32px);margin:-16px -16px 2px;aspect-ratio:2576/1405;border-radius:13px 13px 0 0;display:block;background:#2a170c}
 .innpic{flex-shrink:0;height:clamp(150px,32vh,240px);margin:-16px -16px 2px;border-radius:13px 13px 0 0;background:center/cover no-repeat;box-shadow:inset 0 -40px 40px -20px var(--panel)}
 .overlay{position:fixed;inset:0;z-index:20;background:rgba(9,18,16,.78);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
 .card{background:var(--panel);border:1px solid var(--brass-deep);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
@@ -347,8 +348,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.38.0";
+const VERSION="0.38.1";
 const CHANGELOG=[
+  {v: "0.38.1", date: "16 Nov 2026", title: "Inside the inns", items: ["A new picture of the bar inside each inn, with the inn's own name on the plaque over the fireplace", "It's alive: the fire flickers, embers drift up the chimney, candles waver and the fairy lights twinkle", "It's at the top of Pub games, News and gossip and the Rest screen, and sits behind the cook, the request board and the pub games"]},
   {v: "0.38", date: "16 Nov 2026", title: "The tutorial", items: ["New games can start with a tutorial: a coach at the top of the screen walks you through your first cast, strike, fight and catch, lighting a fire, cooking and eating, getting back to the inn, selling and saving", "Whatever you need to tap next glows", "Skip it any time, and replay it from Settings"]},
   {v: "0.37", date: "16 Nov 2026", title: "Legends, a home and the pub", items: ["Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say", "Land a legend and hand it in for a big reward and a piece of Master gear", "The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it", "Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night", "Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season", "A big wave can damage the boat, and Jory won't go out again until it's repaired", "Your own home: buy Alder Hollow from the land agent in Kingsbridge (300 FB), a plot between Willowmere and the lake. It starts as a tent and a 20-slot store", "Build it up: a timber cabin (sleep and save, 40-slot store), a smokehouse (no portable smoker needed), a fish pond where raw fish never go off, a kitchen garden to pick every day, and a trophy wall for your legends and best fish", "Pub games at every inn, for stakes of 2 to 20 FB: darts against the local (a proper board with doubles, trebles and bulls), five-card draw poker, and higher or lower with a cash-out"]},
   {v: "0.36", date: "16 Nov 2026", title: "Tiles everywhere and faster levelling", items: ["The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp", "The in-game menu gains Map and What's new tiles", "Shop tabs have icons", "Fish give about five times as much fishing XP, more for bigger fish, and 200 XP for a first catch of a species. Rare and very rare fish pay the most", "Lost fish and pots and traps give more XP too", "Fixed: very rare fish (halibut, bluefin tuna) gave no XP"]},
@@ -513,7 +515,7 @@ function stars(n){return "★".repeat(n)+"<i>"+"★".repeat(5-n)+"</i>";}
 function lbOz(w){let lb=Math.floor(w),oz=Math.round((w-lb)*16);if(oz===16){lb++;oz=0;}return lb?`${lb} lb ${oz} oz`:`${oz} oz`;}
 function showOverlay(html,cls){const o=$("#overlay");o.innerHTML=`<div class="card ${cls||""}">${html}</div>`;o.hidden=false;
   // at an inn, the pub itself sits behind every screen
-  o.style.background=G.state==="tavern"&&run&&isTown(run.loc)?`linear-gradient(rgba(9,18,16,.72),rgba(9,18,16,.88)),url('art/inns/${run.loc}.jpg') center/cover`:"";
+  o.style.background=G.state==="tavern"&&run&&isTown(run.loc)?`linear-gradient(rgba(9,18,16,.72),rgba(9,18,16,.88)),url('art/inns/${G.inside?"interior":run.loc}.jpg') center/cover`:"";G.inside=false;
   const b=o.querySelector("button");if(b)setTimeout(()=>{try{b.focus({preventScroll:true});}catch(_){}},50);}
 function hideOverlay(){$("#overlay").hidden=true;$("#overlay").innerHTML="";}
 function headerButtons(on){$("#btnLog").hidden=!on;$("#btnMenu").hidden=!on;}
@@ -1806,7 +1808,7 @@ function cookScreen(){
   const row=r=>{const R=RECIPES[r];if(R.secret||(R.region&&R.region!==tid))return "";const have=run.recipes.includes(r),price=R.feast?COOK_PRICE.feast:R.region?COOK_PRICE.region:COOK_PRICE.buy,lock=(R.region&&L<35)||(R.feast&&L<40);
     return `<div class="act" style="cursor:default"><span>${recipeTitle(r)}<small>${have?"You know this one.":lock?`${T.cook} will teach you at cooking level ${R.feast?40:35}.`:`Cooking level ${R.lv}. Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}${R.bbq?", on a camp BBQ":""}.`}</small></span>
       ${have?"<em>Known</em>":lock?"":`<span style="display:flex;gap:6px">${(R.region||R.feast)&&rare>=0?`<button class="iconbtn" data-cf="${r}" type="button">Give a rare fish</button>`:""}<button class="iconbtn" data-cb="${r}" type="button" ${B>=price?"":"disabled"}>${price} FB</button></span>`}</div>`;};
-  showOverlay(`<span class="tag">${T.n}</span><h2>${T.cook}, the cook</h2><p class="note">${T.cookText} Recipes cost coin, but bring a rare fish and you'll get ${T.n}'s own dishes for nothing.</p>
+  G.inside=true;showOverlay(`<span class="tag">${T.n}</span><h2>${T.cook}, the cook</h2><p class="note">${T.cookText} Recipes cost coin, but bring a rare fish and you'll get ${T.n}'s own dishes for nothing.</p>
     <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Cooking Lv ${L}</p>
     <div class="acts">${Object.keys(RECIPES).map(row).join("")}</div>
     <p class="note">Regional dishes are ${T.n}'s own and sell for 30% more in other towns.</p>
@@ -2061,7 +2063,7 @@ function boardScreen(){
   const reqs=B.reqs.map(q=>`<div class="act" style="cursor:default"><span>${q.txt} <small style="display:inline;color:${["","var(--muted)","var(--safe)","var(--brass)"][q.tier]}">${["","Easy","Medium","Hard"][q.tier]}</small><small>${q.sub} ${q.kind==="deliver"?"Due "+fmtDue(q.due).replace(/ ·.*/,"")+".":`Allows ${Math.round((q.due-absMin())/1440)} days.`}<br>Reward ${q.bucks} FB${q.extra?" and "+extraText(q.extra):""}</small></span>
     <button class="iconbtn" data-take="${q.id}" type="button" ${full?"disabled":""}>Accept</button></div>`).join("");
   const L=level();
-  showOverlay(`<span class="tag">${T.n}</span><h2>Request board</h2>
+  G.inside=true;showOverlay(`<span class="tag">${T.n}</span><h2>Request board</h2>
     <p class="note">Notices pinned up by ${T.city?"merchants, chefs and collectors":"locals, the kitchen and passing traders"}. New ones go up every two days. You can take on ${JOB_MAX} at a time. Miss a deadline and ${T.n} won't forget it.</p>
     <div class="stats"><div><small>Standing</small><b>${repName(r)}</b></div><div><small>Reputation</small><b>${r>0?"+":""}${r}</b></div><div><small>Prices</small><b>${repMul(t)>=1?"+":"−"}${Math.abs(Math.round((repMul(t)-1)*100))}%</b></div></div>
     <p class="note">${repPerks(r)}${nx!==null?` Next standing at ${nx}.`:""}</p>
@@ -2133,7 +2135,7 @@ function newsScreen(msg){
   const heard=run.mkt.filter(e=>e.until>=run.day&&(e.heard||(!e.town||e.town===t)));
   const fests=FESTIVALS.filter(F=>{const d=festDays(F);return d!==null&&d<=10&&(paper||F.town===t||festOn(F)&&F.town===t||(run.news.fest||[]).includes(F.id));}).sort((a,b)=>festDays(a)-festDays(b));
   const tips=(run.news.tips||[]).slice(-3).reverse();
-  showOverlay(`<span class="tag">${T.n}</span><h2>News and gossip</h2>
+  G.inside=true;showOverlay(`${pubSceneHtml()}<span class="tag">${T.n}</span><h2>News and gossip</h2>
     <p class="note">You only know what's happening in other towns' markets if you hear about it. Read the paper or buy a round and listen in.${T.city?"":" Festival posters for this town are up on the wall."}</p>
     ${msg?`<p class="note" style="color:var(--cream)">${msg}</p>`:""}
     <div class="acts">
@@ -2145,7 +2147,7 @@ function newsScreen(msg){
     ${tips.length?`<h3>Fishermen's tips</h3><div class="acts">${tips.map(x=>`<p class="note">${x}</p>`).join("")}</div>`:""}
     <p class="note">Fish that only run in some seasons sell for 10% less while they're in season and 30% more out of it. Salted and smoked fish are how you sell them out of season.</p>
     <div class="controls"><button class="big ghost" id="nwBack" type="button" style="flex:1">Back</button></div>`);
-  $("#nwPaper").onclick=()=>{run.bucks-=1;run.news.paper=run.day;run.mkt.forEach(e=>e.heard=true);renderHud();newsScreen("You read the Courier cover to cover over a cup of tea.");};
+  startPubScene();$("#nwPaper").onclick=()=>{run.bucks-=1;run.news.paper=run.day;run.mkt.forEach(e=>e.heard=true);renderHud();newsScreen("You read the Courier cover to cover over a cup of tea.");};
   $("#nwRound").onclick=()=>{run.bucks-=3;advance(30);renderHud();if(checkDeath())return;if(!run.news.gossip)run.news.gossip={};run.news.gossip[t]=run.day;
     const unheard=run.mkt.filter(e=>e.until>=run.day&&!e.heard&&e.town!==t),soon=FESTIVALS.filter(F=>{const d=festDays(F);return d!==null&&d<=10&&F.town!==t&&!(run.news.fest||[]).includes(F.id);});
     const roll=Math.random();let say;
@@ -2615,7 +2617,7 @@ const PUB_RIVAL={tavern:["Old Tom",0.16],thornmere:["Netty Briggs",0.15],saltwic
 let pubStake=5;
 function pubMenu(){
   const t=townId(),[rival]=PUB_RIVAL[t],B=run.bucks;
-  showOverlay(`<span class="tag">${TOWNS[t].n}</span><h2>Pub games</h2>
+  G.inside=true;showOverlay(`${pubSceneHtml()}<span class="tag">${TOWNS[t].n}</span><h2>Pub games</h2>
     <p class="note">${rival} is propping up the bar and looking for a game. Each game takes about half an hour.</p>
     <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Stake: ${[2,5,10,20].map(v=>`<button class="iconbtn" data-stake="${v}" type="button" style="${v===pubStake?"border-color:var(--brass);color:var(--brass)":""}">${v} FB</button>`).join(" ")}</p>
     <div class="tiles">
@@ -2626,9 +2628,9 @@ function pubMenu(){
     <p class="note">Darts: three darts each, highest score wins. Five-card draw: hold what you like, swap the rest, best hand wins. Higher or lower: call the next card, cash out whenever you like.</p>
     <div class="controls"><button class="big ghost" id="pgBack" type="button" style="flex:1">Back</button></div>`);
   document.querySelectorAll("[data-stake]").forEach(b=>b.onclick=()=>{pubStake=+b.dataset.stake;pubMenu();});
-  $("#pgDarts").onclick=()=>darts();$("#pgPoker").onclick=()=>poker();$("#pgHiLo").onclick=()=>hilo();$("#pgBack").onclick=tavernMenu;}
+  startPubScene();$("#pgDarts").onclick=()=>darts();$("#pgPoker").onclick=()=>poker();$("#pgHiLo").onclick=()=>hilo();$("#pgBack").onclick=tavernMenu;}
 function pubResult(title,text,delta){run.bucks+=delta;advance(30);renderHud();
-  showOverlay(`<span class="tag">Pub games</span><h2>${title}</h2><p>${text}</p><p class="note">${delta>0?`+${delta}`:delta<0?`−${-delta}`:"±0"} Fish Bucks · you have ${run.bucks}</p>
+  G.inside=true;showOverlay(`<span class="tag">Pub games</span><h2>${title}</h2><p>${text}</p><p class="note">${delta>0?`+${delta}`:delta<0?`−${-delta}`:"±0"} Fish Bucks · you have ${run.bucks}</p>
     <div class="controls"><button class="big ghost" id="prMenu" type="button" style="flex:1">Pub games</button><button class="big strike" id="prBar" type="button" style="flex:1">Back to the bar</button></div>`);
   $("#prMenu").onclick=pubMenu;$("#prBar").onclick=tavernMenu;}
 
@@ -2642,7 +2644,7 @@ function darts(){
   const t=townId(),[rival,sig]=PUB_RIVAL[t],stake=pubStake;let mine=[],theirs=[],over=false;
   for(let i=0;i<3;i++){theirs.push(dartScore(gauss()*sig,-0.56+gauss()*sig));}
   const tot=a=>a.reduce((x,y)=>x+y,0);
-  showOverlay(`<span class="tag">Darts</span><h2>You vs ${rival}</h2><p class="note">${rival} throws first: ${theirs.join(" · ")} = <b>${tot(theirs)}</b>. Beat it with three darts.</p>
+  G.inside=true;showOverlay(`<span class="tag">Darts</span><h2>You vs ${rival}</h2><p class="note">${rival} throws first: ${theirs.join(" · ")} = <b>${tot(theirs)}</b>. Beat it with three darts.</p>
     <canvas id="dbC" width="300" height="300" style="width:100%;max-width:300px;align-self:center;touch-action:none"></canvas>
     <p class="note" id="dbS" style="text-align:center">Your darts: —</p>
     <div class="controls"><button class="big strike" id="dbT" type="button" style="flex:1">Throw</button></div>`,"event");
@@ -2680,7 +2682,7 @@ const HANDN=["High card","A pair","Two pair","Three of a kind","A straight","A f
 function cmpHand(a,b){for(let i=0;i<Math.max(a.length,b.length);i++){const d=(a[i]||0)-(b[i]||0);if(d)return d;}return 0;}
 function poker(){
   const t=townId(),[rival]=PUB_RIVAL[t],stake=pubStake,d=deck(),me=d.splice(0,5),them=d.splice(0,5),hold=[false,false,false,false,false];
-  const draw=()=>{showOverlay(`<span class="tag">Five-card draw</span><h2>You vs ${rival}</h2><p class="note">Tap the cards you want to keep, then draw. ${rival}'s cards stay face down.</p>
+  const draw=()=>{G.inside=true;showOverlay(`<span class="tag">Five-card draw</span><h2>You vs ${rival}</h2><p class="note">Tap the cards you want to keep, then draw. ${rival}'s cards stay face down.</p>
     <div class="phand">${them.map(()=>`<span class="pcard back">🂠</span>`).join("")}</div>
     <div class="phand">${me.map((c,i)=>`<button type="button" data-hold="${i}" style="all:unset;cursor:pointer">${cardHtml(c,hold[i]?"held":"")}</button>`).join("")}</div>
     <p class="note" style="text-align:center">${HANDN[handRank(me)[0]]}</p>
@@ -2693,7 +2695,7 @@ function poker(){
     const keep=hr[0]>=4?them.map(()=>true):hr[0]>=1?them.map(c=>cnt[c.r]>1):them.map(c=>c.r>=12);
     for(let i=0;i<5;i++)if(!keep[i])them[i]=d.pop();
     const a=handRank(me),b=handRank(them),r=cmpHand(a,b);
-    showOverlay(`<span class="tag">Five-card draw</span><h2>${r>0?"You win!":r<0?`${rival} wins`:"A split pot"}</h2>
+    G.inside=true;showOverlay(`<span class="tag">Five-card draw</span><h2>${r>0?"You win!":r<0?`${rival} wins`:"A split pot"}</h2>
       <p class="note">${rival}: ${HANDN[b[0]].toLowerCase()}</p><div class="phand">${them.map(c=>cardHtml(c)).join("")}</div>
       <p class="note">You: ${HANDN[a[0]].toLowerCase()}</p><div class="phand">${me.map(c=>cardHtml(c)).join("")}</div>
       <div class="controls"><button class="big strike" id="pkOk" type="button" style="flex:1">Settle up</button></div>`,"event");
@@ -2702,7 +2704,7 @@ function poker(){
 // Higher or lower: each right call grows the pot; a wrong one loses the stake; a match is a free go
 const HILO_PAY=[1,1.4,2,3,4.5,7];
 function hilo(){const stake=pubStake,d=deck();let cur=d.pop(),streak=0,msg="";
-  const show=()=>{showOverlay(`<span class="tag">Higher or lower</span><h2>${streak?`${streak} in a row`:"Call it"}</h2>
+  const show=()=>{G.inside=true;showOverlay(`<span class="tag">Higher or lower</span><h2>${streak?`${streak} in a row`:"Call it"}</h2>
     <div class="phand">${cardHtml(cur)}</div><p class="note" style="text-align:center">${msg||"Will the next card be higher or lower?"}</p>
     <p class="note" style="text-align:center">Stake ${stake} FB · cash out now for <b style="color:var(--brass)">${Math.round(stake*HILO_PAY[Math.min(streak,5)])} FB</b></p>
     <div class="controls"><button class="big strike" id="hlHi" type="button" style="flex:1">Higher</button><button class="big strike" id="hlLo" type="button" style="flex:1">Lower</button></div>
@@ -2746,6 +2748,32 @@ function renderCoach(){let el=document.getElementById("coach");
 setInterval(()=>{document.querySelectorAll(".tut-glow").forEach(e=>e.classList.remove("tut-glow"));
   if(!run||run.tut==null||G.state==="menu"){const el=document.getElementById("coach");if(el)el.remove();return;}const S=TUT[run.tut];if(!S||!S.sel)return;document.querySelectorAll(S.sel).forEach(e=>e.classList.add("tut-glow"));
   if(!document.getElementById("coach")&&G.state!=="menu")renderCoach();},350);
+
+/* ---------- The bar: Kris's pub interior with a living fire, embers, fairy lights and the inn's name on the plaque ---------- */
+// Coordinates are in the original 2576×1405 picture. The canvas keeps the picture's shape, so they just scale.
+const PUB_IMG=new Image();PUB_IMG.src="art/inns/interior.jpg";
+const PUB_LIGHTS=(()=>{const pts=[],line=(a,b,c,d,gap)=>{const n=Math.max(1,Math.round(Math.hypot(c-a,d-b)/gap));for(let i=0;i<=n;i++)pts.push([a+(c-a)*i/n,b+(d-b)*i/n,Math.random()*6.3,1+Math.random()*2]);};
+  line(812,290,965,333,26);line(1110,342,1500,398,28);line(1560,410,2030,404,30);line(2050,382,2565,318,30);return pts;})();
+function pubSceneHtml(){return `<canvas class="pubcv" width="644" height="351" role="img" aria-label="Inside ${town().inn}"></canvas>`;}
+function startPubScene(){const cv=document.querySelector(".pubcv");if(!cv)return;const c=cv.getContext("2d"),W2=cv.width,H2=cv.height,s=W2/2576,name=town().inn.toUpperCase();
+  const embers=[...Array(26)].map(()=>({x:260+Math.random()*230,y:880-Math.random()*400,v:40+Math.random()*60,ph:Math.random()*6.3}));let last=performance.now();
+  const glow=(x,y,r,col,a)=>{const g=c.createRadialGradient(x*s,y*s,0,x*s,y*s,r*s);g.addColorStop(0,`rgba(${col},${a})`);g.addColorStop(1,`rgba(${col},0)`);c.fillStyle=g;c.fillRect((x-r)*s,(y-r)*s,2*r*s,2*r*s);};
+  const frame=now=>{if(!cv.isConnected)return;const dt=Math.min(0.05,(now-last)/1000),t=now/1000;last=now;
+    if(PUB_IMG.complete&&PUB_IMG.naturalWidth)c.drawImage(PUB_IMG,0,0,W2,H2);else{c.fillStyle="#2a170c";c.fillRect(0,0,W2,H2);}
+    // the inn's own name on the plaque over the fire
+    c.save();c.translate(452*s,124*s);c.rotate(0.168);let fs=64;c.font=`700 ${fs*s}px Georgia,serif`;const w=c.measureText(name).width;if(w>390*s){fs*=390*s/w;c.font=`700 ${fs*s}px Georgia,serif`;}
+    c.textAlign="center";c.textBaseline="middle";c.fillStyle="rgba(0,0,0,.45)";c.fillText(name,1.5,1.5);c.fillStyle="#c9a45c";c.fillText(name,0,0);c.restore();
+    c.globalCompositeOperation="lighter";
+    const fl=0.55+0.25*Math.sin(t*7.3)+0.15*Math.sin(t*13.1+1)+0.1*Math.sin(t*23.7);
+    glow(360,830,420,"255,140,50",0.16*fl);glow(380,780,170,"255,190,90",0.22*fl);
+    for(const e of embers){e.y-=e.v*dt;e.x+=Math.sin(t*2+e.ph)*14*dt;if(e.y<470){e.y=900;e.x=270+Math.random()*220;}
+      const a=Math.max(0,Math.min(1,(e.y-470)/300));glow(e.x,e.y,9,"255,170,70",0.9*a);}
+    for(const [x,y,ph,sp] of PUB_LIGHTS)glow(x,y,13,"255,214,140",0.35+0.35*Math.sin(t*sp+ph));
+    for(const [x,y,r] of [[793,318,46],[1528,812,52]])glow(x,y,r,"255,200,110",0.32+0.18*Math.sin(t*9+x));
+    for(const [x,y] of [[1078,348],[1530,440],[2104,420],[2148,384],[2200,365]])glow(x,y,60,"255,200,120",0.12+0.04*Math.sin(t*1.3+y));
+    c.globalCompositeOperation="source-over";
+    requestAnimationFrame(frame);};
+  requestAnimationFrame(frame);}
 
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
@@ -2947,13 +2975,13 @@ function goTavern(id){id=id||(isTown(run.loc)?run.loc:"tavern");run.loc=id;run.t
 function tavernMenu(view){
   const T=town(),ROOM=T.room,t=townId(),$=q=>document.querySelector(q)||{};
   const fest=festsHere(t)[0],ready=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length,L=locker(t);
-  const head=`<div class="innpic" style="background-image:url('art/inns/${t}.jpg');background-position:${t==="tavern"?"12% 40%":"center 35%"}" role="img" aria-label="${T.inn}"></div><span class="tag">${T.n}</span><h2>${T.inn}</h2>`;
+  const head=view==="rest"?`${pubSceneHtml()}<span class="tag">${T.n}</span><h2>${T.inn}</h2>`:`<div class="innpic" style="background-image:url('art/inns/${t}.jpg');background-position:${t==="tavern"?"12% 40%":"center 35%"}" role="img" aria-label="${T.inn}"></div><span class="tag">${T.n}</span><h2>${T.inn}</h2>`;
   let body;
-  if(view==="rest")body=`<h3>Rest</h3><div class="acts">
+  if(view==="rest"){G.inside=true;body=`<h3>Rest</h3><div class="acts">
     <button class="act" id="tStay" type="button" ${run.bucks>=ROOM?"":"disabled"}><span>Stay the night · ${ROOM} FB<small>Full rest, water skins refilled, illness treated, wounds dressed and injuries well on the mend. <b>Saves your game.</b></small></span><em>to 07:00</em></button>
     <button class="act" id="tBarn" type="button"><span>Sleep in the stable · free<small>A save and a roof, but a cold, rough night. Doesn't treat illness.</small></span><em>to 07:00</em></button>
     <button class="act" id="tMeal" type="button" ${run.bucks>=MEAL?"":"disabled"}><span>Hot meal by the fire · ${MEAL} FB<small>Fills you up and warms you through.</small></span><em>30 min</em></button>
-  </div>`;
+  </div>`;}
   else if(view==="travel")body=`<h3>Travel</h3><div class="acts">${travelButtons("go")}</div>`;
   else body=`<p class="note">${clock(run.min)}, day ${run.day}. ${T.blurb}</p>
   ${fest?`<p class="note"><b style="color:var(--brass)">${fest.n} is on!</b> ${fest.desc}</p>`:""}
@@ -2975,7 +3003,7 @@ function tavernMenu(view){
   <p class="note">${T.n} ${wantText(T)}. ${repName(repOf(t))} here.</p>`;
   showOverlay(`${head}<p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b> in your pocket.</p>${body}
   <div class="controls">${view?`<button class="big ghost" id="tBack" type="button" style="flex:1">Back</button>`:`<button class="big ghost" id="tKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="tLog" type="button" style="flex:1">Log</button><button class="big ghost" id="tMenu" type="button" style="flex:1">Menu</button>`}</div>`);
-  $("#tBack").onclick=()=>tavernMenu();
+  $("#tBack").onclick=()=>tavernMenu();if(view==="rest")startPubScene();
   $("#tKit").onclick=()=>kitScreen(tavernMenu);$("#tLog").onclick=()=>logBook(tavernMenu);$("#tMenu").onclick=pauseMenu;
   const night=(fn)=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});fn();if(hasShard()){run.needs.stam=Math.min(run.needs.stam,45);setTimeout(()=>toast("You barely slept. The shard in your net hums all night.",true,2600),400);}run.water=maxWater();run.fire=0;run.away=0;saveTavern();renderHud();};
   $("#tStay").onclick=()=>{run.bucks-=ROOM;night(()=>{Object.assign(run.needs,{food:Math.max(run.needs.food,70),warm:100,stam:100,health:100,thirst:100});run.ill=0;

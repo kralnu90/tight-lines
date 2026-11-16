@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.38.0** · experimental build
+**Current version: 0.38.1** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -67,6 +67,11 @@ Open the link on your Android phone and install it. The first time, Android asks
 ## Changelog
 
 Updates are grouped into big releases. The full in-game list is under **What's new** on the main menu.
+
+### 0.38.1 · Inside the inns (16 Nov 2026)
+- A new picture of the bar inside each inn, with the inn's own name on the plaque over the fireplace
+- It's alive: the fire flickers, embers drift up the chimney, candles waver and the fairy lights twinkle
+- It's at the top of Pub games, News and gossip and the Rest screen, and sits behind the cook, the request board and the pub games
 
 ### 0.38 · The tutorial (16 Nov 2026)
 - New games can start with a tutorial: a coach at the top of the screen walks you through your first cast, strike, fight and catch, lighting a fire, cooking and eating, getting back to the inn, selling and saving
