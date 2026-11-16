@@ -326,8 +326,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.35.0";
+const VERSION="0.35.1";
 const CHANGELOG=[
+  {v: "0.35.1", date: "16 Nov 2026", title: "Your own car on the road", items: ["Road trips in the old estate car now show the estate car, with its roof rack, on the open road", "The campervan has its own film, and the fishing van uses the drawn road scene until it gets one"]},
   {v: "0.35", date: "16 Nov 2026", title: "On the road", items: ["Road trips now play a real film of the open road: driving through the morning, a sunset stop, or a campfire under the stars at night, depending on the time you set off", "The clock still ticks on and you can still tap to skip", "Boat trips keep their sea scene, and if the film can't load the drawn road scene plays instead"]},
   {v: "0.34", date: "16 Nov 2026", title: "The spring clean", items: ["Inns and camp are now a tidy grid of tiles, and each tile opens a short list. No more giant scrolling screens", "Little badges show what needs you: fish to sell, requests ready to hand in, a festival on, snares worth checking", "Travel has its own list in both places, with the map at the top", "The update notes are grouped into big updates, so they're easier to read"]},
   {v: "0.29–0.33", date: "15–16 Nov 2026", title: "The graphical overhaul", items: ["Painted river, lake and coast that follow the clock through a full day: daylight, sunset, a moonlit night with fireflies, and sunrise (Settings, Painted scenes)", "A new rod with a cork grip, reel seat and a proper spinning reel whose handle turns as you reel, styled to match the rod you've set up", "New floats: a yellow-tipped stick float on the river, an orange-tipped quill on the lake, an orange egg float at sea and a glowing night float after dark", "A picture for every inn, at the top of the tavern menu and behind all its screens", "The moving lines on the water stay off rocks, reeds and the willow", "Fixed: striking early could open the Camp menu"]},
@@ -2159,7 +2160,7 @@ function lockerScreen(){
 // Travel is by road, so your vehicle comes everywhere with you. Its boot adds slots to your storage.
 // Bought at Kingsbridge Motors in the city; your old vehicle goes in part exchange for half its price.
 const VEH={
-  estate:{n:"Old estate car",price:0,boot:6,col:"#7a2e2a",desc:"Rusty, reliable and smells of bait. The boot holds 6 slots."},
+  estate:{n:"Old estate car",price:0,boot:6,col:"#34506e",desc:"Rusty, reliable and smells of bait. The boot holds 6 slots."},
   van:{n:"Fishing van",price:180,boot:16,col:"#d9d2bd",desc:"Rod racks on the roof and room for everything. The back holds 16 slots."},
   camper:{n:"Campervan",price:450,boot:12,col:"#d9773b",fridge:true,bed:true,desc:"A bed, a heater, a gas stove and a little fridge. Sleep warm and safe wherever you park, light the stove in minutes, and fresh fish keep half as long again. 12 slots."}
 };
@@ -2189,17 +2190,21 @@ function garageScreen(){
 
 /* ---------- Travel scenes: a short drive between places ---------- */
 // The clock, sky, weather and your vehicle all match the trip. Tap to skip. Settings, Travel scenes, turns it off.
-// Road trips play Kris's campervan film: morning to midday driving, a sunset stop, or a night camp, to match the clock.
-// Sea trips, and any time the film can't load, use the drawn scene.
-const ROAD_CLIPS={dawn:[0,2.4],day:[1.2,4.4],dusk:[5,6.4],night:[6.8,9.9]};
+// Road trips play Kris's films of your vehicle: morning to midday driving, a sunset stop, or a night camp, to match the clock.
+// Sea trips, vehicles without a film yet, and any time the film can't load use the drawn scene.
+const ROAD_FILMS={
+  estate:{src:"art/travel/road-estate.mp4",clips:{dawn:[0,2.4],day:[1.2,5],dusk:[5.6,6.4],night:[6.8,9.9]}},
+  camper:{src:"art/travel/road-camper.mp4",clips:{dawn:[0,2.4],day:[1.2,4.4],dusk:[5,6.4],night:[6.8,9.9]}}
+};
 function travelScene(from,dest,m0,mins,done){
   const seaTrip=[from,dest].some(k=>SPOTS[k]&&SPOTS[k].boat);
-  if(seaTrip||save.settings.roadFilm===false)return travelSceneDrawn(from,dest,m0,mins,done);
-  const dur=clamp(1800+mins*14,2400,4500),h=(m0%1440)/60,clip=ROAD_CLIPS[h>=5&&h<8?"dawn":h>=8&&h<17?"day":h>=17&&h<20.5?"dusk":"night"],V=veh();
+  const film=ROAD_FILMS[(run.car&&run.car.kind)||"estate"];
+  if(seaTrip||!film||save.settings.roadFilm===false)return travelSceneDrawn(from,dest,m0,mins,done);
+  const dur=clamp(1800+mins*14,2400,4500),h=(m0%1440)/60,clip=film.clips[h>=5&&h<8?"dawn":h>=8&&h<17?"day":h>=17&&h<20.5?"dusk":"night"],V=veh();
   showOverlay(`<span class="tag">On the road</span><h2>${placeName(dest)}</h2>
     <p class="note">${placeName(from)} → ${placeName(dest)} · ${fmtMins(mins)} in your ${V.n.toLowerCase()}</p>
     <div style="position:relative;border-radius:10px;overflow:hidden;background:#0e1c19;aspect-ratio:16/9">
-      <video id="trVid" src="art/travel/road.mp4" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;display:block"></video>
+      <video id="trVid" src="${film.src}" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;display:block"></video>
       <div id="trClock" style="position:absolute;left:10px;top:10px;padding:4px 10px;border-radius:8px;background:rgba(14,28,25,.72);color:#f0e7d0;font:700 18px 'Alegreya Sans',sans-serif">${clock(m0%1440)}</div>
       <div style="position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(14,28,25,.6)"><div id="trBar" style="height:100%;width:0;background:#dcaa48"></div></div>
     </div>

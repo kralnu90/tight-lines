@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.35.0** · experimental build
+**Current version: 0.35.1** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -66,6 +66,10 @@ Open the link on your Android phone and install it. The first time, Android asks
 ## Changelog
 
 Updates are grouped into big releases. The full in-game list is under **What's new** on the main menu.
+
+### 0.35.1 · Your own car on the road (16 Nov 2026)
+- Road trips in the old estate car now show the estate car, with its roof rack, on the open road
+- The campervan has its own film, and the fishing van uses the drawn road scene until it gets one
 
 ### 0.35 · On the road (16 Nov 2026)
 - Road trips now play a real film of the open road: driving through the morning, a sunset stop, or a campfire under the stars at night, depending on the time you set off
