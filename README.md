@@ -90,6 +90,10 @@ Open the link on your Android phone and install it. The first time, Android asks
 
 ## Changelog
 
+### 0.33.0 · The inns (16 Nov 2026)
+- Every inn now has its own picture: the Willowmere Arms by the river and stone bridge, the Heron's Rest with its heron sign, the Lantern and Gull on the harbour, and the Crown in Kingsbridge
+- The inn's picture sits at the top of the tavern menu and dimly behind every screen while you're there: selling, the shop, the board, the cook and the rest
+
 ### 0.32.0 · New rod and floats (16 Nov 2026)
 - A new rod that comes in from the bottom right, so you can see the cork grip, the metal reel seat and a proper fixed-spool reel with a gold-trimmed spool, bail arm and a handle that turns as you reel
 - Ring guides that get smaller towards the tip, and a shine down the blank

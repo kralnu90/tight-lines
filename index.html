@@ -108,6 +108,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .big.net.ready{background:var(--safe);color:#10230c;border-color:var(--safe)}
 .big.strike{background:var(--brass);color:#2a1d07}
 .big.ghost{background:var(--panel-2);color:var(--cream);border:1px solid var(--rule);flex:0 0 auto;padding:14px 16px}
+.innpic{flex-shrink:0;height:clamp(150px,32vh,240px);margin:-16px -16px 2px;border-radius:13px 13px 0 0;background:center/cover no-repeat;box-shadow:inset 0 -40px 40px -20px var(--panel)}
 .overlay{position:fixed;inset:0;z-index:20;background:rgba(9,18,16,.78);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
 .card{background:var(--panel);border:1px solid var(--brass-deep);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
 .card h2{margin:0;font-family:var(--display);font-size:26px;color:var(--brass);line-height:1.1;text-wrap:balance}
@@ -320,8 +321,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.32.0";
+const VERSION="0.33.0";
 const CHANGELOG=[
+  {v:"0.33.0",date:"16 Nov 2026",title:"The inns",items:["Every inn now has its own picture: the Willowmere Arms by the river and stone bridge, the Heron's Rest with its heron sign, the Lantern and Gull on the harbour, and the Crown in Kingsbridge", "The inn's picture sits at the top of the tavern menu and dimly behind every screen while you're there: selling, the shop, the board, the cook and the rest"]},
   {v:"0.32.0",date:"16 Nov 2026",title:"New rod and floats",items:["A new rod that comes in from the bottom right, so you can see the cork grip, the metal reel seat and a proper fixed-spool reel with a gold-trimmed spool, bail arm and a handle that turns as you reel", "Ring guides that get smaller towards the tip, and a shine down the blank", "Your rod looks like the one you've set up: willow, hollowcane, black carbon with red whipping, the green and gold Kingfisher, and the fly rods", "New floats: a stick float with a yellow tip on the river, a quill with an orange tip on the lake, a weighted orange egg float at sea, and a glowing green night float after dark"]},
   {v:"0.31.2",date:"16 Nov 2026",title:"Tidier water",items:["The moving current lines on the water now stay on open water: off the rocks at Saltmarsh Point, the reeds and lily pads at the lake, and the willow, jetty and bank on the river", "Fixed in both the painted and the drawn scenes"]},
   {v:"0.31.1",date:"16 Nov 2026",title:"Strike fix",items:["Fixed: striking too early or on nothing could open the Camp menu as well, because your tap landed on the Camp button that appeared under your finger. Taps are now ignored for a moment after the panel changes"]},
@@ -506,6 +508,8 @@ function setCondsEnabled(on){["#selMethod","#selBait","#selLine"].forEach(s=>$(s
 function stars(n){return "★".repeat(n)+"<i>"+"★".repeat(5-n)+"</i>";}
 function lbOz(w){let lb=Math.floor(w),oz=Math.round((w-lb)*16);if(oz===16){lb++;oz=0;}return lb?`${lb} lb ${oz} oz`:`${oz} oz`;}
 function showOverlay(html,cls){const o=$("#overlay");o.innerHTML=`<div class="card ${cls||""}">${html}</div>`;o.hidden=false;
+  // at an inn, the pub itself sits behind every screen
+  o.style.background=G.state==="tavern"&&run&&isTown(run.loc)?`linear-gradient(rgba(9,18,16,.72),rgba(9,18,16,.88)),url('art/inns/${run.loc}.jpg') center/cover`:"";
   const b=o.querySelector("button");if(b)setTimeout(()=>{try{b.focus({preventScroll:true});}catch(_){}},50);}
 function hideOverlay(){$("#overlay").hidden=true;$("#overlay").innerHTML="";}
 function headerButtons(on){$("#btnLog").hidden=!on;$("#btnMenu").hidden=!on;}
@@ -2573,7 +2577,7 @@ function goTavern(id){id=id||(isTown(run.loc)?run.loc:"tavern");run.loc=id;run.t
   $("#panel").innerHTML=`<div class="hint">You're at ${innMid(id)}, ${TOWNS[id].n}.</div>`;renderHud();deliverHere(id);tavernMenu();}
 function tavernMenu(){
   const T=town(),ROOM=T.room;
-  showOverlay(`<span class="tag">${T.n}</span><h2>${T.inn}</h2>
+  showOverlay(`<div class="innpic" style="background-image:url('art/inns/${townId()}.jpg');background-position:${townId()==="tavern"?"12% 40%":"center 35%"}" role="img" aria-label="${T.inn}"></div><span class="tag">${T.n}</span><h2>${T.inn}</h2>
   <p class="note">${clock(run.min)}, day ${run.day}. ${T.blurb}</p>
   <p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b> in your pocket.</p>
   <h3>Rest</h3><div class="acts">
