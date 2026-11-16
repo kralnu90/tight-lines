@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.35.1** · experimental build
+**Current version: 0.36.0** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -66,6 +66,14 @@ Open the link on your Android phone and install it. The first time, Android asks
 ## Changelog
 
 Updates are grouped into big releases. The full in-game list is under **What's new** on the main menu.
+
+### 0.36 · Tiles everywhere and faster levelling (16 Nov 2026)
+- The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp
+- The in-game menu gains Map and What's new tiles
+- Shop tabs have icons
+- Fish give about five times as much fishing XP, more for bigger fish, and 200 XP for a first catch of a species. Rare and very rare fish pay the most
+- Lost fish and pots and traps give more XP too
+- Fixed: very rare fish (halibut, bluefin tuna) gave no XP
 
 ### 0.35.1 · Your own car on the road (16 Nov 2026)
 - Road trips in the old estate car now show the estate car, with its roof rack, on the open road
