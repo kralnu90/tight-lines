@@ -90,6 +90,10 @@ Open the link on your Android phone and install it. The first time, Android asks
 
 ## Changelog
 
+### 0.31.1 · Tidier water (15 Nov 2026)
+- The moving current lines on the water now stay on open water: off the rocks at Saltmarsh Point, the reeds and lily pads at the lake, and the willow, jetty and bank on the river
+- Fixed in both the painted and the drawn scenes
+
 ### 0.31.0 · The painted coast (15 Nov 2026)
 - Saltmarsh Point is now a painted scene: the rocky point on the left where fish run for the rocks, islands on the horizon, and driftwood on the beach
 - Clear blue day, a golden sunset, a moonlit night under the Milky Way, and sunrise, all following the clock

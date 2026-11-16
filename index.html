@@ -322,6 +322,7 @@ const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
 const VERSION="0.31.1";
 const CHANGELOG=[
+  {v:"0.31.1",date:"15 Nov 2026",title:"Tidier water",items:["The moving current lines on the water now stay on open water: off the rocks at Saltmarsh Point, the reeds and lily pads at the lake, and the willow, jetty and bank on the river", "Fixed in both the painted and the drawn scenes"]},
   {v:"0.31.1",date:"16 Nov 2026",title:"Strike fix",items:["Fixed: striking too early or on nothing could open the Camp menu as well, because your tap landed on the Camp button that appeared under your finger. Taps are now ignored for a moment after the panel changes"]},
   {v:"0.31.0",date:"15 Nov 2026",title:"The painted coast",items:["Saltmarsh Point is now a painted scene: the rocky point on the left where fish run for the rocks, islands on the horizon, and driftwood on the beach", "Clear blue day, a golden sunset, a moonlit night under the Milky Way, and sunrise, all following the clock", "All three shore spots are painted now. Settings, Painted scenes, switches them together"]},
   {v:"0.30.0",date:"15 Nov 2026",title:"The painted lake",items:["Willowmere Lake is now a painted scene too, with reeds and lily pads on the right where the weed beds are, running from day through sunset and a moonlit, misty night with fireflies to sunrise", "Settings, Painted scenes: turns the painted river and lake on or off together"]},
@@ -414,9 +415,10 @@ function pickFish(c,q){const ws=biteWeights(c,q);const tot=ws.reduce((a,b)=>a+b.
 // so a full day runs through the video once. Anchors: [hour, second of the 10-second video]; seconds past 10 wrap to the start.
 // horizon / edge: where the far water line and the near bank sit in the 450×800 frames.
 const SPOT_ART={
-  river:{horizon:330,edge:590,img:[],ok:[],started:false},
-  lake:{horizon:272,edge:555,img:[],ok:[],started:false},
-  coast:{horizon:375,edge:630,img:[],ok:[],started:false}
+  // water: the open water in the picture, so the current lines stay off the willow, reeds, lily pads and rocks
+  river:{horizon:330,edge:590,img:[],ok:[],started:false,water:[[112,342],[298,337],[330,349],[450,353],[450,628],[320,598],[200,563],[132,528],[122,468],[112,400]]},
+  lake:{horizon:272,edge:555,img:[],ok:[],started:false,water:[[0,294],[322,294],[316,340],[310,386],[268,416],[276,456],[330,500],[326,512],[180,520],[0,543]]},
+  coast:{horizon:375,edge:630,img:[],ok:[],started:false,water:[[72,380],[450,376],[450,640],[200,624],[64,606],[128,584],[172,556],[186,526],[148,494],[104,446],[76,402]]}
 };
 const ART_N=60,ART_W=450,ART_H=800;
 const ART_TIMES=[[4,7.6],[5.5,8.6],[7.5,9.9],[9,10],[16.5,11],[18,12],[20,13.6],[21.5,15],[28,17.6]];
@@ -437,11 +439,17 @@ function drawArt(A,g,c){const F=artFrame(run.min),R=artFit(A),sk=spotKey();
   const tint={Overcast:"rgba(120,125,132,.28)",Rain:"rgba(55,65,78,.42)",Windy:"rgba(130,138,146,.16)",Fog:"rgba(190,196,200,.2)"}[c.weather];
   if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,W,H);}
   // a little life on the water: the river's current carries faint streaks downstream; the lake and sea just shimmer
+  ctx.save();ctx.beginPath();A.water.forEach(([x,y],i)=>{const X=(x-R.sx)*R.s,Y=(y-R.sy)*R.s;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.closePath();ctx.clip();
   ctx.strokeStyle="rgba(235,245,250,.16)";ctx.lineWidth=1;
   for(const st of scen.streaks){const y=lerp(g.waterTop+8,g.nearY-6,((st.x*7.3)%1+1)%1),depth=(y-g.waterTop)/(g.nearY-g.waterTop);
     const x=sk==="river"?((st.x+G.t*(10+30*depth))%(W+60))-30:st.x+Math.sin(G.t*0.3+st.l)*6;
     ctx.globalAlpha=sk==="river"?0.3+0.7*depth:(0.2+0.4*depth)*(0.5+0.5*Math.sin(G.t*0.8+st.x));ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+st.l*(sk==="river"?0.4+depth:0.3+0.5*depth),y);ctx.stroke();}
-  ctx.globalAlpha=1;}
+  ctx.restore();ctx.globalAlpha=1;}
+// the drawn scenes: keep the current lines clear of the snags, weed beds and rocks along the hazard side
+function clipOpenWater(g,sk){const side=SPOTS[sk].snagSide,off={river:-0.15,lake:-0.13,coast:-0.2}[sk];if(off===undefined)return false;
+  const pts=[];for(let k=0;k<=12;k++){const p=edgePt(k/12,side,off);pts.push([p.x,p.y]);}
+  const far=side<0?W+10:-10;ctx.save();ctx.beginPath();ctx.moveTo(pts[0][0],g.nearY+10);pts.forEach(([x,y])=>ctx.lineTo(x,y));
+  ctx.lineTo(pts[12][0],g.waterTop-4);ctx.lineTo(far,g.waterTop-4);ctx.lineTo(far,g.nearY+10);ctx.closePath();ctx.clip();return true;}
 
 /* ---------- Canvas & scenery ---------- */
 const cv=$("#river"),ctx=cv.getContext("2d");
@@ -853,6 +861,7 @@ function draw(){
   if(sx&&c.weather!=="Rain"){for(let i=0;i<12;i++){const y=g.waterTop+5+i*i*1.6+i*3;if(y>g.nearY-10)break;const w=(6+i*2.2)*(0.55+0.45*Math.sin(G.t*2.1+i*1.7));
       ctx.fillStyle=`rgba(${X.glow},${0.4*(1-i/12)})`;ctx.fillRect(W*sx-w/2+Math.sin(G.t+i)*2,y,w,1.6);}}
   ctx.strokeStyle=pal.streak;ctx.lineWidth=1.2;
+  const clipped=clipOpenWater(g,sk);
   if(sk==="river"){
     for(const s of scen.streaks){const y=lerp(g.waterTop+10,g.nearY-8,((s.x*7.3)%1+1)%1);
       const depth=(y-g.waterTop)/(g.nearY-g.waterTop);const x=((s.x+G.t*(14+40*depth))%(W+60))-30;
@@ -866,6 +875,7 @@ function draw(){
       for(let x=0;x<=W;x+=16){const yy=y+Math.sin(x*0.03+i*1.7+G.t*0.8)*(2+depth*3);if(x===0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);}ctx.stroke();}
     ctx.lineWidth=1.2;
   }
+  if(clipped)ctx.restore();
   ctx.globalAlpha=1;
   if(c.weather==="Clear"&&c.time==="Day"){for(const gl of scen.glints){const a=Math.max(0,Math.sin(G.t*2.3+gl.ph))*0.8;if(a<0.1)continue;
     const y=lerp(g.waterTop+8,g.nearY-12,gl.y);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fillRect(gl.x-2,y,4,1);ctx.fillRect(gl.x,y-1,1,3);}}
