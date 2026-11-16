@@ -136,6 +136,15 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .as-tiles .act>em{position:absolute;top:5px;right:5px;font-size:10px;font-style:normal;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(220,170,72,.18);color:var(--brass)}
 .as-tiles div.act{grid-column:1/-1;flex-direction:row;min-height:0;text-align:left}
 .as-tiles div.act::before{content:none}
+.acts.as-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.as-cards>.act{position:relative;flex-direction:column;align-items:stretch;justify-content:flex-start;text-align:left;gap:6px;padding:10px 10px 10px;min-height:0}
+.as-cards>.act::before{content:attr(data-icon);font-size:22px;line-height:1}
+.as-cards>.act>span:first-child{display:flex;flex-direction:column;gap:3px;font-size:13.5px;font-weight:700;line-height:1.2}
+.as-cards>.act>span:first-child small{font-size:11px;font-weight:500;line-height:1.3;opacity:.85}
+.as-cards>.act>span:not(:first-child),.as-cards>.act>select{display:flex!important;flex-wrap:wrap;gap:6px;margin-top:auto}
+.as-cards>.act>span:not(:first-child) .iconbtn,.as-cards>.act>.iconbtn{flex:1 1 auto;text-align:center}
+.as-cards>.act>em{align-self:flex-start;font-style:normal;font-weight:800;font-size:12px;color:var(--brass);margin-top:auto}
+.as-cards>.act.wide,.as-cards>p,.as-cards>h3,.as-cards>div:not(.act){grid-column:1/-1}
 .innpic{flex-shrink:0;height:clamp(150px,32vh,240px);margin:-16px -16px 2px;border-radius:13px 13px 0 0;background:center/cover no-repeat;box-shadow:inset 0 -40px 40px -20px var(--panel)}
 .overlay{position:fixed;inset:0;z-index:20;background:rgba(9,18,16,.78);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
 .card{background:var(--panel);border:1px solid var(--brass-deep);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
@@ -356,8 +365,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.38.2";
+const VERSION="0.39.0";
 const CHANGELOG=[
+  {v: "0.39", date: "16 Nov 2026", title: "Cards and tiles everywhere", items: ["The cook now has a menu: order fish and chips, stew, a ploughman's or the cook's own special, and eat it by the fire or take it away for your larder", "The cook's recipes are now Lessons, shown as cards", "The tackle shop, lessons, request board, harbour, garage, kit, keep net, locker and home store are all icon cards in a neat grid", "Your bag in the Kit screen is a set of tiles with counts", "Settings are split into four tiles: Controls, Game, Look and feel, and Testing", "Skills are four tiles with your level and progress; tap one for its unlocks"]},
   {v: "0.38.2", date: "16 Nov 2026", title: "Tiles all round", items: ["The Rest, Travel, camp, kitchen and news lists are icon tiles now too, with the time or price in a corner badge", "Travel tiles show just the place name, with what's there underneath"]},
   {v: "0.38.1", date: "16 Nov 2026", title: "Inside the inns", items: ["A new picture of the bar inside each inn, with the inn's own name on the plaque over the fireplace", "It's alive: the fire flickers, embers drift up the chimney, candles waver and the fairy lights twinkle", "It's at the top of Pub games, News and gossip and the Rest screen, and sits behind the cook, the request board and the pub games"]},
   {v: "0.38", date: "16 Nov 2026", title: "The tutorial", items: ["New games can start with a tutorial: a coach at the top of the screen walks you through your first cast, strike, fight and catch, lighting a fire, cooking and eating, getting back to the inn, selling and saving", "Whatever you need to tap next glows", "Skip it any time, and replay it from Settings"]},
@@ -526,6 +536,7 @@ function lbOz(w){let lb=Math.floor(w),oz=Math.round((w-lb)*16);if(oz===16){lb++;
 const ACT_ICONS={tStay:"🛏️",tBarn:"🐴",tMeal:"🍲",aFire:"🔥",aStove:"🍳",aRest:"😴",aSleep:"🌙",aBoil:"🫖",aDrink:"💧",aChum:"🪣",aForage:"🌿",aDig:"🪱",aSnare:"🪤",aCheck:"👀",aPot:"🦀",aHaul:"⛓️",aTrack:"🐾",
   nwPaper:"📰",nwRound:"🍺",eatcook:"🍽️",cook:"🔥",salt:"🧂",smoke:"💨",eat:"🍽️",map:"🗺️","go:home":"🏡","go:tavern":"🍺","go:thornmere":"🍺","go:saltwick":"🍺","go:city":"🏛️","go:river":"🏞️","go:lake":"🪷","go:coast":"🌊"};
 function showOverlay(html,cls){const o=$("#overlay");o.innerHTML=`<div class="card ${cls||""}">${html}</div>`;o.hidden=false;
+  o.querySelectorAll(".as-cards").forEach(g=>g.querySelectorAll(":scope>.act").forEach(b=>{if(!b.dataset.icon)b.dataset.icon=g.dataset.ico||"•";}));
   o.querySelectorAll(".as-tiles .act").forEach(b=>{if(b.dataset.icon)return;const k=b.id||(b.dataset.kc)||(b.dataset.go!==undefined?"go:"+b.dataset.go:"")||(b.dataset.map?"map":"");b.dataset.icon=ACT_ICONS[k]||"•";});
   // at an inn, the pub itself sits behind every screen
   o.style.background=G.state==="tavern"&&run&&isTown(run.loc)?`linear-gradient(rgba(9,18,16,.72),rgba(9,18,16,.88)),url('art/inns/${G.inside?"interior":run.loc}.jpg') center/cover`:"";G.inside=false;
@@ -1320,7 +1331,7 @@ function campMenu(v){
   const V=campView,$=q=>document.querySelector(q)||{};
   const N=run.needs,fire=run.fire>0,night=run.min>=18*60||run.min<5*60,salt=spot().salt,wname=spot().water.toLowerCase(),dark=conds().time==="Night";
   const fishRows=run.keep.map((k,i)=>{const spoiled=isSpoiled(k),raw=(k.form||"raw")==="raw",left=Math.max(0,keepDays(k)-itemAge(k));
-    return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)}<small>${spoiled?"Spoiled. Only good for chum.":`Good for ${left.toFixed(1)} more days`}${qTag(k)&&!spoiled?" · "+qTag(k):""}</small></span>
+    return `<div class="act" style="cursor:default" data-icon="${spoiled?"🦴":raw?"🐟":"🍽️"}"><span>${prodName(k)} · ${lbOz(k.w)}<small>${spoiled?"Spoiled. Only good for chum.":`Good for ${left.toFixed(1)} more days`}${qTag(k)&&!spoiled?" · "+qTag(k):""}</small></span>
     <span style="display:flex;gap:6px">${spoiled?`<button class="iconbtn" data-chum="${i}" type="button">Make chum</button><button class="iconbtn" data-dump="${i}" type="button">Bin</button>`:
     `${raw?`<button class="iconbtn" data-raw="${i}" type="button">Eat raw</button>`:`<button class="iconbtn" data-peat="${i}" type="button">Eat</button>`}<button class="iconbtn" data-cook="${i}" type="button">${raw?"Cook":"Kitchen"}</button>`}</span></div>`;}).join("");
   const snRdy=snaresHere().some(x=>absMin()-x.at>=SNARE_WAIT)||potsHere().some(x=>absMin()-x.at>=POT_WAIT),nInj=Object.keys(run.inj).length;
@@ -1357,8 +1368,8 @@ function campMenu(v){
     ${potsHere().length?`<button class="act" id="aHaul" type="button"><span>Haul your ${salt?"pots":"traps"} (${potsHere().length})<small>${potsHere().some(p=>absMin()-p.at>=POT_WAIT)?"Should be something in there.":"Too soon. About six hours."}</small></span><em>20 min</em></button>`:""}
     <button class="act" id="aTrack" type="button" ${skLv("hunt")>=5&&!dark?"":"disabled"}><span>Go tracking<small>${skLv("hunt")<5?"Needs hunting level 5.":dark?"You can't read tracks in the dark.":bowReady()?`Bow ready, ${run.inv.arrows} arrows.`:run.inv.gear.bow?(run.inv.arrows?"Your bow needs hunting level 10.":"Your bow has no arrows."):"No bow: small game only, really."}</small></span><em>1.5 h</em></button>
   </div>`;
-  else if(V==="net")body=`${run.inv.chum>0||(run.chumUntil||0)>absMin()?`<div class="acts"><button class="act" id="aChum" type="button" ${run.inv.chum>0?"":"disabled"}><span>Throw in chum (${run.inv.chum})<small>${(run.chumUntil||0)>absMin()?`Chum's working for another ${Math.ceil((run.chumUntil-absMin())/6)/10} hours. `:""}Bites come much quicker for 2 hours.</small></span><em>5 min</em></button></div>`:""}<div class="acts">${fishRows||'<p class="note">Empty. Catch something to eat.</p>'}</div>`;
-  else if(V==="larder")body=`<div class="acts">${larderRows()}</div>`;
+  else if(V==="net")body=`${run.inv.chum>0||(run.chumUntil||0)>absMin()?`<div class="acts as-cards" data-ico="🐟"><button class="act" id="aChum" type="button" ${run.inv.chum>0?"":"disabled"}><span>Throw in chum (${run.inv.chum})<small>${(run.chumUntil||0)>absMin()?`Chum's working for another ${Math.ceil((run.chumUntil-absMin())/6)/10} hours. `:""}Bites come much quicker for 2 hours.</small></span><em>5 min</em></button></div>`:""}<div class="acts as-cards" data-ico="🐟">${fishRows||'<p class="note">Empty. Catch something to eat.</p>'}</div>`;
+  else if(V==="larder")body=`<div class="acts as-cards" data-ico="🥫">${larderRows()}</div>`;
   else if(V==="hurt")body=`${Object.keys(run.inj).length?`<div class="acts">${injuryRows()}</div>${run.inv.bandages?`<p class="note">${run.inv.bandages} bandage${run.inv.bandages>1?"s":""} in your bag.</p>`:""}`:""}`;
   else body=`<div class="acts as-tiles">${travelButtons("go")}</div>`;
   showOverlay(`<span class="tag">Camp</span><h2>${V?TITLE[V]:"Camp"}</h2>
@@ -1418,16 +1429,18 @@ function gainSk(k,xp){if(!run||xp<=0)return 0;xp=Math.max(1,Math.round(xp*diff()
   if(k==="fish")renderLevel();
   if(after>before)setTimeout(()=>toast(`${SKILLS[k].n} level ${after}!`,false,2200),300);
   return xp;}
-function skillsScreen(onBack){
+function skillsScreen(onBack,pickK){
   const card=k=>{const S=SKILLS[k],i=levelInfo(skXp(k));
     const rows=S.unl.map(([L,t,live])=>{const got=i.L>=L;
       return `<div class="skrow ${got&&live?"got":""}"><b>${L}</b><span>${t}</span><em>${live?(got?"✓":""):"Coming soon"}</em></div>`;}).join("");
     return `<h3>${S.n} · Lv ${i.L}</h3><div class="skbar"><i style="width:${i.need?i.into/i.need*100:100}%"></i></div>
       <p class="note">${i.need?`${i.into} / ${i.need} XP to level ${i.L+1}`:"Max level"}</p><div class="sktable">${rows}</div>`;};
-  showOverlay(`<h2>Skills</h2><p class="note">Every skill levels from 1 to 50. Higher levels add to your dice rolls in events (+1 for every 10 levels in the skill being tested).</p>
-    ${["fish","hunt","forage","cook"].map(card).join("")}
+  const IC={fish:"🎣",hunt:"🏹",forage:"🌿",cook:"🍳"};
+  showOverlay(`<h2>${pickK?IC[pickK]+" "+SKILLS[pickK].n:"Skills"}</h2>${pickK?card(pickK):`<p class="note">Every skill levels from 1 to 50. Higher levels add to your dice rolls in events (+1 for every 10 levels in the skill being tested). Tap one for its unlocks.</p>
+    <div class="tiles" style="grid-template-columns:repeat(2,1fr)">${["fish","hunt","forage","cook"].map(k=>{const i=levelInfo(skXp(k));return `<button class="tile" data-tile="${k}" type="button" style="min-height:110px"><span class="ti">${IC[k]}</span><span class="tl">${SKILLS[k].n}</span><span style="font-size:20px;color:var(--brass);font-weight:800">Lv ${i.L}</span><span class="skbar" style="width:80%"><i style="width:${i.need?i.into/i.need*100:100}%"></i></span></button>`;}).join("")}</div>`}
     <div class="controls"><button class="big ghost" id="skBack" type="button" style="flex:1">Back</button></div>`);
-  $("#skBack").onclick=onBack;
+  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>skillsScreen(onBack,b.dataset.tile));
+  $("#skBack").onclick=pickK?()=>skillsScreen(onBack):onBack;
 }
 
 /* ---------- Text events: a short scene, a few choices, a d20 roll ---------- */
@@ -1599,6 +1612,10 @@ function runEvent(ev,c,then){
 /* ---------- Larder: game and foraged food (only fish products sell, so these are for eating and cooking) ---------- */
 // keep: days before it spoils. eat: raw effects. cook: needs a fire. tea: brewed on the fire.
 const FOODS={
+  fishchips:{n:"Fish and chips (takeaway)",kind:"Meal",keep:1,eat:{food:50,warm:10}},
+  stewflask:{n:"Stew in a flask",kind:"Meal",keep:2,eat:{food:55,warm:25}},
+  ploughman:{n:"Ploughman's lunch",kind:"Meal",keep:3,eat:{food:40,stam:8}},
+  special:{n:"The cook's special (takeaway)",kind:"Meal",keep:1,eat:{food:70,stam:15,warm:10}},
   rabbit:{n:"Rabbit",kind:"Game",keep:2,cook:{food:35,stam:10}},
   pigeon:{n:"Wood pigeon",kind:"Game",keep:2,cook:{food:22,stam:6}},
   pheasant:{n:"Pheasant",kind:"Game",keep:3,cook:{food:30,stam:8}},
@@ -1814,21 +1831,38 @@ function learnRecipe(pool){const opts=(pool||Object.keys(RECIPES).filter(r=>!REC
   if(!opts.length)return null;const r=pick(opts);run.recipes.push(r);return r;}
 function recipeTitle(r){return RECIPES[r].n.replace("{F}","Fish").replace("{f}","fish");}
 // The cook at the Willowmere Arms: everyday recipes for coin; regional dishes and the feast for coin or a rare fish
-function cookScreen(){
+// The cook: order a meal (eat here or take away), or pay for lessons (recipes)
+const COOK_MENU=[
+  {id:"fishchips",n:"Fish and chips",icon:"🍟",here:5,away:6,eat:{food:60,warm:20},desc:"Fresh from the fryer, wrapped in paper."},
+  {id:"stewflask",n:"Hearty stew and bread",icon:"🍲",here:6,away:7,eat:{food:70,warm:35,stam:10},desc:"Thick enough to stand a spoon in."},
+  {id:"ploughman",n:"Ploughman's lunch",icon:"🧀",here:4,away:5,eat:{food:45,stam:10},desc:"Cheese, pickle, bread and an apple. Keeps for days."}
+];
+const COOK_SPECIAL={tavern:["Maggie's river pie",8,"🥧"],saltwick:["Bram's crab sandwich",8,"🥪"],thornmere:["Agnes's perch supper",8,"🐟"],city:["Henri's tasting plate",15,"🍽️"]};
+function cookScreen(view){
   const L=skLv("cook"),B=run.bucks;
   const rare=run.keep.findIndex(k=>(k.form||"raw")==="raw"&&!isSpoiled(k)&&["Rare","Very rare"].includes(FISH.find(f=>f.id===k.id).rarity));
-  const T=town(),tid=townId();
+  const T=town(),tid=townId(),[spN,spP,spI]=COOK_SPECIAL[tid];
   const row=r=>{const R=RECIPES[r];if(R.secret||(R.region&&R.region!==tid))return "";const have=run.recipes.includes(r),price=R.feast?COOK_PRICE.feast:R.region?COOK_PRICE.region:COOK_PRICE.buy,lock=(R.region&&L<35)||(R.feast&&L<40);
-    return `<div class="act" style="cursor:default"><span>${recipeTitle(r)}<small>${have?"You know this one.":lock?`${T.cook} will teach you at cooking level ${R.feast?40:35}.`:`Cooking level ${R.lv}. Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}${R.bbq?", on a camp BBQ":""}.`}</small></span>
+    return `<div class="act" style="cursor:default" data-icon="${R.region?"🌟":R.feast?"👑":"📜"}"><span>${recipeTitle(r)}<small>${have?"You know this one.":lock?`${T.cook} will teach you at cooking level ${R.feast?40:35}.`:`Cooking level ${R.lv}. Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}${R.bbq?", on a camp BBQ":""}.`}</small></span>
       ${have?"<em>Known</em>":lock?"":`<span style="display:flex;gap:6px">${(R.region||R.feast)&&rare>=0?`<button class="iconbtn" data-cf="${r}" type="button">Give a rare fish</button>`:""}<button class="iconbtn" data-cb="${r}" type="button" ${B>=price?"":"disabled"}>${price} FB</button></span>`}</div>`;};
-  G.inside=true;showOverlay(`<span class="tag">${T.n}</span><h2>${T.cook}, the cook</h2><p class="note">${T.cookText} Recipes cost coin, but bring a rare fish and you'll get ${T.n}'s own dishes for nothing.</p>
-    <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Cooking Lv ${L}</p>
-    <div class="acts">${Object.keys(RECIPES).map(row).join("")}</div>
-    <p class="note">Regional dishes are ${T.n}'s own and sell for 30% more in other towns.</p>
+  const menu=[...COOK_MENU,{id:"special",n:spN,icon:spI,here:spP,away:spP+2,eat:{food:100,stam:25,warm:20,health:15},desc:`${T.cook}'s own. The best thing in ${T.n}.`}];
+  const fxText=e=>Object.entries(e).map(([a,v])=>`+${v} ${({food:"food",stam:"energy",warm:"warmth",health:"health"})[a]}`).join(", ");
+  let body;
+  if(view==="order")body=`<p class="note">Eat by the fire now, or take it away for later. Takeaways go in your larder.</p>
+    <div class="acts as-cards">${menu.map((m,i)=>`<div class="act" style="cursor:default" data-icon="${m.icon}"><span>${m.n}<small>${m.desc} ${fxText(m.eat)}.</small></span>
+      <span><button class="iconbtn" data-here="${i}" type="button" ${B>=m.here?"":"disabled"}>Eat here · ${m.here} FB</button><button class="iconbtn" data-away="${i}" type="button" ${B>=m.away?"":"disabled"}>Take away · ${m.away} FB</button></span></div>`).join("")}</div>`;
+  else if(view==="learn")body=`<p class="note">Lessons cost coin, but bring a rare fish and you'll get ${T.n}'s own dishes for nothing. Regional dishes sell for 30% more in other towns.</p>
+    <div class="acts as-cards">${Object.keys(RECIPES).map(row).join("")}</div>`;
+  else body=`<p class="note">${T.cookText}</p><div class="tiles">${tile("order","🍲","Order a meal","")}${tile("learn","📜","Lessons",`${run.recipes.length}/${Object.keys(RECIPES).length-1}`)}</div>`;
+  G.inside=true;showOverlay(`<span class="tag">${T.n}</span><h2>${view==="order"?"The menu":view==="learn"?"Lessons":`${T.cook}'s kitchen`}</h2>
+    <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Cooking Lv ${L}</p>${body}
     <div class="controls"><button class="big ghost" id="ckBack" type="button" style="flex:1">Back</button></div>`);
-  document.querySelectorAll("[data-cb]").forEach(b=>b.onclick=()=>{const r=b.dataset.cb,R=RECIPES[r],p=R.feast?COOK_PRICE.feast:R.region?COOK_PRICE.region:COOK_PRICE.buy;if(run.bucks<p)return;run.bucks-=p;run.recipes.push(r);renderHud();toast(`Learned: ${recipeTitle(r)}`,false,2200);cookScreen();});
-  document.querySelectorAll("[data-cf]").forEach(b=>b.onclick=()=>{const r=b.dataset.cf,k=run.keep.splice(rare,1)[0];run.recipes.push(r);toast(`${T.cook} takes the ${k.name.toLowerCase()} with a grin. Learned: ${recipeTitle(r)}`,false,3000);cookScreen();});
-  $("#ckBack").onclick=tavernMenu;
+  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>cookScreen(b.dataset.tile));
+  document.querySelectorAll("[data-here]").forEach(b=>b.onclick=()=>{const m=menu[+b.dataset.here];if(run.bucks<m.here)return;run.bucks-=m.here;advance(30);const out=fxObj(m.eat);renderHud();toast(`${m.n}. ${out.join(", ")}`,false,2400);cookScreen("order");});
+  document.querySelectorAll("[data-away]").forEach(b=>b.onclick=()=>{const m=menu[+b.dataset.away];if(run.bucks<m.away)return;run.bucks-=m.away;larderAdd(m.id,1);renderHud();toast(`${m.n} wrapped up for later. It's in your larder.`,false,2400);cookScreen("order");});
+  document.querySelectorAll("[data-cb]").forEach(b=>b.onclick=()=>{const r=b.dataset.cb,R=RECIPES[r],p=R.feast?COOK_PRICE.feast:R.region?COOK_PRICE.region:COOK_PRICE.buy;if(run.bucks<p)return;run.bucks-=p;run.recipes.push(r);renderHud();toast(`Learned: ${recipeTitle(r)}`,false,2200);cookScreen("learn");});
+  document.querySelectorAll("[data-cf]").forEach(b=>b.onclick=()=>{const r=b.dataset.cf,k=run.keep.splice(rare,1)[0];run.recipes.push(r);toast(`${T.cook} takes the ${k.name.toLowerCase()} with a grin. Learned: ${recipeTitle(r)}`,false,3000);cookScreen("learn");});
+  $("#ckBack").onclick=()=>view?cookScreen():tavernMenu();
 }
 
 /* ---------- Fish journal: a page per species, built from your own catches ---------- */
@@ -1972,6 +2006,7 @@ function mapScreen(onBack){
 // run.rep[town]: standing from -100 to 100. run.boards[town]: {day,reqs}, refreshed every 2 days.
 // run.jobs: accepted requests (up to 3). Kinds: catch (fresh fish), size (over a weight), stars (quality),
 // rare (a rare fish), preserved (salted or smoked), dish (a recipe dish with a given fish), deliver (a parcel to another town).
+const JOB_ICON={catch:"🐟",size:"📏",stars:"⭐",rare:"💎",preserved:"🧂",dish:"🍽️",deliver:"📦"};
 const JOB_MAX=3,REP_GAIN=[0,4,7,10],REP_FAIL=[0,5,8,12],REP_DROP=[0,3,5,8];
 function repOf(t){return Math.round((run.rep&&run.rep[t])||0);}
 function addRep(t,n){if(!run.rep)run.rep={};run.rep[t]=clamp((run.rep[t]||0)+n,-100,100);}
@@ -2068,20 +2103,20 @@ function deliverHere(t){if(!run.jobs)return;for(const j of run.jobs.slice())if(j
 function jobRow(j,here){
   const ready=jobReady(j),handable=here===j.town&&ready;
   const where=j.kind==="deliver"?`Deliver to ${TOWNS[j.to].n}`:here===j.town?(ready?"You have it":`Bring it here${j.n>1?` (${run.keep.filter(k=>fitsJob(j,k)).length}/${j.n})`:""}`):`Hand in at ${TOWNS[j.town].n}`;
-  return `<div class="act" style="cursor:default"><span>${j.txt}<small>${TOWNS[j.town].n} · ${fmtDue(j.due)} · ${where}<br>Reward ${j.bucks} FB${j.extra?" and "+extraText(j.extra):""}</small></span>
+  return `<div class="act" style="cursor:default" data-icon="${JOB_ICON[j.kind]}"><span>${j.txt}<small>${TOWNS[j.town].n} · ${fmtDue(j.due)} · ${where}<br>Reward ${j.bucks} FB${j.extra?" and "+extraText(j.extra):""}</small></span>
     <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${handable?`<button class="iconbtn" data-hand="${j.id}" type="button">Hand in</button>`:""}${here===j.town?`<button class="iconbtn" data-drop="${j.id}" type="button">Give up</button>`:""}</span></div>`;}
 function boardScreen(){
   const t=townId(),T=TOWNS[t],B=board(t),r=repOf(t),nx=repNext(r);if(!run.jobs)run.jobs=[];
   const full=run.jobs.length>=JOB_MAX;
-  const reqs=B.reqs.map(q=>`<div class="act" style="cursor:default"><span>${q.txt} <small style="display:inline;color:${["","var(--muted)","var(--safe)","var(--brass)"][q.tier]}">${["","Easy","Medium","Hard"][q.tier]}</small><small>${q.sub} ${q.kind==="deliver"?"Due "+fmtDue(q.due).replace(/ ·.*/,"")+".":`Allows ${Math.round((q.due-absMin())/1440)} days.`}<br>Reward ${q.bucks} FB${q.extra?" and "+extraText(q.extra):""}</small></span>
+  const reqs=B.reqs.map(q=>`<div class="act" style="cursor:default" data-icon="${JOB_ICON[q.kind]}"><span>${q.txt} <small style="display:inline;color:${["","var(--muted)","var(--safe)","var(--brass)"][q.tier]}">${["","Easy","Medium","Hard"][q.tier]}</small><small>${q.sub} ${q.kind==="deliver"?"Due "+fmtDue(q.due).replace(/ ·.*/,"")+".":`Allows ${Math.round((q.due-absMin())/1440)} days.`}<br>Reward ${q.bucks} FB${q.extra?" and "+extraText(q.extra):""}</small></span>
     <button class="iconbtn" data-take="${q.id}" type="button" ${full?"disabled":""}>Accept</button></div>`).join("");
   const L=level();
   G.inside=true;showOverlay(`<span class="tag">${T.n}</span><h2>Request board</h2>
     <p class="note">Notices pinned up by ${T.city?"merchants, chefs and collectors":"locals, the kitchen and passing traders"}. New ones go up every two days. You can take on ${JOB_MAX} at a time. Miss a deadline and ${T.n} won't forget it.</p>
     <div class="stats"><div><small>Standing</small><b>${repName(r)}</b></div><div><small>Reputation</small><b>${r>0?"+":""}${r}</b></div><div><small>Prices</small><b>${repMul(t)>=1?"+":"−"}${Math.abs(Math.round((repMul(t)-1)*100))}%</b></div></div>
     <p class="note">${repPerks(r)}${nx!==null?` Next standing at ${nx}.`:""}</p>
-    ${run.jobs.length?`<h3>Your requests (${run.jobs.length}/${JOB_MAX})</h3><div class="acts">${run.jobs.map(j=>jobRow(j,t)).join("")}</div>`:""}
-    <h3>On the board</h3><div class="acts">${reqs||'<p class="note">Nothing pinned up right now. Check back in a day or two.</p>'}
+    ${run.jobs.length?`<h3>Your requests (${run.jobs.length}/${JOB_MAX})</h3><div class="acts as-cards">${run.jobs.map(j=>jobRow(j,t)).join("")}</div>`:""}
+    <h3>On the board</h3><div class="acts as-cards">${reqs||'<p class="note">Nothing pinned up right now. Check back in a day or two.</p>'}
     ${legendRow(t)}</div>
     <div class="controls"><button class="big ghost" id="bdBack" type="button" style="flex:1">Back</button></div>`);
   document.querySelectorAll("[data-take]").forEach(b=>b.onclick=()=>{const i=B.reqs.findIndex(q=>q.id===b.dataset.take);if(i<0||run.jobs.length>=JOB_MAX)return;
@@ -2183,11 +2218,11 @@ function netLabel(){return `${netUsed()}/${netCap()} slots`;}
 function locker(t){if(!run.lockers)run.lockers={};return run.lockers[t];}
 function lockerPaid(t){const L=locker(t);return !!L&&L.until>=run.day;}
 function itemRow(k,i,btns){const sp=isSpoiled(k);
-  return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)} <small style="display:inline">${slotsOf(k)} slot${slotsOf(k)>1?"s":""}</small><small>${sp?"Spoiled":`Good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}${qTag(k)&&!sp?" · "+qTag(k):""}</small></span><span style="display:flex;gap:6px">${btns(k,i)}</span></div>`;}
+  return `<div class="act" style="cursor:default" data-icon="${k.id==="shard"?"🖤":(k.form||"raw")==="dish"?"🍽️":k.form==="smoked"?"💨":k.form==="salted"?"🧂":k.form==="cooked"?"🔥":"🐟"}"><span>${prodName(k)} · ${lbOz(k.w)} <small style="display:inline">${slotsOf(k)} slot${slotsOf(k)>1?"s":""}</small><small>${sp?"Spoiled":`Good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}${qTag(k)&&!sp?" · "+qTag(k):""}</small></span><span style="display:flex;gap:6px">${btns(k,i)}</span></div>`;}
 // When the net is full: let fish go to make room. back() returns to wherever you came from.
 function netManage(back,need,giveUp){
   showOverlay(`<span class="tag">Keep net</span><h2>Make room</h2><p class="note">Your keep net (${NET_SLOTS+(run.inv.gear.bignet?BIGNET:0)}) and ${veh().n.toLowerCase().replace(/^old /,"")} (${veh().boot}) hold ${netCap()} slots and you're using ${netUsed()}.${need?` You need ${need} free for this one.`:""} Fish under 2 lb take 1 slot, up to 6 lb 2, up to 15 lb 3, up to 30 lb 4, and anything bigger 5. Salted and smoked fish take one less.${run.inv.gear.bignet?"":" A big keep net from the tackle shop holds 8 more."}</p>
-    <div class="acts">${run.keep.map((k,i)=>itemRow(k,i,(k,i)=>`<button class="iconbtn" data-rel="${i}" type="button">Let it go</button>`)).join("")||'<p class="note">Empty.</p>'}</div>
+    <div class="acts as-cards">${run.keep.map((k,i)=>itemRow(k,i,(k,i)=>`<button class="iconbtn" data-rel="${i}" type="button">Let it go</button>`)).join("")||'<p class="note">Empty.</p>'}</div>
     <div class="controls">${giveUp?`<button class="big ghost" id="nmGive" type="button" style="flex:1">Let the new one go</button>`:""}<button class="big" id="nmBack" type="button" style="flex:1">Done</button></div>`);
   if(giveUp)$("#nmGive").onclick=giveUp;
   document.querySelectorAll("[data-rel]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.rel,1)[0];toast(isSpoiled(k)?"Binned.":`The ${k.name.toLowerCase()} goes back in.`,false,1400);netManage(back,need,giveUp);});
@@ -2200,8 +2235,8 @@ function lockerScreen(){
     <p class="note">${capF(T.landlord)} rents out lockers in the cold cellar: ${LOCKER_SLOTS} slots for ${LOCKER_RENT} FB a season (${LOCKER_DAYS} days). What you leave here stays here, and fresh fish still spoil, so it's best for salted and smoked fish.</p>
     <p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b> · ${L?(paid?`Paid up to the end of day ${L.until}.`:`Rent ran out on day ${L.until}. You can take things out, but not put anything in.`):"You don't rent one here."}</p>
     <div class="acts"><button class="act" id="lkRent" type="button" ${run.bucks>=LOCKER_RENT?"":"disabled"}><span>${L?"Pay another season":"Rent a locker"} · ${LOCKER_RENT} FB<small>${L&&paid?`Paid to day ${L.until+LOCKER_DAYS}.`:`Paid to the end of day ${run.day+LOCKER_DAYS-1}.`}</small></span></button></div>
-    ${L?`<h3>In the locker (${used(L.items)}/${LOCKER_SLOTS} slots)</h3><div class="acts">${box||'<p class="note">Empty.</p>'}</div>`:""}
-    <h3>Keep net (${netLabel()})</h3><div class="acts">${net||'<p class="note">Empty.</p>'}</div>
+    ${L?`<h3>In the locker (${used(L.items)}/${LOCKER_SLOTS} slots)</h3><div class="acts as-cards">${box||'<p class="note">Empty.</p>'}</div>`:""}
+    <h3>Keep net (${netLabel()})</h3><div class="acts as-cards">${net||'<p class="note">Empty.</p>'}</div>
     <div class="controls"><button class="big ghost" id="lkBack" type="button" style="flex:1">Back</button></div>`);
   $("#lkRent").onclick=()=>{if(run.bucks<LOCKER_RENT)return;run.bucks-=LOCKER_RENT;
     if(!L)L=run.lockers[t]={until:run.day+LOCKER_DAYS-1,items:[]};else L.until=(paid?L.until:run.day-1)+LOCKER_DAYS;renderHud();toast(`Locker paid to the end of day ${L.until}.`,false,2000);lockerScreen();};
@@ -2229,9 +2264,9 @@ function garageScreen(){
   showOverlay(`<span class="tag">Kingsbridge</span><h2>Kingsbridge Motors</h2>
     <p class="note">A yard behind the market full of vans with ladders on the roof. The mechanic wipes his hands and nods at your ${V.n.toLowerCase()}.</p>
     <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p>
-    <h3>Your vehicle</h3><div class="acts"><div class="act" style="cursor:default"><span>${V.n}<small>${V.desc}${cooled()?" Fresh fish keep half as long again.":""}</small></span></div>
-    ${V.fridge?"":`<div class="act" style="cursor:default"><span>Cool box · ${COOLBOX} FB<small>Packed with ice in the boot. Fresh fish keep half as long again, about 4.5 days. Moves with you if you change vehicle.</small></span>${run.car.cool?"<em>Fitted</em>":`<button class="iconbtn" id="gCool" type="button" ${B>=COOLBOX?"":"disabled"}>Buy</button>`}</div>`}</div>
-    <h3>For sale</h3><div class="acts">${rows}</div>
+    <h3>Your vehicle</h3><div class="acts as-cards" data-ico="🚗"><div class="act" style="cursor:default"><span>${V.n}<small>${V.desc}${cooled()?" Fresh fish keep half as long again.":""}</small></span></div>
+    ${V.fridge?"":`<div class="act" style="cursor:default" data-icon="🧊"><span>Cool box · ${COOLBOX} FB<small>Packed with ice in the boot. Fresh fish keep half as long again, about 4.5 days. Moves with you if you change vehicle.</small></span>${run.car.cool?"<em>Fitted</em>":`<button class="iconbtn" id="gCool" type="button" ${B>=COOLBOX?"":"disabled"}>Buy</button>`}</div>`}</div>
+    <h3>For sale</h3><div class="acts as-cards" data-ico="🚐">${rows}</div>
     <p class="note">Part exchange: your current vehicle is worth half what it cost.</p>
     <div class="controls"><button class="big ghost" id="gBack" type="button" style="flex:1">Back</button></div>`);
   if($("#gCool"))$("#gCool").onclick=()=>{run.bucks-=COOLBOX;run.car.cool=true;renderHud();toast("Cool box fitted and packed with ice.",false,2000);garageScreen();};
@@ -2396,8 +2431,8 @@ function harbourScreen(){
   showOverlay(`<span class="tag">Saltwick</span><h2>The harbour</h2>
     <p class="note">Lobster pots stacked on the quay and a row of boats knocking together on the tide. Jory, the skipper, is leaning on his wheelhouse with a flask of tea.</p>
     <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Fishing Lv ${level()}</p>
-    <h3>Trips</h3><div class="acts">${Object.keys(TRIPS).map(trip).join("")}</div>
-    <h3>Your own boat</h3><div class="acts">${Object.keys(BOATS).map(k=>{const X=BOATS[k],cost=Math.max(0,X.price-(own?Math.floor(own.price/2):0)),mine=run.boat===k,lower=own&&X.price<own.price;
+    <h3>Trips</h3><div class="acts as-cards" data-ico="⛵">${Object.keys(TRIPS).map(trip).join("")}</div>
+    <h3>Your own boat</h3><div class="acts as-cards" data-ico="🚤">${Object.keys(BOATS).map(k=>{const X=BOATS[k],cost=Math.max(0,X.price-(own?Math.floor(own.price/2):0)),mine=run.boat===k,lower=own&&X.price<own.price;
       return `<div class="act" style="cursor:default"><span>${X.n} · ${X.price} FB<small>${X.desc}${lvOk(X.lvl)?"":` Needs fishing level ${X.lvl}.`}${own&&!mine&&!lower?`<br>With your ${own.n.toLowerCase()} in part exchange: <b>${cost} FB</b>`:""}</small></span>${mine?"<em>Moored here</em>":lower?"":`<button class="iconbtn" data-buyboat="${k}" type="button" ${lvOk(X.lvl)&&B>=cost?"":"disabled"}>Buy</button>`}</div>`;}).join("")}</div>
     <p class="note">Bring heavy line and sea bait: squid, deadbait, ragworm and peeler crab. There's no fire and no fresh water at sea, so eat and drink before you go.${save.settings.unlockAll&&level()<25?" Testing switch on: levels skipped.":""}</p>
     <div class="controls"><button class="big ghost" id="hbBack" type="button" style="flex:1">Back</button></div>`);
@@ -2416,8 +2451,8 @@ function boatMenu(v){
     return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)}<small>${spoiled?"Spoiled.":`Good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}</small></span>${spoiled?`<button class="iconbtn" data-chum="${i}" type="button">Make chum</button>`:`<button class="iconbtn" data-eat="${i}" type="button">${raw?"Eat raw":"Eat"}</button>`}</div>`;}).join("");
   const V=boatView,cab=(!T||!T.hired)&&BOATS[run.boat]&&BOATS[run.boat].cabin,nightNow=run.min>=18*60||run.min<5*60;
   let body;
-  if(V==="net")body=`<div class="acts">${fishRows||'<p class="note">Empty so far.</p>'}</div>`;
-  else if(V==="larder")body=`<div class="acts">${run.larder.map((it,i)=>`<div class="act" style="cursor:default"><span>${FOODS[it.id].n}</span><button class="iconbtn" data-leat="${i}" type="button">Eat</button></div>`).join("")}</div>`;
+  if(V==="net")body=`<div class="acts as-cards" data-ico="🐟">${fishRows||'<p class="note">Empty so far.</p>'}</div>`;
+  else if(V==="larder")body=`<div class="acts as-cards" data-ico="🥫">${run.larder.map((it,i)=>`<div class="act" style="cursor:default"><span>${FOODS[it.id].n}</span><button class="iconbtn" data-leat="${i}" type="button">Eat</button></div>`).join("")}</div>`;
   else body=`<div class="tiles">
       ${tileB("bRest","😴","Rest an hour")}
       ${cab?tileB("bSleep","🛏️","Sleep in the cabin",nightNow?"":"disabled"):""}
@@ -2494,13 +2529,13 @@ function legendHere(f){if(!f.legend||!run||!run.hunt||run.hunt.id!==f.id)return 
   if(f.ownBoat&&!(run.trip&&!run.trip.hired))return false;return true;}
 function legendOffer(t){const pool=(LEGEND_BOARD[t]||[]).filter(id=>!(run.legends||[]).includes(id));if(!pool.length)return null;return pool[Math.floor(run.day/2)%pool.length];}
 function legendRow(t){const L=level(),hunt=run.hunt,id=legendOffer(t);
-  if(!lvOk(30))return `<div class="act" style="cursor:default;opacity:.75"><span>🏆 Legendary hunt · a sealed notice<small>Only for anglers of fishing level 30 and above. You're level ${L}.</small></span></div>`;
+  if(!lvOk(30))return `<div class="act wide" style="cursor:default;opacity:.75" data-icon="🏆"><span> Legendary hunt · a sealed notice<small>Only for anglers of fishing level 30 and above. You're level ${L}.</small></span></div>`;
   if(hunt){const F=fishById(hunt.id),have=run.keep.some(k=>k.id===hunt.id&&!isSpoiled(k));
-    return `<div class="act" style="cursor:default;border-color:var(--brass)"><span>🏆 Your legendary hunt: ${F.name}<small>${LEGENDS[hunt.id].hint}<br>Reward ${LEGENDS[hunt.id].reward} FB and a piece of Master gear, from ${TOWNS[hunt.town].n}. No time limit.</small></span>
+    return `<div class="act wide" style="cursor:default;border-color:var(--brass)" data-icon="🏆"><span> Your legendary hunt: ${F.name}<small>${LEGENDS[hunt.id].hint}<br>Reward ${LEGENDS[hunt.id].reward} FB and a piece of Master gear, from ${TOWNS[hunt.town].n}. No time limit.</small></span>
       <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${have&&t===hunt.town?`<button class="iconbtn" id="lgHand" type="button">Hand it in</button>`:""}<button class="iconbtn" id="lgDrop" type="button">Give up</button></span></div>`;}
-  if(!id)return `<div class="act" style="cursor:default;opacity:.75"><span>🏆 Legendary hunt<small>You've landed every legend this board knows of. They're still talking about it.</small></span></div>`;
+  if(!id)return `<div class="act wide" style="cursor:default;opacity:.75" data-icon="🏆"><span> Legendary hunt<small>You've landed every legend this board knows of. They're still talking about it.</small></span></div>`;
   const F=fishById(id);
-  return `<div class="act" style="cursor:default;border-color:var(--brass)"><span>🏆 Legendary hunt: ${F.name}<small>${LEGENDS[id].hint}<br>Reward ${LEGENDS[id].reward} FB and a piece of Master gear. No time limit, one hunt at a time.</small></span><button class="iconbtn" id="lgTake" type="button">Take it on</button></div>`;}
+  return `<div class="act wide" style="cursor:default;border-color:var(--brass)" data-icon="🏆"><span> Legendary hunt: ${F.name}<small>${LEGENDS[id].hint}<br>Reward ${LEGENDS[id].reward} FB and a piece of Master gear. No time limit, one hunt at a time.</small></span><button class="iconbtn" id="lgTake" type="button">Take it on</button></div>`;}
 function bindLegend(t,again){const id=legendOffer(t);
   const tk=$("#lgTake");if(tk)tk.onclick=()=>{run.hunt={id,town:t};toast(`You pin the notice for ${fishById(id).name} to your hat.`,false,2200);again();};
   const dr=$("#lgDrop");if(dr)dr.onclick=()=>{run.hunt=null;toast("You let the legend be, for now.",false,1800);again();};
@@ -2579,15 +2614,15 @@ function homeMenu(view){
   let body,title=HOME.n;
   if(view==="build"){title="Build";body=`<div class="acts">${Object.keys(BUILDS).map(k=>{const X=BUILDS[k];return `<div class="act" style="cursor:default"><span>${X.icon} ${X.n} · ${X.price} FB<small>${X.desc}</small></span>${H.built[k]?"<em>Built</em>":`<button class="iconbtn" data-build="${k}" type="button" ${B>=X.price?"":"disabled"}>Build</button>`}</div>`;}).join("")}</div>`;}
   else if(view==="store"){title=`Store (${used(H.store)}/${homeSlots()} slots)`;
-    body=`<h3>In the store</h3><div class="acts">${items(H.store,(k,i)=>`<button class="iconbtn" data-out="${i}" type="button" ${netFits(k)?"":"disabled"}>Take</button>`)}</div>
-    <h3>Keep net (${netLabel()})</h3><div class="acts">${items(run.keep,(k,i)=>`<button class="iconbtn" data-in="${i}" type="button" ${used(H.store)+slotsOf(k)<=homeSlots()?"":"disabled"}>Store</button>`)}</div>`;}
+    body=`<h3>In the store</h3><div class="acts as-cards">${items(H.store,(k,i)=>`<button class="iconbtn" data-out="${i}" type="button" ${netFits(k)?"":"disabled"}>Take</button>`)}</div>
+    <h3>Keep net (${netLabel()})</h3><div class="acts as-cards">${items(run.keep,(k,i)=>`<button class="iconbtn" data-in="${i}" type="button" ${used(H.store)+slotsOf(k)<=homeSlots()?"":"disabled"}>Store</button>`)}</div>`;}
   else if(view==="pond"){title=`Fish pond (${used(H.pond)}/12 slots)`;
-    body=`<p class="note">Raw fish in the pond stay as fresh as the day you put them in.</p><h3>In the pond</h3><div class="acts">${items(H.pond,(k,i)=>`<button class="iconbtn" data-pout="${i}" type="button" ${netFits(k)?"":"disabled"}>Net it</button>`)}</div>
-    <h3>Keep net</h3><div class="acts">${items(run.keep.filter(k=>(k.form||"raw")==="raw"),(k)=>{const i=run.keep.indexOf(k);return `<button class="iconbtn" data-pin="${i}" type="button" ${used(H.pond)+slotsOf(k)<=12&&!isSpoiled(k)?"":"disabled"}>Release in</button>`;})}</div>`;}
+    body=`<p class="note">Raw fish in the pond stay as fresh as the day you put them in.</p><h3>In the pond</h3><div class="acts as-cards">${items(H.pond,(k,i)=>`<button class="iconbtn" data-pout="${i}" type="button" ${netFits(k)?"":"disabled"}>Net it</button>`)}</div>
+    <h3>Keep net</h3><div class="acts as-cards">${items(run.keep.filter(k=>(k.form||"raw")==="raw"),(k)=>{const i=run.keep.indexOf(k);return `<button class="iconbtn" data-pin="${i}" type="button" ${used(H.pond)+slotsOf(k)<=12&&!isSpoiled(k)?"":"disabled"}>Release in</button>`;})}</div>`;}
   else if(view==="smoke"){title="Smokehouse";const L=skLv("cook");
-    body=`<p class="note">${L<25?`You need cooking level 25 to smoke fish. You're level ${L}.`:"Oak smoke, two hours a fish. Smoked fish keeps 10 days and sells for 1.8× raw."}</p><div class="acts">${items(run.keep.filter(k=>(k.form||"raw")==="raw"&&!isSpoiled(k)),(k)=>{const i=run.keep.indexOf(k);return `<button class="iconbtn" data-smoke="${i}" type="button" ${L>=25?"":"disabled"}>Smoke · 2 h</button>`;})}</div>`;}
+    body=`<p class="note">${L<25?`You need cooking level 25 to smoke fish. You're level ${L}.`:"Oak smoke, two hours a fish. Smoked fish keeps 10 days and sells for 1.8× raw."}</p><div class="acts as-cards">${items(run.keep.filter(k=>(k.form||"raw")==="raw"&&!isSpoiled(k)),(k)=>{const i=run.keep.indexOf(k);return `<button class="iconbtn" data-smoke="${i}" type="button" ${L>=25?"":"disabled"}>Smoke · 2 h</button>`;})}</div>`;}
   else if(view==="trophy"){title="Trophy wall";const best={};for(const e of run.log){if(!best[e.id]||e.w>best[e.id].w)best[e.id]=e;}
-    const leg=(run.legends||[]).map(id=>`<div class="act" style="cursor:default;border-color:var(--brass)"><span>🏆 ${fishById(id).name}<small>A legend, landed and handed in.</small></span></div>`).join("");
+    const leg=(run.legends||[]).map(id=>`<div class="act wide" style="cursor:default;border-color:var(--brass)" data-icon="🏆"><span> ${fishById(id).name}<small>A legend, landed and handed in.</small></span></div>`).join("");
     body=`${leg}<div class="acts">${Object.values(best).sort((a,b)=>b.w-a.w).slice(0,12).map(e=>`<div class="act" style="cursor:default"><span>${e.name} · ${lbOz(e.w)} <span class="stars" style="font-size:12px">${stars(e.stars)}</span><small>${e.spot}, day ${e.day}</small></span></div>`).join("")||'<p class="note">Nothing on the wall yet.</p>'}</div>`;}
   else if(view==="travel"){title="Travel";body=`<div class="acts as-tiles">${travelButtons("go")}</div>`;}
   else body=`<p class="note">${clock(run.min)}, day ${run.day}. ${H.built.cabin?"Smoke curls from the cabin chimney.":"A tent under the alders, a lock-up box and a lot of potential."}</p>
@@ -2925,7 +2960,7 @@ function shopScreen(tab){
   if(tab==="lures")body=Object.entries(LURES).map(([l,p])=>`<div class="act" style="cursor:default"><span>${l}<small>Lost if the line breaks or snags. You have ${run.inv.lures[l]||0}</small></span><button class="iconbtn" data-bl="${l}" type="button" ${B>=p?"":"disabled"}>${p} FB</button></div>`).join("");
   if(tab==="lines")body=Object.entries(LINES).filter(([k,L])=>L.price>0).map(([k,L])=>`<div class="act" style="cursor:default"><span>${L.name}<small>${k==="Light"?"Breaks easily, but shy fish don't mind it.":L.all?"Very strong. Most fish are wary of it.":"Stronger. Shy fish notice it."}</small></span>${run.inv.lines[k]?'<em>Owned</em>':`<button class="iconbtn" data-bn="${k}" type="button" ${B>=L.price?"":"disabled"}>${L.price} FB</button>`}</div>`).join("");
   if(tab==="gear")body=`<p class="note">Today's gear. The stock changes every day${town().city?", and the city shop carries more than the villages":""}.</p>`+shopStock().map(id=>{const g=GEAR[id];
-    return `<div class="act" style="cursor:default"><span>${g.name} <small style="display:inline;color:${GRADES[g.grade]}">${g.grade}</small><small>${g.desc}${gearStats(g)}</small></span>${run.inv.gear[id]?'<em>Owned</em>':`<button class="iconbtn" data-bg="${id}" type="button" ${B>=g.price?"":"disabled"}>${g.price} FB</button>`}</div>`;}).join("");
+    return `<div class="act" style="cursor:default" data-icon="${{rod:"🎣",flyrod:"🪶",reel:"⚙️",kit:"🎒"}[g.type]||"🎣"}"><span>${g.name} <small style="display:inline;color:${GRADES[g.grade]}">${g.grade}</small><small>${g.desc}${gearStats(g)}</small></span>${run.inv.gear[id]?'<em>Owned</em>':`<button class="iconbtn" data-bg="${id}" type="button" ${B>=g.price?"":"disabled"}>${g.price} FB</button>`}</div>`;}).join("");
   if(tab==="bait")body+=`<div class="act" style="cursor:default"><span>Trap or pot<small>Crayfish traps inland, crab and lobster pots on the coast. Needs fishing level 20. You have ${run.inv.pots}</small></span><button class="iconbtn" data-bp="1" type="button" ${B>=12?"":"disabled"}>12 FB</button></div>`;
   if(tab==="hunt")body=`<p class="note">Hunting level ${skLv("hunt")}. Tracking starts at level 5, and the bow only helps from level 10.</p>
     <div class="act" style="cursor:default"><span>Snares · ×3<small>Set them at camp and check back after a few hours. You have ${run.inv.snares}</small></span><button class="iconbtn" data-bh="snares" type="button" ${B>=6?"":"disabled"}>6 FB</button></div>
@@ -2937,7 +2972,7 @@ function shopScreen(tab){
     ${["bignet","smoker","bbq"].map(id=>`<div class="act" style="cursor:default"><span>${GEAR[id].name} <small style="display:inline;color:${GRADES[GEAR[id].grade]}">${GEAR[id].grade}</small><small>${GEAR[id].desc}</small></span>${run.inv.gear[id]?'<em>Owned</em>':`<button class="iconbtn" data-bk="${id}" type="button" ${B>=GEAR[id].price?"":"disabled"}>${GEAR[id].price} FB</button>`}</div>`).join("")}`;
   showOverlay(`<h2>Tackle shop · ${town().n}</h2><p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p>
   <div class="controls" style="flex-wrap:wrap">${tabs.map(([k,n])=>`<button class="iconbtn" data-tab="${k}" type="button" style="flex:1;${k===tab?"border-color:var(--brass);color:var(--brass)":""}">${n}</button>`).join("")}</div>
-  <div class="acts">${body}</div>
+  <div class="acts as-cards" data-ico="${{bait:"🪱",lures:"🪝",lines:"🧵",gear:"🎣",hunt:"🏹",kitchen:"🏕️"}[tab]}">${body}</div>
   <div class="controls"><button class="big ghost" id="shBack" type="button" style="flex:1">Back</button></div>`);
   const buy=(p,fn,msg)=>{if(run.bucks<p)return;run.bucks-=p;fn();renderHud();toast(msg);shopScreen(tab);};
   document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>shopScreen(b.dataset.tab));
@@ -2964,18 +2999,20 @@ function gearStats(g){
 function kitScreen(onBack){
   const slot=(label,key,type)=>{const owned=Object.keys(GEAR).filter(id=>GEAR[id].type===type&&run.inv.gear[id]);
     const cur=run.equip[key];
-    return `<div class="act" style="cursor:default;flex-wrap:wrap"><span>${label}<small>${cur?GEAR[cur].name+gearStats(GEAR[cur]):"None. Buy one at the tackle shop."}</small></span>
+    return `<div class="act" style="cursor:default;flex-wrap:wrap" data-icon="${{rod:"🎣",fly:"🪶",reel:"⚙️"}[key]}"><span>${label}<small>${cur?GEAR[cur].name+gearStats(GEAR[cur]):"None. Buy one at the tackle shop."}</small></span>
     ${owned.length>1?`<select data-eq="${key}" style="background:var(--panel);color:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:6px">${owned.map(id=>`<option value="${id}" ${id===cur?"selected":""}>${GEAR[id].name}</option>`).join("")}</select>`:""}</div>`;};
   const bait=Object.entries(run.inv.bait).filter(([,n])=>n>0).map(([b,n])=>`${b} ${n}`).join(" · ")||"None";
   const lures=Object.entries(run.inv.lures).filter(([,n])=>n>0).map(([b,n])=>`${b} ${n}`).join(" · ")||"None";
   const lines=Object.keys(run.inv.lines).map(k=>LINES[k].short).join(", ");
   const kit=Object.keys(run.inv.gear).filter(id=>GEAR[id].type==="kit").map(id=>`<div class="act" style="cursor:default"><span>${GEAR[id].name}<small>${GEAR[id].desc}</small></span></div>`).join("");
   showOverlay(`<h2>Kit</h2><p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b></p>
-  <h3>Vehicle</h3><div class="acts"><div class="act" style="cursor:default"><span>${veh().n}${run.car.cool&&!veh().fridge?" with a cool box":""}<small>${veh().desc} Storage ${netLabel()} in all.</small></span></div></div>
-  <h3>Tackle</h3><div class="acts">${slot("Rod","rod","rod")}${slot("Fly rod","fly","flyrod")}${slot("Reel","reel","reel")}</div>
-  <h3>Bag</h3><p class="note"><b>Bait:</b> ${bait}<br><b>Lures and flies:</b> ${lures}<br><b>Line:</b> ${lines}<br><b>Snares:</b> ${run.inv.snares} in the bag, ${run.snares.length} set · <b>Traps:</b> ${run.inv.pots} in the bag, ${run.pots.length} out · <b>Arrows:</b> ${run.inv.arrows}<br><b>Bandages:</b> ${run.inv.bandages} · <b>Salt:</b> ${run.inv.salt} · <b>Chum:</b> ${run.inv.chum} · <b>Recipes:</b> ${run.recipes.length}</p>
-  ${kit?`<h3>Kit</h3><div class="acts">${kit}</div>`:""}
-  ${run.jobs&&run.jobs.length?`<h3>Requests</h3><div class="acts">${run.jobs.map(j=>jobRow(j,null)).join("")}</div>`:""}
+  <h3>Vehicle</h3><div class="acts"><div class="act" style="cursor:default" data-icon="🚗"><span>${veh().n}${run.car.cool&&!veh().fridge?" with a cool box":""}<small>${veh().desc} Storage ${netLabel()} in all.</small></span></div></div>
+  <h3>Tackle</h3><div class="acts as-cards">${slot("Rod","rod","rod")}${slot("Fly rod","fly","flyrod")}${slot("Reel","reel","reel")}</div>
+  <h3>Bag</h3><div class="tiles bagtiles">${[["🪱","Bait",Object.values(run.inv.bait).reduce((a,b)=>a+b,0),bait],["🪝","Lures and flies",Object.values(run.inv.lures).reduce((a,b)=>a+b,0),lures],["🧵","Line",Object.keys(run.inv.lines).length,lines],
+    ["🪤","Snares",run.inv.snares,`${run.snares.length} set`],["🦀","Traps",run.inv.pots,`${run.pots.length} out`],["🏹","Arrows",run.inv.arrows,""],["🩹","Bandages",run.inv.bandages,""],["🧂","Salt",run.inv.salt,""],["🪣","Chum",run.inv.chum,""],["📜","Recipes",run.recipes.length,""]]
+    .map(([ic,n,c,sub])=>`<div class="tile" style="cursor:default"><span class="ti">${ic}</span><span class="tl">${n}</span><span class="tb">${c}</span>${sub?`<small style="font-size:10px;opacity:.75;font-weight:500">${sub}</small>`:""}</div>`).join("")}</div>
+  ${kit?`<h3>Kit</h3><div class="acts as-cards" data-ico="🎒">${kit}</div>`:""}
+  ${run.jobs&&run.jobs.length?`<h3>Requests</h3><div class="acts as-cards">${run.jobs.map(j=>jobRow(j,null)).join("")}</div>`:""}
   <div class="controls"><button class="big ghost" id="kBack" type="button" style="flex:1">Back</button></div>`);
   document.querySelectorAll("[data-eq]").forEach(sel=>sel.onchange=()=>{run.equip[sel.dataset.eq]=sel.value;kitScreen(onBack);});
   $("#kBack").onclick=onBack;
@@ -3195,7 +3232,7 @@ function titleScreen(){
   $("#tmLb").onclick=()=>leaderboard(titleScreen);
   $("#tmHow").onclick=()=>howTo(titleScreen);
   $("#tmNews").onclick=()=>whatsNew(titleScreen);
-  $("#tmSet").onclick=()=>settingsScreen(titleScreen);
+  $("#tmSet").onclick=()=>settingsScreen(titleScreen,null);
   if($("#tmInst"))$("#tmInst").onclick=installPrompt;
 }
 function slotsScreen(mode){
@@ -3264,7 +3301,7 @@ function pauseMenu(){
   </div>
   <div class="menu" style="margin-top:10px"><button id="pmQuit" type="button">Quit to title<small>${isTown(run.loc)?"You'll pick up right here.":"You'll pick up right here, but only a tavern stay truly saves."}</small></button></div>`);
   $("#pmMap").onclick=()=>mapScreen(pauseMenu);$("#pmNews").onclick=()=>whatsNew(pauseMenu);
-  $("#pmRes").onclick=back;$("#pmLb").onclick=()=>leaderboard(pauseMenu);$("#pmLog").onclick=()=>logBook(pauseMenu);$("#pmKit").onclick=()=>kitScreen(pauseMenu);$("#pmSk").onclick=()=>skillsScreen(pauseMenu);$("#pmJr").onclick=()=>journalScreen(pauseMenu);$("#pmHow").onclick=()=>howTo(pauseMenu);$("#pmSet").onclick=()=>settingsScreen(pauseMenu);
+  $("#pmRes").onclick=back;$("#pmLb").onclick=()=>leaderboard(pauseMenu);$("#pmLog").onclick=()=>logBook(pauseMenu);$("#pmKit").onclick=()=>kitScreen(pauseMenu);$("#pmSk").onclick=()=>skillsScreen(pauseMenu);$("#pmJr").onclick=()=>journalScreen(pauseMenu);$("#pmHow").onclick=()=>howTo(pauseMenu);$("#pmSet").onclick=()=>settingsScreen(pauseMenu,null);
   $("#pmQuit").onclick=()=>{suspend();run=null;titleScreen();};
 }
 function logBook(onBack){
@@ -3309,7 +3346,23 @@ function howTo(onBack){
   </div><div class="controls"><button class="big ghost" id="hBack" type="button" style="flex:1">Back</button></div>`);
   $("#hBack").onclick=onBack;
 }
-function settingsScreen(onBack){
+// Settings: four tiles, each showing its own rows. Rows are sorted into sections by the controls they hold.
+const SET_SEC={sens:"ctrl",mcOn:"ctrl",mcMsg:"ctrl",mcPrac:"ctrl",tiltOn:"ctrl",tiltMsg:"ctrl",tiltNow:"ctrl",tiltRange:"ctrl",tiltCal:"ctrl",tiltRv:"ctrl",
+  diffSel:"game",diffNote:"game",tuReplay:"game",evts:"game",toHC:"game",lbShare:"game",rvArt:"look",trAnim:"look",unl:"test",dbg:"test",strict:"test",strictv:"test"};
+const SET_TILES=[["ctrl","🎮","Controls"],["game","🎲","Game"],["look","🎨","Look and feel"],["test","🧪","Testing"]];
+let setSec=null;
+function settingsScreen(onBack,sec){if(sec!==undefined)setSec=sec;settingsScreenRaw(onBack);
+  const card=document.querySelector("#overlay .card");if(!card)return;const kids=[...card.children];let cur=null;
+  const secOf=el=>{for(const id of Object.keys(SET_SEC))if(el.id===id||el.querySelector&&el.querySelector("#"+id))return SET_SEC[id];return null;};
+  kids.forEach((el,i)=>{if(el.tagName==="H2"||el.classList.contains("controls"))return;let k=secOf(el);
+    if(!k&&el.tagName==="H3"){for(let j=i+1;j<kids.length&&!k;j++)k=secOf(kids[j]);}
+    if(!k)k=cur;cur=k;el.dataset.sec=k||"game";
+    if(setSec===null||el.dataset.sec!==setSec)el.style.display="none";});
+  const h2=card.querySelector("h2");
+  if(setSec===null){h2.insertAdjacentHTML("afterend",`<div class="tiles" style="grid-template-columns:repeat(2,1fr)">${SET_TILES.map(([k,i,n])=>tile(k,i,n,"")).join("")}</div>`);
+    card.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>settingsScreen(onBack,b.dataset.tile));}
+  else{const T=SET_TILES.find(x=>x[0]===setSec);h2.textContent=`${T[1]} ${T[2]}`;const c=card.querySelector("#closeO");if(c){c.textContent="Back";c.onclick=()=>settingsScreen(onBack,null);}}}
+function settingsScreenRaw(onBack){
   showOverlay(`<h2>Settings</h2>
   <div class="row"><label for="sens">Rod sensitivity</label><input id="sens" type="range" min="0.6" max="1.8" step="0.1" value="${save.settings.sens}"></div>
   ${run?`<div class="row"><label for="diffSel">Difficulty</label><select id="diffSel" style="background:var(--panel-2);color:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:6px">${DORDER.slice(0,DORDER.indexOf(run.diff||"medium")+1).map(k=>`<option value="${k}" ${k===(run.diff||"medium")?"selected":""}>${DIFFS[k].name}</option>`).join("")}</select></div>
@@ -3344,7 +3397,7 @@ function settingsScreen(onBack){
   $("#mcOn").onchange=e=>{const on=e.target.checked;if(!on){save.settings.motionCast=false;persist();return;}
     startMotion().then(ok=>{if(!ok){e.target.checked=false;$("#mcMsg").textContent="Your phone didn't allow motion access, so motion casting can't work. Check your browser's motion sensor permission.";return;}
       save.settings.motionCast=true;persist();setTimeout(()=>{if(!MC.seen)$("#mcMsg").textContent="No motion sensor reading. This device may not have one (most computers don't). Give the phone a little shake and check again.";},1500);});};
-  $("#mcPrac").onclick=()=>{startMotion();flickPractice(()=>settingsScreen(onBack));};
+  $("#mcPrac").onclick=()=>{startMotion();flickPractice(()=>settingsScreen(onBack,"ctrl"));};
   $("#tiltOn").onchange=e=>{const on=e.target.checked;
     if(!on){save.settings.tilt=false;persist();return;}
     startTilt().then(ok=>{if(!ok){e.target.checked=false;$("#tiltMsg").textContent="Your phone didn't allow motion access, so tilt can't work. Check your browser's motion sensor permission.";return;}

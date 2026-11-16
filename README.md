@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.38.2** · experimental build
+**Current version: 0.39.0** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -67,6 +67,14 @@ Open the link on your Android phone and install it. The first time, Android asks
 ## Changelog
 
 Updates are grouped into big releases. The full in-game list is under **What's new** on the main menu.
+
+### 0.39 · Cards and tiles everywhere (16 Nov 2026)
+- The cook now has a menu: order fish and chips, stew, a ploughman's or the cook's own special, and eat it by the fire or take it away for your larder
+- The cook's recipes are now Lessons, shown as cards
+- The tackle shop, lessons, request board, harbour, garage, kit, keep net, locker and home store are all icon cards in a neat grid
+- Your bag in the Kit screen is a set of tiles with counts
+- Settings are split into four tiles: Controls, Game, Look and feel, and Testing
+- Skills are four tiles with your level and progress; tap one for its unlocks
 
 ### 0.38.2 · Tiles all round (16 Nov 2026)
 - The Rest, Travel, camp, kitchen and news lists are icon tiles now too, with the time or price in a corner badge
