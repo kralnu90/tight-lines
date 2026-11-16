@@ -108,6 +108,11 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .big.net.ready{background:var(--safe);color:#10230c;border-color:var(--safe)}
 .big.strike{background:var(--brass);color:#2a1d07}
 .big.ghost{background:var(--panel-2);color:var(--cream);border:1px solid var(--rule);flex:0 0 auto;padding:14px 16px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:84px;padding:10px 4px;border-radius:12px;border:1px solid var(--rule);background:rgba(255,255,255,.04);color:var(--cream);font:700 13px/1.15 var(--body,inherit);cursor:pointer;text-align:center}
+.tile:hover,.tile:focus-visible{border-color:var(--brass)}
+.tile .ti{font-size:26px;line-height:1}
+.tile .tb{position:absolute;top:6px;right:6px;min-width:18px;padding:1px 6px;border-radius:999px;background:var(--brass);color:#1d1a0e;font-size:11px;font-weight:800}
 .innpic{flex-shrink:0;height:clamp(150px,32vh,240px);margin:-16px -16px 2px;border-radius:13px 13px 0 0;background:center/cover no-repeat;box-shadow:inset 0 -40px 40px -20px var(--panel)}
 .overlay{position:fixed;inset:0;z-index:20;background:rgba(9,18,16,.78);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
 .card{background:var(--panel);border:1px solid var(--brass-deep);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
@@ -321,43 +326,16 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.33.0";
+const VERSION="0.34.0";
 const CHANGELOG=[
-  {v:"0.33.0",date:"16 Nov 2026",title:"The inns",items:["Every inn now has its own picture: the Willowmere Arms by the river and stone bridge, the Heron's Rest with its heron sign, the Lantern and Gull on the harbour, and the Crown in Kingsbridge", "The inn's picture sits at the top of the tavern menu and dimly behind every screen while you're there: selling, the shop, the board, the cook and the rest"]},
-  {v:"0.32.0",date:"16 Nov 2026",title:"New rod and floats",items:["A new rod that comes in from the bottom right, so you can see the cork grip, the metal reel seat and a proper fixed-spool reel with a gold-trimmed spool, bail arm and a handle that turns as you reel", "Ring guides that get smaller towards the tip, and a shine down the blank", "Your rod looks like the one you've set up: willow, hollowcane, black carbon with red whipping, the green and gold Kingfisher, and the fly rods", "New floats: a stick float with a yellow tip on the river, a quill with an orange tip on the lake, a weighted orange egg float at sea, and a glowing green night float after dark"]},
-  {v:"0.31.2",date:"16 Nov 2026",title:"Tidier water",items:["The moving current lines on the water now stay on open water: off the rocks at Saltmarsh Point, the reeds and lily pads at the lake, and the willow, jetty and bank on the river", "Fixed in both the painted and the drawn scenes"]},
-  {v:"0.31.1",date:"16 Nov 2026",title:"Strike fix",items:["Fixed: striking too early or on nothing could open the Camp menu as well, because your tap landed on the Camp button that appeared under your finger. Taps are now ignored for a moment after the panel changes"]},
-  {v:"0.31.0",date:"15 Nov 2026",title:"The painted coast",items:["Saltmarsh Point is now a painted scene: the rocky point on the left where fish run for the rocks, islands on the horizon, and driftwood on the beach", "Clear blue day, a golden sunset, a moonlit night under the Milky Way, and sunrise, all following the clock", "All three shore spots are painted now. Settings, Painted scenes, switches them together"]},
-  {v:"0.30.0",date:"15 Nov 2026",title:"The painted lake",items:["Willowmere Lake is now a painted scene too, with reeds and lily pads on the right where the weed beds are, running from day through sunset and a moonlit, misty night with fireflies to sunrise", "Settings, Painted scenes: turns the painted river and lake on or off together"]},
-  {v:"0.29.0",date:"15 Nov 2026",title:"The painted river",items:["Willowmere River is now a painted scene that follows the clock through a whole day: daylight, a golden sunset, dusk, a moonlit night with fireflies, and sunrise", "It changes smoothly as time passes, and rain, wind and fog still show on top", "Settings, Painted river: turn it off to go back to the drawn river"]},
-  {v:"0.28.0",date:"15 Nov 2026",title:"The deep sea",items:["The Kettle Deeps (fishing level 40): an hour and a half out from Saltwick on Jory's boat", "Pump and wind: deep-sea fights have a depth meter. Tap Pump to lift the fish, then hold Reel as the rod drops back. Just cranking barely moves it, and it dives back down if you let it", "Seven deep-sea fish: haddock, hake (soft mouth, so go easy), monkfish (wakes up at the surface), turbot, and from fishing level 45 the big game: blue shark, Atlantic halibut and bluefin tuna", "Ling turn up in the deeps as well as the wreck", "Offshore cruiser (fishing level 40, 750 FB): reaches the deeps, 15 FB fuel a trip, and a cabin to sleep in", "Part exchange your cobble for half its price", "Keyboard: P or the up arrow to pump"]},
-  {v:"0.27.0",date:"15 Nov 2026",title:"Boats",items:["Saltwick harbour: hire Jory's boat, or buy your own", "Saltwick Bay (fishing level 25): open water with more tope, cod and conger than the shore, plus two new fish: thornback ray and black bream", "The Marguerite wreck (fishing level 30): ling and ballan wrasse, two more new fish, plus conger, pollock and cod. Hooked fish dive for the wreck", "Hired trips give you 6 hours of fishing, then Jory brings you back", "Your own cobble (fishing level 35, 320 FB): no time limit, 5 FB fuel a trip", "At sea there's no fire or fresh water. The Boat menu lets you rest, eat, chum and head back", "You fish from the boat itself, and the trip out has its own sea scene", "The testing switch in Settings skips the boat level checks too"]},
-  {v:"0.26.1",date:"15 Nov 2026",title:"Travel scene fix",items:["Fixed: the travel scene skipped itself straight away when you tapped a travel button, so it only showed some of the time. It now plays on every trip, on foot or by van"]},
-  {v:"0.26.0",date:"15 Nov 2026",title:"The campervan and the open road",items:["Travel scenes: a short drive between places, with the clock ticking on, the sky matching the time of day, rain, fog or wind, the sea or the city skyline on the way, and headlights at night. Tap to skip, or turn them off in Settings", "Your old estate car comes with a boot: 6 more slots of storage", "Kingsbridge Motors in the city: a cool box (fresh fish keep half as long again), the fishing van (16 slots) and the campervan", "The campervan: sleep warm and safe anywhere you park, with far fewer night-time surprises, rest in the warm, and light the gas stove in 5 minutes to cook and boil water. Its fridge keeps fresh fish half as long again", "Part exchange: your old vehicle is worth half what it cost", "Your vehicle shows in the Kit screen"]},
-  {v:"0.25.0",date:"15 Nov 2026",title:"Storage, and Phase 4 done",items:["Your keep net now holds 12 slots. Fish under 2 lb take 1, and bigger fish take up to 5", "Salted and smoked fish pack down a slot smaller", "Big keep net in the Camp tab of the tackle shop: 8 more slots for 40 FB", "When the net is full, let the new fish go or make room. It stays in your log either way", "Rent a locker at any inn: 24 slots for 10 FB a season. What you leave there stays in that town, and fresh fish still spoil", "Pots and traps let catches go if there's no room", "Phase 4, towns and trade, is finished"]},
-  {v:"0.24.0",date:"15 Nov 2026",title:"News, gossip and festivals",items:["News and gossip at every inn: buy the Kingsbridge Courier (1 FB) or a round at the bar (3 FB)", "Other towns' prices are hidden until you hear about them", "Market news that comes and goes: storms keeping the fleet in, bumper years, banquets, weddings, shortages and gluts, each lasting a few days", "Five festivals, always on the same days each year: the Willowmere Spring Fair, Saltwick Mackerel Festival, Kingsbridge Food Fair, Thornmere Pike and Perch Fair and Kingsbridge Midwinter Market", "Festival posters go up in town five days ahead, and the paper lists everything in the next ten days", "Seasonal prices: fish that only run in some seasons sell for 10% less in season and 30% more out of it", "Old anglers at the bar share tips on where and when rare fish turn up", "The sell screen shows every price change: season, festival, market news and your standing"]},
-  {v:"0.23.0",date:"15 Nov 2026",title:"Request boards and reputation",items:["A request board at every inn, with new notices every two days", "Orders for fresh catches, specimen fish, 4-star fish, rare fish, salted or smoked fish and recipe dishes, plus parcels to deliver to other towns", "Take on up to 3 at a time. Beat the deadline for Fish Bucks, and sometimes a recipe, gear, lures or bait", "Every town remembers you: Stranger, Known, Regular, Friend, then Local legend", "Good standing raises the price an inn pays (up to +20%), unlocks harder, better-paid orders and adds gear to the shop", "Missing a deadline or giving up a request costs standing, and a distrusted angler gets paid less", "Your requests show in the Kit screen, and fish wanted for a request are marked when you sell", "The legendary hunt notice is up, sealed until fishing level 30"]},
-  {v:"0.22.0",date:"15 Nov 2026",title:"Thornmere and Kingsbridge",items:["Thornmere, a lakeside village on the north shore of Willowmere Lake, with the Heron's Rest inn, its own tackle shop and Agnes the cook", "Kingsbridge, the city: the Crown inn, a bigger tackle shop and Henri the head chef", "The trade triangle is complete: Thornmere pays 30% more for sea fish and less for lake fish", "The city pays a fair price for every kind of fish, 50% more for rare fish and 25% more for dishes", "Four new regional dishes: Thornmere perch in brown butter and sorrel, Thornmere baked pike with juniper, Kingsbridge eel pie and Kingsbridge potted smoked trout", "Both new towns are on the map, and you can save at either inn"]},
-  {v:"0.21.0",date:"15 Nov 2026",title:"Motion casting",items:["Cast by flicking the phone: hold Cast, swing back, flick forward and let go (Settings, Motion casting)","Flick speed sets the distance, letting go as the flick peaks makes a clean cast, and tilting left or right aims","Practice screen shows your power, timing and flick speed, and sets full power to suit your wrist","Swipe casting still works alongside it"]},
-  {v:"0.20.0",date:"15 Nov 2026",title:"Tilt controls",items:["Tilt the phone left and right to move the rod in a fight (Settings, Tilt controls)","Calibrate to however you hold the phone, and set how far you need to tilt for full rod","Works in the browser and in the Android app"]},
-  {v:"0.19.0",date:"15 Nov 2026",title:"Saltwick and the map",items:["A region map: see every town and fishing spot with travel times, and tap to travel","Saltwick, a seaside village half an hour from Saltmarsh Point, with the Lantern and Gull inn, its own tackle shop and Bram the cook","The trade triangle starts working: Saltwick pays 30% more for river fish and less for sea fish, Willowmere pays more for lake fish","Each town has its own market, so flooding one doesn't drop prices in the other","Regional dishes sell for 30% more away from home. Two new Saltwick dishes: crab cakes and soused mackerel with fennel","You can save at either inn and wake there"]},
-  {v:"0.18.0",date:"15 Nov 2026",title:"Tougher fights",items:["Fish now bolt straight away from you, more often once they're close and still fresh. The line jolts tight, so stop reeling and give line","Fish tire more slowly and get their breath back if you let the line go slack","Fish pull about 10% harder and take more line on their runs","Fights last about half as long again, and big fish on basic gear will break you off more often"]},
-  {v:"0.17.0",date:"14 Nov 2026",title:"Injuries and survival tuning",items:["Injuries that last: open wounds, sprained ankles, cracked ribs, and being chilled to the bone after hours at zero warmth","Wounds stop your health coming back until cleaned on the fire or bandaged, and can get infected if left 12 hours","Sprains slow travel and tire you, cracked ribs slow your reeling and healing","Bandages in the new Camp tab at the tackle shop (you start with one). A room at the Arms dresses everything and halves healing time","Animal encounters, falls and tracking mishaps now cause injuries","Survival retuned: food drains about 20% slower, energy drains faster and every fight costs a little, health comes back faster when you're fed, warm and watered, rain is slightly less cold"]},
-  {v:"0.16.0",date:"14 Nov 2026",title:"Fishing core finished",items:["A less predictable float: dips, trembles, bobs, slides and false bites in random order and timing, and takes that plunge, slide away or lift and lie flat","Fly fishing gets near-miss rises that splash at your fly without taking it","New weather: wind (drifts your float, gusts in the fight, bass love it) and fog (predators come out, harder to see)","Rain makes the reel slippery during a fight","Fish journal: a page per species with your records and every season, time, weather, method, bait and spot you've caught it in","Methods now unlock by fishing level (5 ledger, 10 spinning, 15 fly). The testing switch is still in Settings","Traps and pots from fishing level 20: crayfish inland, brown crab and the odd lobster on the coast"]},
-  {v:"0.15.0",date:"14 Nov 2026",title:"Deeper cooking",items:["A kitchen for every fish at camp: cook and eat, cook to keep, salt, smoke or cook a recipe","Prep dice rolls: gutting and filleting can go well (worth more, feeds more) or get botched","13 recipes using foraged ingredients: pan dishes, Dutch oven stews and chowders, BBQ grills, two Willowmere regional dishes and the Angler's truffle feast","Maggie, the cook at the Willowmere Arms, teaches recipes for coin or a rare fish; strangers and abandoned camps can share them too","Salting (level 15) and smoking (level 25, portable smoker) keep fish for 15 and 10 days and sell for 1.5× and 1.8×","Cooked, preserved and recipe fish all sell, priced by form, prep quality and recipe","Spoiled fish makes chum: throw it in for much quicker bites for 2 hours","New Kitchen tab at the tackle shop: salt, portable smoker and camp BBQ"]},
-  {v:"0.14.0",date:"14 Nov 2026",title:"Hunting and foraging",items:["Forage at camp: herbs, berries, wild veg, mushrooms, coastal finds, spices, rare herbs and truffles, depending on your level, the season and where you are","Dig for bait from foraging level 5: worms inland, lugworm and ragworm on the coast","Snares: set up to 3, check back after a few hours. You start with 2","Tracking from hunting level 5: rabbits, then pigeons and pheasants, roe deer, wild boar and the red stag","Hunting bow and arrows in a new Hunting tab at the tackle shop: +5 when tracking from hunting level 10","A larder for game and foraged food: eat it, cook it, or brew rare herbs into teas","Clean springs at foraging level 30: drinking straight is almost always safe"]},
-  {v:"0.13.0",date:"14 Nov 2026",title:"Events and skills",items:["Text events with d20 rolls while you travel, rest and sleep out: wolves, wild boar, bears, a fox thief, a stranger at the fire, an abandoned camp, a slippery bank and a lost lure","Your bonuses are shown before you choose: skill level, campfire, lantern, being rested, hurt or exhausted","Hunting, foraging and cooking skills, levelling 1 to 50 like fishing","Skills screen with every unlock table (Menu, Skills)","Cooking your catch at camp earns cooking XP","New kit: storm lantern and bear bell","Turn random events off in Settings"]},
-  {v:"0.12.1",date:"9 Nov 2026",title:"Update notices",items:["A notice pops up when a new version of the game is out, with an Update button","Get the latest version button on the title screen"]},
-  {v:"0.12.0",date:"3 Nov 2026",title:"Graphics pass",items:["Hazards drawn as the real thing: a weeping willow with sunken branches on the river, lily pads, reeds and weed on the lake, and a rocky point with breaking surf on the coast","No more text labels on hazards","Drifting clouds, sun and moon reflections, sparkling water and a softer far bank","A proper float, a rod with cork grip, guides and a turning reel, and leaping fish in their own colours","Firelight glow at camp"]},
-  {v:"0.11.0",date:"1 Nov 2026",title:"Difficulty levels",items:["Choose Easy, Medium, Hard or Extreme when you start a new game","Easy: gentler line tension, needs switched off, fewer rare fish, half XP","Hard: tougher fish and line, needs drop 50% faster, more rare fish, +20% XP","Extreme: brutal fights, needs drop 75% faster, always hardcore, +30% rare fish, +40% XP","Lower a save's difficulty in Settings (it can never be raised)","Difficulty shows on saves and the memory board","Kit, Log and Menu buttons at the Willowmere Arms"]},
-  {v:"0.10.0",date:"1 Nov 2026",title:"Online leaderboard",items:["Leaderboard of the heaviest fish of every species, shared between players","Your best catches post automatically when you're online, and wait on the phone when you're not","Turn sharing off any time in Settings"]},
-  {v:"0.9.0",date:"31 Oct 2026",title:"Fish Bucks and gear",items:["Fish Bucks: sell your catch at the Willowmere Arms","Prices depend on size, stars and freshness; lake fish pay more in riverside Willowmere","Selling lots of one fish drops its price for a while","Tackle shop with bait, lures, line and graded rods, reels and kit; gear stock changes daily","Bait gets used up and lures are lost when the line breaks","Rods, reels and line now change how fights play","Rooms cost 6 FB; the stable is free but rough","Kit screen to see and change your gear"]},
-  {v:"0.8.1",date:"31 Oct 2026",title:"Experimental build",items:["Startup warning that the game is experimental and may have bugs","Install Tight Lines as an app from the GitHub page, with offline play","Version number and this What's new screen"]},
-  {v:"0.8.0",date:"31 Oct 2026",title:"Lake, coast and techniques",items:["New spots: Willowmere Lake and Saltmarsh Point, with travel between them","16 new fish: 9 lake and 7 coast species (23 in total)","Four methods that play differently: float, ledger, spinning and fly","Main menu, in-game menu and a How to play guide","More line on the reel before a fish can strip it all"]},
-  {v:"0.7.0",date:"30 Oct 2026",title:"Survival",items:["Day and night clock with 10-day seasons and changing weather","Food, warmth, energy, health and water","Camp: fires, cooking, boiling water, resting and sleeping","Keep net with spoilage","The Willowmere Arms: the only place to save","Three save slots, Normal and Hardcore modes, and the memory board"]},
-  {v:"0.6.0",date:"30 Oct 2026",title:"All the river fish",items:["Grayling, European eel, barbel and Atlantic salmon, each with its own fight","Night fishing and weather (clear, overcast, rain)"]},
-  {v:"0.5.0",date:"30 Oct 2026",title:"Tension tuning",items:["Line tension retuned to the sweet spot","Tension strictness setting","Cut line button and fixes for the game freezing"]},
-  {v:"0.1.0",date:"30 Oct 2026",title:"First fight prototype",items:["Casting, bites, the fight and landing on Willowmere River","Dace, chub and brown trout"]}
+  {v: "0.34", date: "16 Nov 2026", title: "The spring clean", items: ["Inns and camp are now a tidy grid of tiles, and each tile opens a short list. No more giant scrolling screens", "Little badges show what needs you: fish to sell, requests ready to hand in, a festival on, snares worth checking", "Travel has its own list in both places, with the map at the top", "The update notes are grouped into big updates, so they're easier to read"]},
+  {v: "0.29–0.33", date: "15–16 Nov 2026", title: "The graphical overhaul", items: ["Painted river, lake and coast that follow the clock through a full day: daylight, sunset, a moonlit night with fireflies, and sunrise (Settings, Painted scenes)", "A new rod with a cork grip, reel seat and a proper spinning reel whose handle turns as you reel, styled to match the rod you've set up", "New floats: a yellow-tipped stick float on the river, an orange-tipped quill on the lake, an orange egg float at sea and a glowing night float after dark", "A picture for every inn, at the top of the tavern menu and behind all its screens", "The moving lines on the water stay off rocks, reeds and the willow", "Fixed: striking early could open the Camp menu"]},
+  {v: "0.26–0.28", date: "15 Nov 2026", title: "Boats and the open road", items: ["A short drive scene on every trip, matching the time, weather and where you're going (tap to skip)", "Your car's boot adds storage. Kingsbridge Motors sells a cool box, a fishing van and a campervan you can sleep in safely anywhere", "Saltwick harbour: hire Jory's boat or buy your own cobble, then an offshore cruiser", "Saltwick Bay (level 25), the Marguerite wreck (30) and the Kettle Deeps (40), fished from the boat", "Deep-sea fights use pump and wind: lift the fish, then reel as the rod drops", "11 new sea fish, from thornback ray and ling to blue shark, halibut and bluefin tuna (big game from level 45)"]},
+  {v: "0.22–0.25", date: "15 Nov 2026", title: "Towns and trade", items: ["Two new towns: Thornmere by the lake and Kingsbridge, the city. The trade triangle is complete, and the city pays top money for rare fish and dishes", "Request boards at every inn, with deadlines and rewards, and a reputation in every town", "News, gossip and five yearly festivals. Other towns' prices are hidden until you hear about them, and seasonal fish sell for more out of season", "Keep net slots (bigger fish take more room) and lockers you can rent at any inn"]},
+  {v: "0.18–0.21", date: "15 Nov 2026", title: "Tougher fights and motion controls", items: ["Fish bolt, tire more slowly and pull harder, so fights last longer", "Saltwick, a seaside village, and a region map with travel times", "Tilt the phone to steer the rod, and flick it to cast (Settings)", "Android test app to download"]},
+  {v: "0.13–0.17", date: "14 Nov 2026", title: "Life in the wild", items: ["Dice-roll events on the road and at camp: wolves, boar, bears, strangers and finds", "Hunting, foraging and cooking skills, each with their own unlocks", "Snares, tracking, a bow, bait digging and a larder", "Deeper cooking: prep rolls, salting, smoking, recipes and regional dishes", "An unpredictable float, wind and fog, the fish journal, and traps and pots", "Injuries that last until they heal"]},
+  {v: "0.9–0.12", date: "31 Oct–9 Nov 2026", title: "Fish Bucks, leaderboard and difficulty", items: ["Fish Bucks, selling, a tackle shop and graded gear", "An online leaderboard of the heaviest fish of every species", "Easy, Medium, Hard and Extreme difficulty", "A graphics pass for the scenery, and update notices"]},
+  {v: "0.1–0.8", date: "30–31 Oct 2026", title: "The first builds", items: ["The fishing fight, tuned to feel right", "All 23 river, lake and coast fish across three spots", "Float, ledger, spinning and fly fishing", "Survival: the clock, seasons, needs, camping, tavern saves and hardcore mode", "Installable and playable offline"]}
 ];
 
 
@@ -1263,6 +1241,8 @@ function renderHud(){
 }
 
 /* ---------- Camp ---------- */
+// a big square button with an icon, a label and an optional badge
+function tile(id,icon,label,badge){return `<button class="tile" data-tile="${id}" type="button"><span class="ti">${icon}</span><span class="tl">${label}</span>${badge!==""&&badge!==undefined&&badge!==0?`<span class="tb">${badge}</span>`:""}</button>`;}
 function fishAge(k){return (absMin()-k.caught)/1440;}
 function travelTo(dest){
   const from=run.loc,mins=travelMins(from,dest),m0=absMin();
@@ -1282,27 +1262,43 @@ function travelButtons(prefix){
   return `<button class="act" data-map="1" type="button"><span>Open the map<small>See where everything is and how long it takes.</small></span></button>`+
     opts.map(([k,t,d])=>`<button class="act" data-${prefix}="${k}" type="button"><span>${t}<small>${d}</small></span><em>${fmtMins(travelMins(here,k))}</em></button>`).join("");
 }
-function campMenu(){
+// Camp: a few tiles, each opening its own short list. v: a section name, null for the tiles, or undefined to stay where you were.
+let campView=null;
+function campMenu(v){
   if(G.state!=="ready")return;if(onBoat())return boatMenu();
+  if(typeof v==="string"||v===null)campView=v;else if(v!==undefined)campView=null;
+  const V=campView,$=q=>document.querySelector(q)||{};
   const N=run.needs,fire=run.fire>0,night=run.min>=18*60||run.min<5*60,salt=spot().salt,wname=spot().water.toLowerCase(),dark=conds().time==="Night";
   const fishRows=run.keep.map((k,i)=>{const spoiled=isSpoiled(k),raw=(k.form||"raw")==="raw",left=Math.max(0,keepDays(k)-itemAge(k));
     return `<div class="act" style="cursor:default"><span>${prodName(k)} · ${lbOz(k.w)}<small>${spoiled?"Spoiled. Only good for chum.":`Good for ${left.toFixed(1)} more days`}${qTag(k)&&!spoiled?" · "+qTag(k):""}</small></span>
     <span style="display:flex;gap:6px">${spoiled?`<button class="iconbtn" data-chum="${i}" type="button">Make chum</button><button class="iconbtn" data-dump="${i}" type="button">Bin</button>`:
     `${raw?`<button class="iconbtn" data-raw="${i}" type="button">Eat raw</button>`:`<button class="iconbtn" data-peat="${i}" type="button">Eat</button>`}<button class="iconbtn" data-cook="${i}" type="button">${raw?"Cook":"Kitchen"}</button>`}</span></div>`;}).join("");
-  showOverlay(`<h2>Camp</h2>
-  <p class="note">${spot().name} · ${clock(run.min)}, ${conds().time.toLowerCase()} · ${conds().weather.toLowerCase()}. ${fire?`Fire burning for ${Math.ceil(run.fire/60)} more hours.`:"No fire."} Camping never saves your game.</p>
-  <div class="acts">
+  const snRdy=snaresHere().some(x=>absMin()-x.at>=SNARE_WAIT)||potsHere().some(x=>absMin()-x.at>=POT_WAIT),nInj=Object.keys(run.inj).length;
+  const TITLE={rest:"Fire and rest",water:"Water",wild:"Hunt and forage",net:`Keep net (${netLabel()})`,larder:"Larder",hurt:"Injuries",travel:"Travel"};
+  let body;
+  if(!V)body=`<div class="tiles">
+    ${tile("rest",fire?"🔥":"🪵",camperHere()?"Stove and bed":"Fire and rest",fire?Math.ceil(run.fire/60)+"h":"")}
+    ${tile("water","💧","Water",salt?"":run.water>0?"":"!")}
+    ${tile("wild","🌿","Hunt and forage",snRdy?"!":"")}
+    ${tile("net","🐟","Keep net",run.keep.length||"")}
+    ${run.larder.length?tile("larder","🥫","Larder",run.larder.length):""}
+    ${nInj?tile("hurt","🩹","Injuries",nInj):""}
+    ${tile("travel","🗺️","Travel","")}
+    ${tile("kit","🎒","Kit","")}
+  </div>`;
+  else if(V==="rest")body=`<div class="acts">
     <button class="act" id="aFire" type="button"><span>${fire?"Add wood":"Light a campfire"}<small>Warms you and lets you cook and boil water. Burns about 3 hours.</small></span><em>30 min</em></button>
     ${camperHere()?`<button class="act" id="aStove" type="button"><span>Light the camper stove<small>Cook and boil water without gathering wood, and the heater warms you. Burns 2 hours.</small></span><em>5 min</em></button>`:""}
     <button class="act" id="aRest" type="button"><span>Rest a while${camperHere()?" in the camper":""}<small>Get your energy back.${camperHere()?" Warm and dry.":""}</small></span><em>1 hour</em></button>
     <button class="act" id="aSleep" type="button" ${night?"":"disabled"}><span>${camperHere()?"Sleep in the campervan":"Sleep until dawn"}<small>${night?(camperHere()?"Warm, dry and locked in. Far less can happen to you in the night.":fire?"The fire will keep you warm for a while.":"No fire. It will be a cold night."):"Only after dusk."}</small></span><em>to 06:00</em></button>
+
+  </div>`;
+  else if(V==="water")body=`<div class="acts">
     ${salt?`<div class="act" style="cursor:default"><span>No fresh water here<small>Sea water is salt. You can't drink it. ${run.water>0?`You carry ${run.water.toFixed(1)} days of water.`:"Head inland to a river or lake."}</small></span></div>`:`
     <button class="act" id="aBoil" type="button" ${fire?"":"disabled"}><span>Boil ${wname} water and drink<small>${fire?"Safe to drink.":"Needs a fire."} ${run.water>0?`You still carry ${run.water.toFixed(1)} days of water.`:""}</small></span><em>30 min</em></button>
     <button class="act" id="aDrink" type="button"><span>Drink straight from the ${wname}<small>${skLv("forage")>=30?"You know where the clean springs are. Almost always safe.":"Quick, but it could make you ill."}</small></span><em>5 min</em></button>`}
-  </div>
-  ${run.inv.chum>0||(run.chumUntil||0)>absMin()?`<div class="acts"><button class="act" id="aChum" type="button" ${run.inv.chum>0?"":"disabled"}><span>Throw in chum (${run.inv.chum})<small>${(run.chumUntil||0)>absMin()?`Chum's working for another ${Math.ceil((run.chumUntil-absMin())/6)/10} hours. `:""}Bites come much quicker for 2 hours.</small></span><em>5 min</em></button></div>`:""}
-  ${Object.keys(run.inj).length?`<h3>Injuries</h3><div class="acts">${injuryRows()}</div>${run.inv.bandages?`<p class="note">${run.inv.bandages} bandage${run.inv.bandages>1?"s":""} in your bag.</p>`:""}`:""}
-  <h3>Hunting and foraging</h3><div class="acts">
+  </div>`;
+  else if(V==="wild")body=`<div class="acts">
     <button class="act" id="aForage" type="button" ${dark?"disabled":""}><span>Forage nearby<small>${dark?"Too dark to see what you're picking.":`Herbs, berries${skLv("forage")>=10?", wild veg":""}${skLv("forage")>=15?", mushrooms":""}. Foraging Lv ${skLv("forage")}.`}</small></span><em>45 min</em></button>
     <button class="act" id="aDig" type="button" ${skLv("forage")>=5?"":"disabled"}><span>Dig for bait<small>${skLv("forage")>=5?(salt?"Lugworm and ragworm from the wet sand.":"Worms from the bank."):"Needs foraging level 5."}</small></span><em>30 min</em></button>
     <button class="act" id="aSnare" type="button" ${run.inv.snares>0&&run.snares.length<3?"":"disabled"}><span>Set a snare<small>${run.inv.snares>0?(run.snares.length<3?`${run.inv.snares} in your bag. Check back in a few hours.`:"You've already got 3 set. That's all you can keep track of."):"No snares. Buy them at the tackle shop."}</small></span><em>15 min</em></button>
@@ -1310,11 +1306,17 @@ function campMenu(){
     ${level()>=20||run.inv.pots||run.pots.length?`<button class="act" id="aPot" type="button" ${level()>=20&&run.inv.pots>0&&run.pots.length<POT_MAX?"":"disabled"}><span>Drop a ${salt?"pot":"trap"}<small>${level()<20?"Needs fishing level 20.":!run.inv.pots?"No traps. Buy them in the Bait tab.":run.pots.length>=POT_MAX?"You've got 2 out already.":salt?"Crabs, and if you're lucky, a lobster. Haul it after about six hours.":"Crayfish. Haul it after about six hours."}</small></span><em>15 min</em></button>`:""}
     ${potsHere().length?`<button class="act" id="aHaul" type="button"><span>Haul your ${salt?"pots":"traps"} (${potsHere().length})<small>${potsHere().some(p=>absMin()-p.at>=POT_WAIT)?"Should be something in there.":"Too soon. About six hours."}</small></span><em>20 min</em></button>`:""}
     <button class="act" id="aTrack" type="button" ${skLv("hunt")>=5&&!dark?"":"disabled"}><span>Go tracking<small>${skLv("hunt")<5?"Needs hunting level 5.":dark?"You can't read tracks in the dark.":bowReady()?`Bow ready, ${run.inv.arrows} arrows.`:run.inv.gear.bow?(run.inv.arrows?"Your bow needs hunting level 10.":"Your bow has no arrows."):"No bow: small game only, really."}</small></span><em>1.5 h</em></button>
-  </div>
-  <h3>Keep net (${netLabel()})</h3><div class="acts">${fishRows||'<p class="note">Empty. Catch something to eat.</p>'}</div>
-  ${run.larder.length?`<h3>Larder</h3><div class="acts">${larderRows()}</div>`:""}
-  <h3>Travel</h3><div class="acts">${travelButtons("go")}</div>
-  <div class="controls"><button class="big ghost" id="closeO" type="button" style="flex:1">Back to fishing</button></div>`);
+  </div>`;
+  else if(V==="net")body=`${run.inv.chum>0||(run.chumUntil||0)>absMin()?`<div class="acts"><button class="act" id="aChum" type="button" ${run.inv.chum>0?"":"disabled"}><span>Throw in chum (${run.inv.chum})<small>${(run.chumUntil||0)>absMin()?`Chum's working for another ${Math.ceil((run.chumUntil-absMin())/6)/10} hours. `:""}Bites come much quicker for 2 hours.</small></span><em>5 min</em></button></div>`:""}<div class="acts">${fishRows||'<p class="note">Empty. Catch something to eat.</p>'}</div>`;
+  else if(V==="larder")body=`<div class="acts">${larderRows()}</div>`;
+  else if(V==="hurt")body=`${Object.keys(run.inj).length?`<div class="acts">${injuryRows()}</div>${run.inv.bandages?`<p class="note">${run.inv.bandages} bandage${run.inv.bandages>1?"s":""} in your bag.</p>`:""}`:""}`;
+  else body=`<div class="acts">${travelButtons("go")}</div>`;
+  showOverlay(`<span class="tag">Camp</span><h2>${V?TITLE[V]:"Camp"}</h2>
+  <p class="note">  ${spot().name} · ${clock(run.min)}, ${conds().time.toLowerCase()} · ${conds().weather.toLowerCase()}. ${fire?`Fire burning for ${Math.ceil(run.fire/60)} more hours.`:"No fire."} Camping never saves your game.</p>
+  ${body}
+  <div class="controls">${V?`<button class="big ghost" id="campBack" type="button" style="flex:1">Back</button>`:""}<button class="big ghost" id="closeO" type="button" style="flex:1">Back to fishing</button></div>`);
+  $("#campBack").onclick=()=>campMenu(null);
+  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{const t=b.dataset.tile;if(t==="kit")return kitScreen(()=>campMenu(null));campMenu(t);});
   const act=(mins,fn,opt)=>{advance(mins,opt);if(fn)fn();renderHud();if(checkDeath())return;campMenu();};
   $("#aFire").onclick=()=>act(30,()=>{run.fire=Math.min(run.fire+180,480);toast(fire?"You stack on more wood.":"The fire crackles into life.");});
   if($("#aStove"))$("#aStove").onclick=()=>act(5,()=>{run.fire=Math.max(run.fire,120);toast("The stove pops alight and the heater ticks on.");});
@@ -2575,30 +2577,37 @@ function kitScreen(onBack){
 /* ---------- Tavern ---------- */
 function goTavern(id){id=id||(isTown(run.loc)?run.loc:"tavern");run.loc=id;run.trip=null;run.lastTown=id;G.state="tavern";G.fish=null;G.float=null;G.cast=null;G.reeling=false;setCondsEnabled(false);headerButtons(true);
   $("#panel").innerHTML=`<div class="hint">You're at ${innMid(id)}, ${TOWNS[id].n}.</div>`;renderHud();deliverHere(id);tavernMenu();}
-function tavernMenu(){
-  const T=town(),ROOM=T.room;
-  showOverlay(`<div class="innpic" style="background-image:url('art/inns/${townId()}.jpg');background-position:${townId()==="tavern"?"12% 40%":"center 35%"}" role="img" aria-label="${T.inn}"></div><span class="tag">${T.n}</span><h2>${T.inn}</h2>
-  <p class="note">${clock(run.min)}, day ${run.day}. ${T.blurb}</p>
-  <p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b> in your pocket.</p>
-  <h3>Rest</h3><div class="acts">
+// The inn: a picture, then a grid of tiles. Rest and Travel open their own short lists.
+function tavernMenu(view){
+  const T=town(),ROOM=T.room,t=townId(),$=q=>document.querySelector(q)||{};
+  const fest=festsHere(t)[0],ready=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length,L=locker(t);
+  const head=`<div class="innpic" style="background-image:url('art/inns/${t}.jpg');background-position:${t==="tavern"?"12% 40%":"center 35%"}" role="img" aria-label="${T.inn}"></div><span class="tag">${T.n}</span><h2>${T.inn}</h2>`;
+  let body;
+  if(view==="rest")body=`<h3>Rest</h3><div class="acts">
     <button class="act" id="tStay" type="button" ${run.bucks>=ROOM?"":"disabled"}><span>Stay the night · ${ROOM} FB<small>Full rest, water skins refilled, illness treated, wounds dressed and injuries well on the mend. <b>Saves your game.</b></small></span><em>to 07:00</em></button>
     <button class="act" id="tBarn" type="button"><span>Sleep in the stable · free<small>A save and a roof, but a cold, rough night. Doesn't treat illness.</small></span><em>to 07:00</em></button>
     <button class="act" id="tMeal" type="button" ${run.bucks>=MEAL?"":"disabled"}><span>Hot meal by the fire · ${MEAL} FB<small>Fills you up and warms you through.</small></span><em>30 min</em></button>
+  </div>`;
+  else if(view==="travel")body=`<h3>Travel</h3><div class="acts">${travelButtons("go")}</div>`;
+  else body=`<p class="note">${clock(run.min)}, day ${run.day}. ${T.blurb}</p>
+  ${fest?`<p class="note"><b style="color:var(--brass)">${fest.n} is on!</b> ${fest.desc}</p>`:""}
+  <div class="tiles">
+    ${tile("rest","🛏️","Rest and save","")}
+    ${tile("sell","🐟","Sell catch",run.keep.length||"")}
+    ${tile("shop","🎣","Tackle shop","")}
+    ${tile("cook","🍳",T.cook+"'s kitchen","")}
+    ${tile("board","📋","Requests",ready||"")}
+    ${tile("news","📰","News",fest?"!":"")}
+    ${tile("locker","📦","Locker",L&&L.items.length?L.items.length:"")}
+    ${t==="saltwick"?tile("harbour","⚓","Harbour",""):""}
+    ${T.city?tile("garage","🚐","Motors",""):""}
+    ${tile("memory","🕯️","Memory board",store.memorial.length||"")}
   </div>
-  <h3>Trade</h3><div class="acts">
-    <button class="act" id="tSell" type="button"><span>Sell your catch<small>${run.keep.length?run.keep.length+" fish in your keep net":"Your keep net is empty"}. ${T.n} ${wantText(T)}.</small></span></button>
-    <button class="act" id="tCook" type="button"><span>Talk to ${T.cook}, the cook<small>Learn recipes, including ${T.n}'s own dishes. ${run.recipes.length} of ${Object.keys(RECIPES).length} known.</small></span></button>
-    <button class="act" id="tNews" type="button"><span>News and gossip<small>${(()=>{const t=townId(),F=festsHere(t)[0];const up=FESTIVALS.filter(x=>x.town===t&&!festOn(x)&&festDays(x)!==null&&festDays(x)<=5)[0];
-      return F?`<b style="color:var(--brass)">${F.n} is on!</b> ${F.desc}`:up?`Posters up: ${up.n} ${festDays(up)===1?"tomorrow":"in "+festDays(up)+" days"}.`:"The paper, the regulars, and what other towns are paying.";})()}</small></span></button>
-    <button class="act" id="tReq" type="button"><span>Request board<small>${(()=>{const t=townId(),mine=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length;return `${repName(repOf(t))} here.${mine?` <b style="color:var(--brass)">${mine} ready to hand in.</b>`:" Orders, deliveries and rewards."}`;})()}</small></span></button>
-    <button class="act" id="tLock" type="button"><span>Locker<small>${(()=>{const t=townId(),L=locker(t);return L?`${L.items.length} item${L.items.length===1?"":"s"} stored here · ${lockerPaid(t)?"paid to day "+L.until:"rent overdue"}.`:`Rent cellar storage here: ${LOCKER_SLOTS} slots for ${LOCKER_RENT} FB a season.`;})()} Keep net ${netLabel()}.</small></span></button>
-    ${townId()==="saltwick"?`<button class="act" id="tHarbour" type="button"><span>The harbour<small>Hire Jory's boat from fishing level 25, or buy your own from 35. Bay, wreck and deep-sea fishing.</small></span></button>`:""}
-    ${T.city?`<button class="act" id="tGarage" type="button"><span>Kingsbridge Motors<small>Vans, campervans and cool boxes. You drive ${{estate:"an old estate car",van:"a fishing van",camper:"a campervan"}[run.car.kind]}.</small></span></button>`:""}
-    <button class="act" id="tShop" type="button"><span>Tackle shop<small>Bait, lures, line, rods, reels and kit. Gear stock changes daily.</small></span></button>
-    <button class="act" id="tBoard" type="button"><span>Memory board<small>${store.memorial.length?store.memorial.length+" anglers remembered":"No names on it yet"}</small></span></button>
-  </div>
-  <h3>Travel</h3><div class="acts">${travelButtons("go")}</div>
-  <div class="controls"><button class="big ghost" id="tKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="tLog" type="button" style="flex:1">Log</button><button class="big ghost" id="tMenu" type="button" style="flex:1">Menu</button></div>`);
+  <button class="act" data-tile="travel" type="button" style="margin-top:8px"><span>🗺️ Travel<small>The map, the fishing spots and the other towns.</small></span></button>
+  <p class="note">${T.n} ${wantText(T)}. ${repName(repOf(t))} here.</p>`;
+  showOverlay(`${head}<p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b> in your pocket.</p>${body}
+  <div class="controls">${view?`<button class="big ghost" id="tBack" type="button" style="flex:1">Back</button>`:`<button class="big ghost" id="tKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="tLog" type="button" style="flex:1">Log</button><button class="big ghost" id="tMenu" type="button" style="flex:1">Menu</button>`}</div>`);
+  $("#tBack").onclick=()=>tavernMenu();
   $("#tKit").onclick=()=>kitScreen(tavernMenu);$("#tLog").onclick=()=>logBook(tavernMenu);$("#tMenu").onclick=pauseMenu;
   const night=(fn)=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});fn();run.water=maxWater();run.fire=0;run.away=0;saveTavern();renderHud();};
   $("#tStay").onclick=()=>{run.bucks-=ROOM;night(()=>{Object.assign(run.needs,{food:Math.max(run.needs.food,70),warm:100,stam:100,health:100,thirst:100});run.ill=0;
@@ -2606,11 +2615,11 @@ function tavernMenu(){
     toast("Game saved. A new day.",false,2200);tavernMenu();};
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
-  $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu();};
-  $("#tSell").onclick=sellScreen;$("#tCook").onclick=cookScreen;$("#tReq").onclick=boardScreen;$("#tLock").onclick=lockerScreen;if($("#tGarage"))$("#tGarage").onclick=garageScreen;if($("#tHarbour"))$("#tHarbour").onclick=harbourScreen;$("#tNews").onclick=()=>newsScreen();$("#tShop").onclick=()=>shopScreen("bait");
-  $("#tBoard").onclick=()=>memorialView(tavernMenu);
+  $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu("rest");};
+  const go={sell:sellScreen,shop:()=>shopScreen("bait"),cook:cookScreen,board:boardScreen,news:()=>newsScreen(),locker:lockerScreen,harbour:harbourScreen,garage:garageScreen,memory:()=>memorialView(tavernMenu),rest:()=>tavernMenu("rest"),travel:()=>tavernMenu("travel")};
+  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>go[b.dataset.tile]());
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
-  document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?tavernMenu:campMenu));
+  document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?()=>tavernMenu("travel"):campMenu));
 }
 
 /* ---------- Death ---------- */
