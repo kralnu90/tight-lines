@@ -113,6 +113,12 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .tile:hover,.tile:focus-visible{border-color:var(--brass)}
 .tile .ti{font-size:26px;line-height:1}
 .tile .tb{position:absolute;top:6px;right:6px;min-width:18px;padding:1px 6px;border-radius:999px;background:var(--brass);color:#1d1a0e;font-size:11px;font-weight:800}
+.phand{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:4px 0}
+.pcard{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:48px;height:68px;border-radius:7px;background:#f4efe2;color:#1d1d1f;font:800 20px/1 Georgia,serif;box-shadow:0 2px 0 rgba(0,0,0,.35);border:2px solid transparent}
+.pcard small{font-size:18px}
+.pcard.red{color:#b8262e}
+.pcard.back{background:#2f5a4e;color:#cfe2da;font-size:30px}
+.pcard.held{border-color:var(--brass);transform:translateY(-6px)}
 .innpic{flex-shrink:0;height:clamp(150px,32vh,240px);margin:-16px -16px 2px;border-radius:13px 13px 0 0;background:center/cover no-repeat;box-shadow:inset 0 -40px 40px -20px var(--panel)}
 .overlay{position:fixed;inset:0;z-index:20;background:rgba(9,18,16,.78);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
 .card{background:var(--panel);border:1px solid var(--brass-deep);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
@@ -333,9 +339,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.37.1";
+const VERSION="0.37.2";
 const CHANGELOG=[
-  {v: "0.37", date: "16 Nov 2026", title: "Legends, a home and the pub", items: ["Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say", "Land a legend and hand it in for a big reward and a piece of Master gear", "The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it", "Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night", "Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season", "A big wave can damage the boat, and Jory won't go out again until it's repaired", "Your own home: buy Alder Hollow from the land agent in Kingsbridge (300 FB), a plot between Willowmere and the lake. It starts as a tent and a 20-slot store", "Build it up: a timber cabin (sleep and save, 40-slot store), a smokehouse (no portable smoker needed), a fish pond where raw fish never go off, a kitchen garden to pick every day, and a trophy wall for your legends and best fish"]},
+  {v: "0.37", date: "16 Nov 2026", title: "Legends, a home and the pub", items: ["Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say", "Land a legend and hand it in for a big reward and a piece of Master gear", "The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it", "Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night", "Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season", "A big wave can damage the boat, and Jory won't go out again until it's repaired", "Your own home: buy Alder Hollow from the land agent in Kingsbridge (300 FB), a plot between Willowmere and the lake. It starts as a tent and a 20-slot store", "Build it up: a timber cabin (sleep and save, 40-slot store), a smokehouse (no portable smoker needed), a fish pond where raw fish never go off, a kitchen garden to pick every day, and a trophy wall for your legends and best fish", "Pub games at every inn, for stakes of 2 to 20 FB: darts against the local (a proper board with doubles, trebles and bulls), five-card draw poker, and higher or lower with a cash-out"]},
   {v: "0.36", date: "16 Nov 2026", title: "Tiles everywhere and faster levelling", items: ["The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp", "The in-game menu gains Map and What's new tiles", "Shop tabs have icons", "Fish give about five times as much fishing XP, more for bigger fish, and 200 XP for a first catch of a species. Rare and very rare fish pay the most", "Lost fish and pots and traps give more XP too", "Fixed: very rare fish (halibut, bluefin tuna) gave no XP"]},
   {v: "0.35.1", date: "16 Nov 2026", title: "Your own car on the road", items: ["Road trips in the old estate car now show the estate car, with its roof rack, on the open road", "The campervan has its own film, and the fishing van uses the drawn road scene until it gets one"]},
   {v: "0.35", date: "16 Nov 2026", title: "On the road", items: ["Road trips now play a real film of the open road: driving through the morning, a sunset stop, or a campfire under the stars at night, depending on the time you set off", "The clock still ticks on and you can still tap to skip", "Boat trips keep their sea scene, and if the film can't load the drawn road scene plays instead"]},
@@ -2591,6 +2597,110 @@ function homeMenu(view){
   document.querySelectorAll("[data-smoke]").forEach(b=>b.onclick=()=>{const k=run.keep[+b.dataset.smoke];if(!k)return;const n=prepRoll(k);k.form="smoked";k.made=absMin();advance(120);const g=gainSk("cook",20+Math.round(k.w*3));renderHud();toast(`${n}Smoked in the smokehouse. +${g} cooking XP`,false,2400);again();});
 }
 
+/* ---------- Pub games: darts, five-card draw and higher or lower, for a few Fish Bucks ---------- */
+const PUB_RIVAL={tavern:["Old Tom",0.16],thornmere:["Netty Briggs",0.15],saltwick:["Fisherman Pete",0.17],city:["Mr Ashdown",0.12]};
+let pubStake=5;
+function pubMenu(){
+  const t=townId(),[rival]=PUB_RIVAL[t],B=run.bucks;
+  showOverlay(`<span class="tag">${TOWNS[t].n}</span><h2>Pub games</h2>
+    <p class="note">${rival} is propping up the bar and looking for a game. Each game takes about half an hour.</p>
+    <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Stake: ${[2,5,10,20].map(v=>`<button class="iconbtn" data-stake="${v}" type="button" style="${v===pubStake?"border-color:var(--brass);color:var(--brass)":""}">${v} FB</button>`).join(" ")}</p>
+    <div class="tiles">
+      ${tileB("pgDarts","🎯","Darts",B>=pubStake?"":"disabled")}
+      ${tileB("pgPoker","🃏","Five-card draw",B>=pubStake?"":"disabled")}
+      ${tileB("pgHiLo","🔼","Higher or lower",B>=pubStake?"":"disabled")}
+    </div>
+    <p class="note">Darts: three darts each, highest score wins. Five-card draw: hold what you like, swap the rest, best hand wins. Higher or lower: call the next card, cash out whenever you like.</p>
+    <div class="controls"><button class="big ghost" id="pgBack" type="button" style="flex:1">Back</button></div>`);
+  document.querySelectorAll("[data-stake]").forEach(b=>b.onclick=()=>{pubStake=+b.dataset.stake;pubMenu();});
+  $("#pgDarts").onclick=()=>darts();$("#pgPoker").onclick=()=>poker();$("#pgHiLo").onclick=()=>hilo();$("#pgBack").onclick=tavernMenu;}
+function pubResult(title,text,delta){run.bucks+=delta;advance(30);renderHud();
+  showOverlay(`<span class="tag">Pub games</span><h2>${title}</h2><p>${text}</p><p class="note">${delta>0?`+${delta}`:delta<0?`−${-delta}`:"±0"} Fish Bucks · you have ${run.bucks}</p>
+    <div class="controls"><button class="big ghost" id="prMenu" type="button" style="flex:1">Pub games</button><button class="big strike" id="prBar" type="button" style="flex:1">Back to the bar</button></div>`);
+  $("#prMenu").onclick=pubMenu;$("#prBar").onclick=tavernMenu;}
+
+// Darts: a wobbling aim; tap Throw. Scored like the real board (doubles, trebles, bulls).
+const DART_SEGS=[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
+function dartScore(x,y){const r=Math.hypot(x,y);if(r<0.045)return 50;if(r<0.1)return 25;if(r>0.95)return 0;
+  let a=Math.atan2(x,-y)*180/Math.PI;if(a<0)a+=360;const seg=DART_SEGS[Math.floor(((a+9)%360)/18)];
+  return r>=0.53&&r<0.59?seg*3:r>=0.89?seg*2:seg;}
+function gauss(){return Math.sqrt(-2*Math.log(Math.random()||1e-9))*Math.cos(2*Math.PI*Math.random());}
+function darts(){
+  const t=townId(),[rival,sig]=PUB_RIVAL[t],stake=pubStake;let mine=[],theirs=[],over=false;
+  for(let i=0;i<3;i++){theirs.push(dartScore(gauss()*sig,-0.56+gauss()*sig));}
+  const tot=a=>a.reduce((x,y)=>x+y,0);
+  showOverlay(`<span class="tag">Darts</span><h2>You vs ${rival}</h2><p class="note">${rival} throws first: ${theirs.join(" · ")} = <b>${tot(theirs)}</b>. Beat it with three darts.</p>
+    <canvas id="dbC" width="300" height="300" style="width:100%;max-width:300px;align-self:center;touch-action:none"></canvas>
+    <p class="note" id="dbS" style="text-align:center">Your darts: —</p>
+    <div class="controls"><button class="big strike" id="dbT" type="button" style="flex:1">Throw</button></div>`,"event");
+  const cv=$("#dbC"),c=cv.getContext("2d"),R=140,cx=150,cy=150,t0=performance.now();let aim={x:0,y:0};
+  const draw=now=>{if(over)return;const k=(now-t0)/1000;
+    aim={x:Math.sin(k*1.9)*0.55+Math.sin(k*4.3)*0.12,y:Math.sin(k*1.3+1)*0.55+Math.cos(k*3.7)*0.12};
+    c.clearRect(0,0,300,300);c.fillStyle="#1b1b1b";c.beginPath();c.arc(cx,cy,R+8,0,7);c.fill();
+    for(let i=0;i<20;i++){const a0=(i*18-9-90)*Math.PI/180,a1=a0+18*Math.PI/180;
+      for(const [r0,r1,colA,colB] of [[0.1,0.53,"#e8dcc0","#1d1d1d"],[0.53,0.59,"#c0392b","#1e7a46"],[0.59,0.89,"#e8dcc0","#1d1d1d"],[0.89,0.95,"#c0392b","#1e7a46"]]){
+        c.fillStyle=i%2?colB:colA;c.beginPath();c.arc(cx,cy,R*r1,a0,a1);c.arc(cx,cy,R*r0,a1,a0,true);c.fill();}
+      c.fillStyle="#d8cfb8";c.font="bold 11px sans-serif";c.textAlign="center";const am=(a0+a1)/2;c.fillText(DART_SEGS[i],cx+Math.cos(am)*R*1.0,cy+Math.sin(am)*R*1.0+4);}
+    c.fillStyle="#1e7a46";c.beginPath();c.arc(cx,cy,R*0.1,0,7);c.fill();c.fillStyle="#c0392b";c.beginPath();c.arc(cx,cy,R*0.045,0,7);c.fill();
+    for(const d of mine){c.fillStyle="#f1c75b";c.beginPath();c.arc(cx+d.x*R,cy+d.y*R,4,0,7);c.fill();}
+    c.strokeStyle="#f1c75b";c.lineWidth=2;c.beginPath();c.arc(cx+aim.x*R,cy+aim.y*R,9,0,7);c.moveTo(cx+aim.x*R-14,cy+aim.y*R);c.lineTo(cx+aim.x*R+14,cy+aim.y*R);c.moveTo(cx+aim.x*R,cy+aim.y*R-14);c.lineTo(cx+aim.x*R,cy+aim.y*R+14);c.stroke();
+    requestAnimationFrame(draw);};
+  requestAnimationFrame(draw);
+  $("#dbT").onclick=()=>{if(over||mine.length>=3)return;const d={x:aim.x+gauss()*0.04,y:aim.y+gauss()*0.04};d.s=dartScore(d.x,d.y);mine.push(d);
+    $("#dbS").textContent="Your darts: "+mine.map(m=>m.s).join(" · ")+" = "+tot(mine.map(m=>m.s));
+    if(mine.length===3){over=true;const a=tot(mine.map(m=>m.s)),b=tot(theirs);
+      setTimeout(()=>pubResult(a>b?"You win!":a<b?`${rival} wins`:"A draw",a>b?`${a} beats ${b}. ${rival} grumbles and pays up.`:a<b?`${b} beats your ${a}. ${rival} pockets your stake with a wink.`:`${a} each. You both keep your money.`,a>b?stake:a<b?-stake:0),900);}};}
+
+// Cards
+const SUITS=["♠","♥","♦","♣"],RANKN={11:"J",12:"Q",13:"K",14:"A"};
+function deck(){const d=[];for(const s of SUITS)for(let r=2;r<=14;r++)d.push({r,s});for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}return d;}
+function cardHtml(c,extra){return `<span class="pcard ${c.s==="♥"||c.s==="♦"?"red":""} ${extra||""}">${RANKN[c.r]||c.r}<small>${c.s}</small></span>`;}
+// hand value: [category, tiebreak ranks...]; higher wins
+function handRank(h){const rs=h.map(c=>c.r).sort((a,b)=>b-a),cnt={};rs.forEach(r=>cnt[r]=(cnt[r]||0)+1);
+  const groups=Object.entries(cnt).map(([r,n])=>[n,+r]).sort((a,b)=>b[0]-a[0]||b[1]-a[1]);
+  const flush=h.every(c=>c.s===h[0].s),uniq=[...new Set(rs)];let straight=uniq.length===5&&rs[0]-rs[4]===4,top=rs[0];
+  if(uniq.length===5&&rs[0]===14&&rs[1]===5){straight=true;top=5;}
+  if(straight&&flush)return [8,top];if(groups[0][0]===4)return [7,groups[0][1],groups[1][1]];if(groups[0][0]===3&&groups[1][0]===2)return [6,groups[0][1],groups[1][1]];
+  if(flush)return [5,...rs];if(straight)return [4,top];if(groups[0][0]===3)return [3,...groups.map(g=>g[1])];if(groups[0][0]===2&&groups[1][0]===2)return [2,...groups.map(g=>g[1])];
+  if(groups[0][0]===2)return [1,...groups.map(g=>g[1])];return [0,...rs];}
+const HANDN=["High card","A pair","Two pair","Three of a kind","A straight","A flush","A full house","Four of a kind","A straight flush"];
+function cmpHand(a,b){for(let i=0;i<Math.max(a.length,b.length);i++){const d=(a[i]||0)-(b[i]||0);if(d)return d;}return 0;}
+function poker(){
+  const t=townId(),[rival]=PUB_RIVAL[t],stake=pubStake,d=deck(),me=d.splice(0,5),them=d.splice(0,5),hold=[false,false,false,false,false];
+  const draw=()=>{showOverlay(`<span class="tag">Five-card draw</span><h2>You vs ${rival}</h2><p class="note">Tap the cards you want to keep, then draw. ${rival}'s cards stay face down.</p>
+    <div class="phand">${them.map(()=>`<span class="pcard back">🂠</span>`).join("")}</div>
+    <div class="phand">${me.map((c,i)=>`<button type="button" data-hold="${i}" style="all:unset;cursor:pointer">${cardHtml(c,hold[i]?"held":"")}</button>`).join("")}</div>
+    <p class="note" style="text-align:center">${HANDN[handRank(me)[0]]}</p>
+    <div class="controls"><button class="big strike" id="pkDraw" type="button" style="flex:1">Draw</button></div>`,"event");
+    document.querySelectorAll("[data-hold]").forEach(b=>b.onclick=()=>{const i=+b.dataset.hold;hold[i]=!hold[i];draw();});
+    $("#pkDraw").onclick=finish;};
+  const finish=()=>{for(let i=0;i<5;i++)if(!hold[i])me[i]=d.pop();
+    // the rival keeps pairs and better, or the two highest cards
+    const hr=handRank(them),cnt={};them.forEach(c=>cnt[c.r]=(cnt[c.r]||0)+1);
+    const keep=hr[0]>=4?them.map(()=>true):hr[0]>=1?them.map(c=>cnt[c.r]>1):them.map(c=>c.r>=12);
+    for(let i=0;i<5;i++)if(!keep[i])them[i]=d.pop();
+    const a=handRank(me),b=handRank(them),r=cmpHand(a,b);
+    showOverlay(`<span class="tag">Five-card draw</span><h2>${r>0?"You win!":r<0?`${rival} wins`:"A split pot"}</h2>
+      <p class="note">${rival}: ${HANDN[b[0]].toLowerCase()}</p><div class="phand">${them.map(c=>cardHtml(c)).join("")}</div>
+      <p class="note">You: ${HANDN[a[0]].toLowerCase()}</p><div class="phand">${me.map(c=>cardHtml(c)).join("")}</div>
+      <div class="controls"><button class="big strike" id="pkOk" type="button" style="flex:1">Settle up</button></div>`,"event");
+    $("#pkOk").onclick=()=>pubResult(r>0?"You win!":r<0?`${rival} wins`:"A split pot",r>0?`${HANDN[a[0]]} takes it.`:r<0?`${rival}'s ${HANDN[b[0]].toLowerCase()} takes it.`:"Dead level. Nobody wins.",r>0?stake:r<0?-stake:0);};
+  draw();}
+// Higher or lower: each right call grows the pot; a wrong one loses the stake; a match is a free go
+const HILO_PAY=[1,1.4,2,3,4.5,7];
+function hilo(){const stake=pubStake,d=deck();let cur=d.pop(),streak=0,msg="";
+  const show=()=>{showOverlay(`<span class="tag">Higher or lower</span><h2>${streak?`${streak} in a row`:"Call it"}</h2>
+    <div class="phand">${cardHtml(cur)}</div><p class="note" style="text-align:center">${msg||"Will the next card be higher or lower?"}</p>
+    <p class="note" style="text-align:center">Stake ${stake} FB · cash out now for <b style="color:var(--brass)">${Math.round(stake*HILO_PAY[Math.min(streak,5)])} FB</b></p>
+    <div class="controls"><button class="big strike" id="hlHi" type="button" style="flex:1">Higher</button><button class="big strike" id="hlLo" type="button" style="flex:1">Lower</button></div>
+    <div class="controls"><button class="big ghost" id="hlCash" type="button" style="flex:1" ${streak?"":"disabled"}>Cash out</button></div>`,"event");
+    const call=up=>{const nx=d.pop();if(nx.r===cur.r){msg=`${RANKN[nx.r]||nx.r}${nx.s}: a match. Free go.`;cur=nx;return show();}
+      if((nx.r>cur.r)===up){streak++;cur=nx;msg=`${RANKN[nx.r]||nx.r}${nx.s}. Right!`;if(streak>=5)return pubResult("Five in a row!",`The whole bar's watching. ${Math.round(stake*HILO_PAY[5])} FB on the table.`,Math.round(stake*HILO_PAY[5])-stake);return show();}
+      pubResult("Wrong call",`It was the ${RANKN[nx.r]||nx.r}${nx.s}. There goes your stake.`,-stake);};
+    $("#hlHi").onclick=()=>call(true);$("#hlLo").onclick=()=>call(false);
+    $("#hlCash").onclick=()=>pubResult("Cashed out",`You quit while you're ahead after ${streak} right.`,Math.round(stake*HILO_PAY[Math.min(streak,5)])-stake);};
+  show();}
+
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
 // tiltRange: degrees of tilt for full rod travel. tiltZero: the "level" angle saved by Calibrate.
@@ -2809,6 +2919,7 @@ function tavernMenu(view){
     ${tile("board","📋","Requests",ready||"")}
     ${tile("news","📰","News",fest?"!":"")}
     ${tile("locker","📦","Locker",L&&L.items.length?L.items.length:"")}
+    ${tile("pub","🎯","Pub games","")}
     ${t==="saltwick"?tile("harbour","⚓","Harbour",""):""}
     ${T.city?tile("garage","🚐","Motors",""):""}
     ${T.city?tile("land","🏡","Land agent",""):""}
@@ -2827,7 +2938,7 @@ function tavernMenu(view){
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu("rest");};
-  const go={sell:sellScreen,shop:()=>shopScreen("bait"),cook:cookScreen,board:boardScreen,news:()=>newsScreen(),locker:lockerScreen,harbour:harbourScreen,garage:garageScreen,land:landAgent,memory:()=>memorialView(tavernMenu),rest:()=>tavernMenu("rest"),travel:()=>tavernMenu("travel")};
+  const go={sell:sellScreen,shop:()=>shopScreen("bait"),cook:cookScreen,board:boardScreen,news:()=>newsScreen(),locker:lockerScreen,harbour:harbourScreen,garage:garageScreen,land:landAgent,pub:pubMenu,memory:()=>memorialView(tavernMenu),rest:()=>tavernMenu("rest"),travel:()=>tavernMenu("travel")};
   document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>go[b.dataset.tile]());
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?()=>tavernMenu("travel"):campMenu));

@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.37.1** · experimental build
+**Current version: 0.37.2** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -21,6 +21,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 - **Getting about:** drive between places, upgrade to a van or campervan, and take boats out from Saltwick to the bay, the wreck and the deep sea.
 - **Looks:** painted day and night scenes for the river, lake and coast, a picture for every inn, a film of the open road on every drive, and a sea scene for boat trips.
 - **Online leaderboard:** the heaviest fish of every species, shared between players. No account needed, and you can turn sharing off.
+- **Legends and the pub:** legendary hunts from fishing level 30, a secret in the deep sea, your own home to build up, and darts, poker and higher or lower at the bar.
 - **Settings:** four difficulty levels, tilt and flick controls on phones that support them, and switches for events, travel scenes and painted scenes.
 
 ## How to play
@@ -54,7 +55,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 | 2 · Survival | Clock, seasons, needs, camping, tavern saves, death rules, injuries, tuning | Done |
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | Done |
 | 4 · Towns and trade | Fish Bucks, shops, region map, four towns, request boards, reputation, news and gossip, festivals, seasonal prices, storage | Done |
-| 5 · Progression | Car, van and campervan, boats, bay and wreck fishing, deep sea (done); home base, legendary hunts, pub games | In progress |
+| 5 · Progression | Car, van and campervan, boats, deep sea, legendary hunts, the Midgard Serpent, home base, pub games | First pass done |
 | 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
 
 ## Android app (test build)
@@ -76,6 +77,7 @@ Updates are grouped into big releases. The full in-game list is under **What's n
 - A big wave can damage the boat, and Jory won't go out again until it's repaired
 - Your own home: buy Alder Hollow from the land agent in Kingsbridge (300 FB), a plot between Willowmere and the lake. It starts as a tent and a 20-slot store
 - Build it up: a timber cabin (sleep and save, 40-slot store), a smokehouse (no portable smoker needed), a fish pond where raw fish never go off, a kitchen garden to pick every day, and a trophy wall for your legends and best fish
+- Pub games at every inn, for stakes of 2 to 20 FB: darts against the local (a proper board with doubles, trebles and bulls), five-card draw poker, and higher or lower with a cash-out
 
 ### 0.36 · Tiles everywhere and faster levelling (16 Nov 2026)
 - The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp
