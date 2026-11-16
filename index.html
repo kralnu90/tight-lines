@@ -119,6 +119,14 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .pcard.red{color:#b8262e}
 .pcard.back{background:#2f5a4e;color:#cfe2da;font-size:30px}
 .pcard.held{border-color:var(--brass);transform:translateY(-6px)}
+#coach{position:fixed;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top,0px));z-index:40;width:min(420px,calc(100vw - 20px));background:rgba(14,28,25,.96);border:2px solid var(--brass);border-radius:12px;padding:10px 12px;color:var(--cream);box-shadow:0 8px 24px rgba(0,0,0,.45);font-size:14px;line-height:1.4}
+#coach p{margin:4px 0 0}
+#coach .ch{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);font-weight:800}
+#coach .ch button{all:unset;cursor:pointer;color:var(--muted);font-size:11px;letter-spacing:.1em;padding:2px 4px}
+#coach .co-btn{margin-top:8px;padding:7px 16px;border-radius:999px;border:0;background:var(--brass);color:#1d1a0e;font-weight:800;cursor:pointer}
+.tut-glow{outline:3px solid var(--brass)!important;outline-offset:2px;animation:tutpulse 1.1s ease-in-out infinite}
+@keyframes tutpulse{50%{outline-color:rgba(241,199,91,.25)}}
+@media (prefers-reduced-motion:reduce){.tut-glow{animation:none}}
 .innpic{flex-shrink:0;height:clamp(150px,32vh,240px);margin:-16px -16px 2px;border-radius:13px 13px 0 0;background:center/cover no-repeat;box-shadow:inset 0 -40px 40px -20px var(--panel)}
 .overlay{position:fixed;inset:0;z-index:20;background:rgba(9,18,16,.78);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
 .card{background:var(--panel);border:1px solid var(--brass-deep);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
@@ -339,8 +347,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.37.2";
+const VERSION="0.38.0";
 const CHANGELOG=[
+  {v: "0.38", date: "16 Nov 2026", title: "The tutorial", items: ["New games can start with a tutorial: a coach at the top of the screen walks you through your first cast, strike, fight and catch, lighting a fire, cooking and eating, getting back to the inn, selling and saving", "Whatever you need to tap next glows", "Skip it any time, and replay it from Settings"]},
   {v: "0.37", date: "16 Nov 2026", title: "Legends, a home and the pub", items: ["Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say", "Land a legend and hand it in for a big reward and a piece of Master gear", "The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it", "Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night", "Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season", "A big wave can damage the boat, and Jory won't go out again until it's repaired", "Your own home: buy Alder Hollow from the land agent in Kingsbridge (300 FB), a plot between Willowmere and the lake. It starts as a tent and a 20-slot store", "Build it up: a timber cabin (sleep and save, 40-slot store), a smokehouse (no portable smoker needed), a fish pond where raw fish never go off, a kitchen garden to pick every day, and a trophy wall for your legends and best fish", "Pub games at every inn, for stakes of 2 to 20 FB: darts against the local (a proper board with doubles, trebles and bulls), five-card draw poker, and higher or lower with a cash-out"]},
   {v: "0.36", date: "16 Nov 2026", title: "Tiles everywhere and faster levelling", items: ["The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp", "The in-game menu gains Map and What's new tiles", "Shop tabs have icons", "Fish give about five times as much fishing XP, more for bigger fish, and 200 XP for a first catch of a species. Rare and very rare fish pay the most", "Lost fish and pots and traps give more XP too", "Fixed: very rare fish (halibut, bluefin tuna) gave no XP"]},
   {v: "0.35.1", date: "16 Nov 2026", title: "Your own car on the road", items: ["Road trips in the old estate car now show the estate car, with its roof rack, on the open road", "The campervan has its own film, and the fishing van uses the drawn road scene until it gets one"]},
@@ -564,6 +573,7 @@ let tapGuardUntil=0;
 function guardTaps(ms){tapGuardUntil=performance.now()+(ms||450);}
 document.addEventListener("click",e=>{if(performance.now()<tapGuardUntil){e.stopPropagation();e.preventDefault();}},true);
 function toReady(msg,warn){
+  setTimeout(()=>tut("ready"),0);
   guardTaps();hideOverlay();headerButtons(true);
   G.state="ready";G.fish=null;G.cast=null;G.float=null;G.reeling=false;G.R=0;G.aim=null;
   setCondsEnabled(true);fillMethods();panelReady();if(msg)toast(msg,warn,2200);
@@ -577,7 +587,7 @@ function startCast(q,power,aim){
   if(run&&LURES[cb]===undefined){run.inv.bait[cb]--;}
   if(run){run.needs.stam=Math.max(0,run.needs.stam-1.5);if(run.needs.stam<20)power*=0.75;}
   const m=conds().method,[d0,dr]=castRange(m);const D=d0+power*dr*(odinOn()?1.12:1);
-  G.cast={q,D,aim,t:0,from:rodTip(),method:m};
+  G.cast={q,D,aim,t:0,from:rodTip(),method:m};tut("cast");
   G.state="flight";setCondsEnabled(false);
   $("#panel").innerHTML=`<div class="hint">Casting…</div>`;
   const pct=Math.round(q*100);
@@ -626,6 +636,7 @@ function strike(){
 }
 function hook(f){
   if(G.float&&G.float.serpent&&serpentHook())return;
+  tut("hook");
   if(spot().deep&&odinOn()&&Math.random()<0.1){lose("You feel a tremor down the line... it snaps, and somewhere far below the Serpent laughs");return;}
   const r=Math.random();const w=f.min+(f.max-f.min)*Math.pow(r,2);const s=(w-f.min)/(f.max-f.min);
   const fl=G.float;const side=spot().snagSide;
@@ -653,6 +664,7 @@ function nextMode(F){
   F.mode="rest";F.modeT=rand(0.6,1.6);F.modePull=0.25;
 }
 function lose(msg){
+  setTimeout(()=>tut("lost"),0);
   const f=G.fish&&G.fish.f;const lx=Math.max(1,Math.round(12*diff().xp));if(run){run.xp+=lx;if(diff().needs&&G.state==="fight")run.needs.stam=clamp(run.needs.stam-2,0,100);}renderLevel();
   const bt=conds().bait,lures=["Spinner","Soft lure","Big lure","Feathers","Dry fly","Nymph"];
   const gone=lures.includes(bt)&&/snap|Snag|spool|tangle|weed|rocks/i.test(msg);
@@ -678,6 +690,7 @@ function tryNet(){
   toast("It bolted from the net! Tire it more.",true,1500);
 }
 function landed(){
+  setTimeout(()=>tut("landed"),0);
   const F=G.fish,f=F.f,c=conds();G.state="result";G.reeling=false;
   const len=Math.round(f.lenK*Math.pow(F.w,1/3));
   const st=F.s<0.1?1:F.s<0.25?2:F.s<0.45?3:F.s<0.8?4:5;
@@ -1340,8 +1353,8 @@ function campMenu(v){
   $("#campBack").onclick=()=>campMenu(null);
   document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{const t=b.dataset.tile;if(t==="kit")return kitScreen(()=>campMenu(null));campMenu(t);});
   const act=(mins,fn,opt)=>{advance(mins,opt);if(fn)fn();renderHud();if(checkDeath())return;campMenu();};
-  $("#aFire").onclick=()=>act(30,()=>{run.fire=Math.min(run.fire+180,480);toast(fire?"You stack on more wood.":"The fire crackles into life.");});
-  if($("#aStove"))$("#aStove").onclick=()=>act(5,()=>{run.fire=Math.max(run.fire,120);toast("The stove pops alight and the heater ticks on.");});
+  $("#aFire").onclick=()=>act(30,()=>{run.fire=Math.min(run.fire+180,480);tut("fire");toast(fire?"You stack on more wood.":"The fire crackles into life.");});
+  if($("#aStove"))$("#aStove").onclick=()=>act(5,()=>{run.fire=Math.max(run.fire,120);tut("fire");toast("The stove pops alight and the heater ticks on.");});
   $("#aRest").onclick=()=>{advance(60,{rest:true,camper:camperHere()});renderHud();if(checkDeath())return;if(!maybeEvent("camp",0.12,campMenu))campMenu();};
   $("#aSleep").onclick=()=>{const cv=camperHere(),m=run.min>=18*60?(1440-run.min)+360:360-run.min,half=Math.floor(m/2);
     advance(half,{sleep:true,camper:cv});renderHud();if(checkDeath())return;
@@ -1353,9 +1366,9 @@ function campMenu(v){
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?tavernMenu:campMenu));
   document.querySelectorAll("[data-raw]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.raw,1)[0];
-    act(10,()=>{run.needs.food=clamp(run.needs.food+6+k.w*4,0,100);if(Math.random()<0.15){run.ill=Math.max(run.ill,8*60);toast("Raw fish didn't agree with you.",true,2200);}else toast(`You eat the ${k.name.toLowerCase()} raw.`);});});
+    act(10,()=>{tut("ate");run.needs.food=clamp(run.needs.food+6+k.w*4,0,100);if(Math.random()<0.15){run.ill=Math.max(run.ill,8*60);toast("Raw fish didn't agree with you.",true,2200);}else toast(`You eat the ${k.name.toLowerCase()} raw.`);});});
   document.querySelectorAll("[data-cook]").forEach(b=>b.onclick=()=>kitchen(+b.dataset.cook,campMenu));
-  document.querySelectorAll("[data-peat]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.peat,1)[0];act(10,()=>{fxObj(eatFx(k));toast(`You eat the ${prodName(k).toLowerCase()}.`);});});
+  document.querySelectorAll("[data-peat]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.peat,1)[0];act(10,()=>{tut("ate");fxObj(eatFx(k));toast(`You eat the ${prodName(k).toLowerCase()}.`);});});
   document.querySelectorAll("[data-chum]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.chum,1);act(10,()=>{run.inv.chum++;toast("Chopped up for chum. It smells exactly as bad as you'd think.",false,2200);});});
   if($("#aChum"))$("#aChum").onclick=()=>act(5,()=>{run.inv.chum--;run.chumUntil=absMin()+120;toast("Chum in the water. Fish will come looking for the next two hours.",false,2400);});
   document.querySelectorAll("[data-dump]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.dump,1);campMenu();});
@@ -1774,8 +1787,8 @@ function kitchen(i,back){
     <div class="controls"><button class="big ghost" id="kcBack" type="button" style="flex:1">Back</button></div>`,"event");
   const done=msg=>{renderHud();if(checkDeath())return;if(msg)toast(msg,false,2600);back();};
   document.querySelectorAll("[data-kc]").forEach(b=>b.onclick=()=>{const a=b.dataset.kc;
-    if(a==="eat"){run.keep.splice(i,1);advance(10);fxObj(eatFx(k));return done(`You eat the ${prodName(k).toLowerCase()}.`);}
-    if(a==="eatcook"){run.keep.splice(i,1);const n=prepRoll(k);k.form="cooked";advance(30);fxObj(eatFx(k));const g=gainSk("cook",8+Math.round(k.w*4));return done(`${n}Campfire ${k.name.toLowerCase()}. Proper food. +${g} cooking XP`);}
+    if(a==="eat"){run.keep.splice(i,1);advance(10);fxObj(eatFx(k));tut("ate");return done(`You eat the ${prodName(k).toLowerCase()}.`);}
+    if(a==="eatcook"){run.keep.splice(i,1);const n=prepRoll(k);k.form="cooked";advance(30);fxObj(eatFx(k));tut("ate");const g=gainSk("cook",8+Math.round(k.w*4));return done(`${n}Campfire ${k.name.toLowerCase()}. Proper food. +${g} cooking XP`);}
     if(a==="cook"){const n=prepRoll(k);k.form="cooked";k.made=absMin();advance(30);const g=gainSk("cook",8+Math.round(k.w*4));return done(`${n}${prodName(k)}, wrapped and in the net. +${g} cooking XP`);}
     if(a==="salt"){const n=prepRoll(k);run.inv.salt--;k.form="salted";k.made=absMin();advance(20);const g=gainSk("cook",10+Math.round(k.w*2));return done(`${n}Packed in salt. It'll keep for weeks. +${g} cooking XP`);}
     if(a==="smoke"){const n=prepRoll(k);k.form="smoked";k.made=absMin();advance(120);const g=gainSk("cook",20+Math.round(k.w*3));return done(`${n}Two hours over oak smoke. Golden and fragrant. +${g} cooking XP`);}
@@ -2701,6 +2714,39 @@ function hilo(){const stake=pubStake,d=deck();let cur=d.pop(),streak=0,msg="";
     $("#hlCash").onclick=()=>pubResult("Cashed out",`You quit while you're ahead after ${streak} right.`,Math.round(stake*HILO_PAY[Math.min(streak,5)])-stake);};
   show();}
 
+/* ---------- Tutorial: a coach for the first hour (first fish, first fire, first meal, back to the inn, first save) ---------- */
+// run.tut: the current step, or null when finished or skipped. Game code calls tut("event") at key moments.
+const TUT=[
+  {t:"Welcome to Willowmere! Let's catch your first fish. Tap <b>Travel</b>, then <b>Willowmere River</b>.",sel:'[data-tile="travel"],[data-go="river"]',on:{ready:1}},
+  {t:"Your rod's set up for float fishing with maggots. <b>Drag down on the water</b> to swing the rod back, then <b>let go</b> at the end of the swing to cast.",on:{cast:2}},
+  {t:"Watch the float. Little dips and shakes are just nibbles. When it <b>goes right under</b>, or lifts and lies flat, tap <b>Strike</b>!",sel:"#btnStrike",on:{hook:3,ready:1}},
+  {t:"Fish on! <b>Hold Reel</b> to bring it in, but watch the <b>Tension</b> bar: too high and the line snaps. If it runs, let go and drag the rod with it. When it's close and tired, tap <b>Net</b>.",sel:"#btnReel,#btnNet",on:{landed:4,lost:1}},
+  {t:"Your first fish, in the keep net! Catch another if you like, then tap <b>Next</b> and we'll make camp.",sel:"#again",next:5,on:{landed:5}},
+  {t:"You'll get hungry and cold out here. Tap <b>Camp</b>, then <b>Fire and rest</b>, and light a campfire.",sel:'#btnCamp,[data-tile="rest"],#aFire,#aStove',on:{fire:6}},
+  {t:"Now eat. At Camp, open <b>Keep net</b>, tap <b>Cook</b> on a fish, then <b>Cook and eat it now</b>.",sel:'#btnCamp,#campBack,[data-tile="net"],[data-cook],[data-kc="eatcook"]',on:{ate:7}},
+  {t:"Fed and warm. Camping never saves your game, so head back to the inn: <b>Camp</b>, <b>Travel</b>, then <b>the Willowmere Arms</b>.",sel:'#btnCamp,#campBack,[data-tile="travel"],[data-go="tavern"]',on:{tavern:8}},
+  {t:"Tap <b>Sell catch</b> to turn your fish into Fish Bucks.",sel:'[data-tile="sell"],#sAll',on:{sold:9}},
+  {t:"Last thing: tap <b>Rest and save</b>, then <b>Stay the night</b>. Inns are the only places that save your game.",sel:'#sBackT,[data-tile="rest"],#tStay,#tBarn',on:{saved:10}},
+  {t:"That's the basics! When you're ready: the <b>Requests</b> board has paid jobs, the <b>kitchen</b> teaches recipes, and the <b>tackle shop</b> sells better gear. <b>How to play</b> in the Menu has the rest. Tight lines!",done:true}
+];
+function tut(ev){if(!run||run.tut==null)return;const S=TUT[run.tut];if(!S||!S.on||S.on[ev]===undefined)return;
+  let n=S.on[ev];if(n===8&&!run.keep.length)n=9;run.tut=n;
+  if(ev==="lost"||(ev==="ready"&&run.tut===1&&S!==TUT[0]))setTimeout(()=>toast("No luck that time. Cast again.",false,1600),300);
+  renderCoach();}
+function renderCoach(){let el=document.getElementById("coach");
+  if(!run||run.tut==null||G.state==="menu"){if(el)el.remove();return;}
+  const S=TUT[run.tut];if(!S){run.tut=null;if(el)el.remove();return;}
+  if(!el){el=document.createElement("div");el.id="coach";el.setAttribute("role","status");document.body.appendChild(el);}
+  el.innerHTML=`<div class="ch"><span>🎣 Tutorial · ${run.tut+1} of ${TUT.length}</span><button type="button" id="coSkip">${S.done?"":"Skip"}</button></div><p>${S.t}</p>
+    ${S.next!==undefined?`<button type="button" class="co-btn" id="coNext">Next</button>`:""}${S.done?`<button type="button" class="co-btn" id="coDone">Finish</button>`:""}`;
+  const sk=el.querySelector("#coSkip");if(sk)sk.onclick=()=>{run.tut=null;renderCoach();toast("Tutorial skipped. You can replay it from Settings.",false,2200);};
+  const nx=el.querySelector("#coNext");if(nx)nx.onclick=()=>{run.tut=S.next;if(run.tut===5&&G.state==="result")toReady();renderCoach();};
+  const dn=el.querySelector("#coDone");if(dn)dn.onclick=()=>{run.tut=null;renderCoach();};}
+// keep the thing to tap glowing
+setInterval(()=>{document.querySelectorAll(".tut-glow").forEach(e=>e.classList.remove("tut-glow"));
+  if(!run||run.tut==null||G.state==="menu"){const el=document.getElementById("coach");if(el)el.remove();return;}const S=TUT[run.tut];if(!S||!S.sel)return;document.querySelectorAll(S.sel).forEach(e=>e.classList.add("tut-glow"));
+  if(!document.getElementById("coach")&&G.state!=="menu")renderCoach();},350);
+
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
 // tiltRange: degrees of tilt for full rod travel. tiltZero: the "level" angle saved by Calibrate.
@@ -2817,7 +2863,7 @@ function sellScreen(){
   <p class="note"><b style="color:var(--brass)">${run.bucks} Fish Bucks</b></p>
   <div class="acts">${rows||'<p class="note">Nothing to sell. Go and catch something.</p>'}</div>
   <div class="controls"><button class="big ghost" id="sBackT" type="button" style="flex:1">Back</button>${total?`<button class="big strike" id="sAll" type="button">Sell all</button>`:""}</div>`);
-  const sell=i=>{const k=run.keep[i];const q=fishPrice(k);run.bucks+=q.p;if(repOf(townId())<10)addRep(townId(),0.2);run.market[mkKey(k.id)]=(run.market[mkKey(k.id)]||0)+1;run.keep.splice(i,1);return q.p;};
+  const sell=i=>{const k=run.keep[i];const q=fishPrice(k);run.bucks+=q.p;setTimeout(()=>tut("sold"),0);if(repOf(townId())<10)addRep(townId(),0.2);run.market[mkKey(k.id)]=(run.market[mkKey(k.id)]||0)+1;run.keep.splice(i,1);return q.p;};
   document.querySelectorAll("[data-sell]").forEach(b=>b.onclick=()=>{const p=sell(+b.dataset.sell);toast(`+${p} Fish Bucks`);renderHud();sellScreen();});
   document.querySelectorAll("[data-dump]").forEach(b=>b.onclick=()=>{run.keep.splice(+b.dataset.dump,1);sellScreen();});
   if($("#sAll"))$("#sAll").onclick=()=>{let got=0;for(let i=run.keep.length-1;i>=0;i--){if(fishPrice(run.keep[i]).p>0)got+=sell(i);}toast(`+${got} Fish Bucks`);renderHud();sellScreen();};
@@ -2896,7 +2942,7 @@ function kitScreen(onBack){
 
 /* ---------- Tavern ---------- */
 function goTavern(id){id=id||(isTown(run.loc)?run.loc:"tavern");run.loc=id;run.trip=null;run.lastTown=id;G.state="tavern";G.fish=null;G.float=null;G.cast=null;G.reeling=false;setCondsEnabled(false);headerButtons(true);
-  $("#panel").innerHTML=`<div class="hint">You're at ${innMid(id)}, ${TOWNS[id].n}.</div>`;renderHud();deliverHere(id);tavernMenu();}
+  $("#panel").innerHTML=`<div class="hint">You're at ${innMid(id)}, ${TOWNS[id].n}.</div>`;renderHud();deliverHere(id);tavernMenu();tut("tavern");}
 // The inn: a picture, then a grid of tiles. Rest and Travel open their own short lists.
 function tavernMenu(view){
   const T=town(),ROOM=T.room,t=townId(),$=q=>document.querySelector(q)||{};
@@ -2934,9 +2980,9 @@ function tavernMenu(view){
   const night=(fn)=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});fn();if(hasShard()){run.needs.stam=Math.min(run.needs.stam,45);setTimeout(()=>toast("You barely slept. The shard in your net hums all night.",true,2600),400);}run.water=maxWater();run.fire=0;run.away=0;saveTavern();renderHud();};
   $("#tStay").onclick=()=>{run.bucks-=ROOM;night(()=>{Object.assign(run.needs,{food:Math.max(run.needs.food,70),warm:100,stam:100,health:100,thirst:100});run.ill=0;
       for(const k of Object.keys(run.inj)){const o=run.inj[k];if(k==="chill"){delete run.inj[k];continue;}o.treated=true;o.left=Math.round(o.left/2);}});
-    toast("Game saved. A new day.",false,2200);tavernMenu();};
+    toast("Game saved. A new day.",false,2200);tavernMenu();tut("saved");};
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
-    toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
+    toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();tut("saved");};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu("rest");};
   const go={sell:sellScreen,shop:()=>shopScreen("bait"),cook:cookScreen,board:boardScreen,news:()=>newsScreen(),locker:lockerScreen,harbour:harbourScreen,garage:garageScreen,land:landAgent,pub:pubMenu,memory:()=>memorialView(tavernMenu),rest:()=>tavernMenu("rest"),travel:()=>tavernMenu("travel")};
   document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>go[b.dataset.tile]());
@@ -3141,8 +3187,11 @@ function newGameScreen(i){
     <button class="mode hard" id="mHard" type="button">Hardcore<small>One life. Death is permanent.</small></button>
   </div>
   <p class="note" id="mNote">You can switch a normal game to hardcore later, but never back. You can lower the difficulty later, but never raise it.</p>
+  <h3>Tutorial</h3>
+  <div class="modes"><button class="mode on" id="tuOn" type="button">Show me the ropes<small>A coach walks you through your first catch, camp and save.</small></button><button class="mode" id="tuOff" type="button">I know what I'm doing<small>No tutorial. You can turn it on later in Settings.</small></button></div>
   <div class="controls"><button class="big ghost" id="nBack" type="button">Back</button><button class="big strike" id="nGo" type="button">Start</button></div>`);
-  let dsel="medium";
+  let dsel="medium",tutOn=true;
+  const tset=v=>{tutOn=v;$("#tuOn").classList.toggle("on",v);$("#tuOff").classList.toggle("on",!v);};$("#tuOn").onclick=()=>tset(true);$("#tuOff").onclick=()=>tset(false);
   document.querySelectorAll("[data-diff]").forEach(b=>b.onclick=()=>{dsel=b.dataset.diff;document.querySelectorAll("[data-diff]").forEach(x=>x.classList.toggle("on",x===b));
     const lock=!!DIFFS[dsel].hardcore;$("#mNorm").disabled=lock;if(lock)set(true);});
   const set=h=>{if(!h&&DIFFS[dsel]&&DIFFS[dsel].hardcore)h=true;hard=h;armed=false;$("#mNorm").classList.toggle("on",!h);$("#mHard").classList.toggle("on",h);
@@ -3152,8 +3201,8 @@ function newGameScreen(i){
   $("#nGo").onclick=()=>{
     if(hard&&!armed){armed=true;$("#nGo").textContent="Confirm hardcore";$("#mNote").textContent="Are you sure? Tap again to lock this angler into permadeath.";return;}
     const name=($("#angName").value||"").trim().slice(0,20)||`Angler ${i+1}`;
-    run=newRun(i,name,hard);run.diff=dsel;store.slots[i]={name,hardcore:hard,diff:dsel,tavern:null,suspend:null,played:Date.now()};saveTavern();
-    renderLevel();goTavern();toast("Spring, day 1. The water's waiting.",false,2400);};
+    run=newRun(i,name,hard);run.diff=dsel;run.tut=tutOn?0:null;store.slots[i]={name,hardcore:hard,diff:dsel,tavern:null,suspend:null,played:Date.now()};saveTavern();
+    renderLevel();goTavern();renderCoach();toast("Spring, day 1. The water's waiting.",false,2400);};
 }
 function pauseMenu(){
   if(["fight","waiting","flight"].includes(G.state))return toast("Not while fishing!",true,900);
@@ -3226,6 +3275,7 @@ function settingsScreen(onBack){
   <p class="note" id="diffNote">${diff().desc} You can lower the difficulty, but never raise it again.</p>`:""}
   <div class="row"><label for="unl">All methods unlocked (testing)</label><input id="unl" type="checkbox" ${save.settings.unlockAll?"checked":""}></div>
   <p class="note">Ledgering unlocks at fishing level 5, spinning at 10 and fly fishing at 15. Tick this to try them early. It also skips the level checks for boats, the deeps and big game.</p>
+  ${run?`<div class="row"><span class="note">Walk through the basics again: first catch, camp, the inn and saving.</span><button class="iconbtn" id="tuReplay" type="button">Replay tutorial</button></div>`:""}
   <div class="row"><label for="evts">Random events</label><input id="evts" type="checkbox" ${save.settings.events!==false?"checked":""}></div>
   <p class="note">Animal encounters, strangers and finds while you travel, rest and sleep out.</p>
   <div class="row"><label for="rvArt">Painted scenes</label><input id="rvArt" type="checkbox" ${save.settings.riverArt!==false?"checked":""}></div>
@@ -3262,6 +3312,7 @@ function settingsScreen(onBack){
   $("#tiltCal").onclick=()=>{if(!TILT.seen){startTilt();toast("No tilt reading yet. Turn tilt on and try again.",true,2000);return;}save.settings.tiltZero=TILT.now;persist();toast("Calibrated. That's level.",false,1600);};
   $("#dbg").onchange=e=>{save.settings.debug=e.target.checked;persist();};
   $("#evts").onchange=e=>{save.settings.events=e.target.checked;persist();};
+  if($("#tuReplay"))$("#tuReplay").onclick=()=>{run.tut=isTown(run.loc)?0:1;renderCoach();toast("Tutorial on. Follow the coach at the top.",false,2200);};
   $("#rvArt").onchange=e=>{save.settings.riverArt=e.target.checked;persist();bgKey="";};
   $("#trAnim").onchange=e=>{save.settings.travelAnim=e.target.checked;persist();};
   $("#unl").onchange=e=>{save.settings.unlockAll=e.target.checked;persist();if(G.state==="ready")fillMethods();};

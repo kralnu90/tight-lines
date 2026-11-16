@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.37.2** · experimental build
+**Current version: 0.38.0** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -56,7 +56,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 | 3 · Camp skills | Text events, animal encounters, hunting, foraging, deeper cooking, skill levels | Done |
 | 4 · Towns and trade | Fish Bucks, shops, region map, four towns, request boards, reputation, news and gossip, festivals, seasonal prices, storage | Done |
 | 5 · Progression | Car, van and campervan, boats, deep sea, legendary hunts, the Midgard Serpent, home base, pub games | First pass done |
-| 6 · Release | Art, sound, tutorial, balancing, Android app | Planned |
+| 6 · Release | Tutorial (first pass done); art, sound, balancing, Android app | In progress |
 
 ## Android app (test build)
 
@@ -67,6 +67,11 @@ Open the link on your Android phone and install it. The first time, Android asks
 ## Changelog
 
 Updates are grouped into big releases. The full in-game list is under **What's new** on the main menu.
+
+### 0.38 · The tutorial (16 Nov 2026)
+- New games can start with a tutorial: a coach at the top of the screen walks you through your first cast, strike, fight and catch, lighting a fire, cooking and eating, getting back to the inn, selling and saving
+- Whatever you need to tap next glows
+- Skip it any time, and replay it from Settings
 
 ### 0.37 · Legends, a home and the pub (16 Nov 2026)
 - Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say
