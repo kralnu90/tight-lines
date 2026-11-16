@@ -90,7 +90,7 @@ Open the link on your Android phone and install it. The first time, Android asks
 
 ## Changelog
 
-### 0.31.1 · Tidier water (15 Nov 2026)
+### 0.31.2 · Tidier water (16 Nov 2026)
 - The moving current lines on the water now stay on open water: off the rocks at Saltmarsh Point, the reeds and lily pads at the lake, and the willow, jetty and bank on the river
 - Fixed in both the painted and the drawn scenes
 
