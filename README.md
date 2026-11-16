@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.38.1** · experimental build
+**Current version: 0.38.2** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -67,6 +67,10 @@ Open the link on your Android phone and install it. The first time, Android asks
 ## Changelog
 
 Updates are grouped into big releases. The full in-game list is under **What's new** on the main menu.
+
+### 0.38.2 · Tiles all round (16 Nov 2026)
+- The Rest, Travel, camp, kitchen and news lists are icon tiles now too, with the time or price in a corner badge
+- Travel tiles show just the place name, with what's there underneath
 
 ### 0.38.1 · Inside the inns (16 Nov 2026)
 - A new picture of the bar inside each inn, with the inn's own name on the plaque over the fireplace

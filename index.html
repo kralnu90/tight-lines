@@ -128,6 +128,14 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 @keyframes tutpulse{50%{outline-color:rgba(241,199,91,.25)}}
 @media (prefers-reduced-motion:reduce){.tut-glow{animation:none}}
 .pubcv{flex-shrink:0;width:calc(100% + 32px);margin:-16px -16px 2px;aspect-ratio:2576/1405;border-radius:13px 13px 0 0;display:block;background:#2a170c}
+.acts.as-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.as-tiles .act{position:relative;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;gap:4px;min-height:110px;padding:22px 6px 8px}
+.as-tiles .act::before{content:attr(data-icon);font-size:26px;line-height:1}
+.as-tiles .act>span{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;font-weight:700;line-height:1.15}
+.as-tiles .act small{font-size:10.5px;font-weight:500;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;opacity:.8}
+.as-tiles .act>em{position:absolute;top:5px;right:5px;font-size:10px;font-style:normal;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(220,170,72,.18);color:var(--brass)}
+.as-tiles div.act{grid-column:1/-1;flex-direction:row;min-height:0;text-align:left}
+.as-tiles div.act::before{content:none}
 .innpic{flex-shrink:0;height:clamp(150px,32vh,240px);margin:-16px -16px 2px;border-radius:13px 13px 0 0;background:center/cover no-repeat;box-shadow:inset 0 -40px 40px -20px var(--panel)}
 .overlay{position:fixed;inset:0;z-index:20;background:rgba(9,18,16,.78);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
 .card{background:var(--panel);border:1px solid var(--brass-deep);border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
@@ -348,8 +356,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.38.1";
+const VERSION="0.38.2";
 const CHANGELOG=[
+  {v: "0.38.2", date: "16 Nov 2026", title: "Tiles all round", items: ["The Rest, Travel, camp, kitchen and news lists are icon tiles now too, with the time or price in a corner badge", "Travel tiles show just the place name, with what's there underneath"]},
   {v: "0.38.1", date: "16 Nov 2026", title: "Inside the inns", items: ["A new picture of the bar inside each inn, with the inn's own name on the plaque over the fireplace", "It's alive: the fire flickers, embers drift up the chimney, candles waver and the fairy lights twinkle", "It's at the top of Pub games, News and gossip and the Rest screen, and sits behind the cook, the request board and the pub games"]},
   {v: "0.38", date: "16 Nov 2026", title: "The tutorial", items: ["New games can start with a tutorial: a coach at the top of the screen walks you through your first cast, strike, fight and catch, lighting a fire, cooking and eating, getting back to the inn, selling and saving", "Whatever you need to tap next glows", "Skip it any time, and replay it from Settings"]},
   {v: "0.37", date: "16 Nov 2026", title: "Legends, a home and the pub", items: ["Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say", "Land a legend and hand it in for a big reward and a piece of Master gear", "The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it", "Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night", "Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season", "A big wave can damage the boat, and Jory won't go out again until it's repaired", "Your own home: buy Alder Hollow from the land agent in Kingsbridge (300 FB), a plot between Willowmere and the lake. It starts as a tent and a 20-slot store", "Build it up: a timber cabin (sleep and save, 40-slot store), a smokehouse (no portable smoker needed), a fish pond where raw fish never go off, a kitchen garden to pick every day, and a trophy wall for your legends and best fish", "Pub games at every inn, for stakes of 2 to 20 FB: darts against the local (a proper board with doubles, trebles and bulls), five-card draw poker, and higher or lower with a cash-out"]},
@@ -513,7 +522,11 @@ function toast(msg,warn,ms){const el=$("#toast");el.textContent=msg;el.className
 function setCondsEnabled(on){["#selMethod","#selBait","#selLine"].forEach(s=>$(s).disabled=!on);}
 function stars(n){return "★".repeat(n)+"<i>"+"★".repeat(5-n)+"</i>";}
 function lbOz(w){let lb=Math.floor(w),oz=Math.round((w-lb)*16);if(oz===16){lb++;oz=0;}return lb?`${lb} lb ${oz} oz`:`${oz} oz`;}
+// icons for lists shown as tiles (by button id, kitchen action or travel destination)
+const ACT_ICONS={tStay:"🛏️",tBarn:"🐴",tMeal:"🍲",aFire:"🔥",aStove:"🍳",aRest:"😴",aSleep:"🌙",aBoil:"🫖",aDrink:"💧",aChum:"🪣",aForage:"🌿",aDig:"🪱",aSnare:"🪤",aCheck:"👀",aPot:"🦀",aHaul:"⛓️",aTrack:"🐾",
+  nwPaper:"📰",nwRound:"🍺",eatcook:"🍽️",cook:"🔥",salt:"🧂",smoke:"💨",eat:"🍽️",map:"🗺️","go:home":"🏡","go:tavern":"🍺","go:thornmere":"🍺","go:saltwick":"🍺","go:city":"🏛️","go:river":"🏞️","go:lake":"🪷","go:coast":"🌊"};
 function showOverlay(html,cls){const o=$("#overlay");o.innerHTML=`<div class="card ${cls||""}">${html}</div>`;o.hidden=false;
+  o.querySelectorAll(".as-tiles .act").forEach(b=>{if(b.dataset.icon)return;const k=b.id||(b.dataset.kc)||(b.dataset.go!==undefined?"go:"+b.dataset.go:"")||(b.dataset.map?"map":"");b.dataset.icon=ACT_ICONS[k]||"•";});
   // at an inn, the pub itself sits behind every screen
   o.style.background=G.state==="tavern"&&run&&isTown(run.loc)?`linear-gradient(rgba(9,18,16,.72),rgba(9,18,16,.88)),url('art/inns/${G.inside?"interior":run.loc}.jpg') center/cover`:"";G.inside=false;
   const b=o.querySelector("button");if(b)setTimeout(()=>{try{b.focus({preventScroll:true});}catch(_){}},50);}
@@ -1293,10 +1306,10 @@ function travelTo(dest){
 }
 function travelButtons(prefix){
   const here=run.loc,opts=[];
-  if(owns()&&here!=="home")opts.push(["home",`Go home to ${HOME.n}`,run.home.built.cabin?"Your cabin: sleep and save, store, pond and more.":"Your plot: a tent, a store and room to build."]);
-  for(const k of Object.keys(TOWNS))if(k!==here)opts.push([k,`${isTown(here)?"Head to":"Walk to"} ${innMid(k)}, ${TOWNS[k].n}`,`Bed, a hot meal and a save. ${capF(wantText(TOWNS[k]))}.`]);
-  for(const k of Object.keys(SPOTS))if(k!==here&&!SPOTS[k].boat)opts.push([k,`${isTown(here)?"Head to":"Move on to"} ${SPOTS[k].name}`,SPOT_BLURB[k]]);
-  return `<button class="act" data-map="1" type="button"><span>Open the map<small>See where everything is and how long it takes.</small></span></button>`+
+  if(owns()&&here!=="home")opts.push(["home",HOME.n,run.home.built.cabin?"Your cabin: sleep and save, store, pond and more.":"Your plot: a tent, a store and room to build."]);
+  for(const k of Object.keys(TOWNS))if(k!==here)opts.push([k,TOWNS[k].n,`${TOWNS[k].inn}. ${capF(wantText(TOWNS[k]))}.`]);
+  for(const k of Object.keys(SPOTS))if(k!==here&&!SPOTS[k].boat)opts.push([k,SPOTS[k].name,SPOT_BLURB[k]]);
+  return `<button class="act" data-map="1" type="button"><span>Map<small>See where everything is and how long it takes.</small></span></button>`+
     opts.map(([k,t,d])=>`<button class="act" data-${prefix}="${k}" type="button"><span>${t}<small>${d}</small></span><em>${fmtMins(travelMins(here,k))}</em></button>`).join("");
 }
 // Camp: a few tiles, each opening its own short list. v: a section name, null for the tiles, or undefined to stay where you were.
@@ -1323,19 +1336,19 @@ function campMenu(v){
     ${tile("travel","🗺️","Travel","")}
     ${tile("kit","🎒","Kit","")}
   </div>`;
-  else if(V==="rest")body=`<div class="acts">
+  else if(V==="rest")body=`<div class="acts as-tiles">
     <button class="act" id="aFire" type="button"><span>${fire?"Add wood":"Light a campfire"}<small>Warms you and lets you cook and boil water. Burns about 3 hours.</small></span><em>30 min</em></button>
     ${camperHere()?`<button class="act" id="aStove" type="button"><span>Light the camper stove<small>Cook and boil water without gathering wood, and the heater warms you. Burns 2 hours.</small></span><em>5 min</em></button>`:""}
     <button class="act" id="aRest" type="button"><span>Rest a while${camperHere()?" in the camper":""}<small>Get your energy back.${camperHere()?" Warm and dry.":""}</small></span><em>1 hour</em></button>
     <button class="act" id="aSleep" type="button" ${night?"":"disabled"}><span>${camperHere()?"Sleep in the campervan":"Sleep until dawn"}<small>${night?(camperHere()?"Warm, dry and locked in. Far less can happen to you in the night.":fire?"The fire will keep you warm for a while.":"No fire. It will be a cold night."):"Only after dusk."}</small></span><em>to 06:00</em></button>
 
   </div>`;
-  else if(V==="water")body=`<div class="acts">
+  else if(V==="water")body=`<div class="acts as-tiles">
     ${salt?`<div class="act" style="cursor:default"><span>No fresh water here<small>Sea water is salt. You can't drink it. ${run.water>0?`You carry ${run.water.toFixed(1)} days of water.`:"Head inland to a river or lake."}</small></span></div>`:`
     <button class="act" id="aBoil" type="button" ${fire?"":"disabled"}><span>Boil ${wname} water and drink<small>${fire?"Safe to drink.":"Needs a fire."} ${run.water>0?`You still carry ${run.water.toFixed(1)} days of water.`:""}</small></span><em>30 min</em></button>
     <button class="act" id="aDrink" type="button"><span>Drink straight from the ${wname}<small>${skLv("forage")>=30?"You know where the clean springs are. Almost always safe.":"Quick, but it could make you ill."}</small></span><em>5 min</em></button>`}
   </div>`;
-  else if(V==="wild")body=`<div class="acts">
+  else if(V==="wild")body=`<div class="acts as-tiles">
     <button class="act" id="aForage" type="button" ${dark?"disabled":""}><span>Forage nearby<small>${dark?"Too dark to see what you're picking.":`Herbs, berries${skLv("forage")>=10?", wild veg":""}${skLv("forage")>=15?", mushrooms":""}. Foraging Lv ${skLv("forage")}.`}</small></span><em>45 min</em></button>
     <button class="act" id="aDig" type="button" ${skLv("forage")>=5?"":"disabled"}><span>Dig for bait<small>${skLv("forage")>=5?(salt?"Lugworm and ragworm from the wet sand.":"Worms from the bank."):"Needs foraging level 5."}</small></span><em>30 min</em></button>
     <button class="act" id="aSnare" type="button" ${run.inv.snares>0&&run.snares.length<3?"":"disabled"}><span>Set a snare<small>${run.inv.snares>0?(run.snares.length<3?`${run.inv.snares} in your bag. Check back in a few hours.`:"You've already got 3 set. That's all you can keep track of."):"No snares. Buy them at the tackle shop."}</small></span><em>15 min</em></button>
@@ -1347,7 +1360,7 @@ function campMenu(v){
   else if(V==="net")body=`${run.inv.chum>0||(run.chumUntil||0)>absMin()?`<div class="acts"><button class="act" id="aChum" type="button" ${run.inv.chum>0?"":"disabled"}><span>Throw in chum (${run.inv.chum})<small>${(run.chumUntil||0)>absMin()?`Chum's working for another ${Math.ceil((run.chumUntil-absMin())/6)/10} hours. `:""}Bites come much quicker for 2 hours.</small></span><em>5 min</em></button></div>`:""}<div class="acts">${fishRows||'<p class="note">Empty. Catch something to eat.</p>'}</div>`;
   else if(V==="larder")body=`<div class="acts">${larderRows()}</div>`;
   else if(V==="hurt")body=`${Object.keys(run.inj).length?`<div class="acts">${injuryRows()}</div>${run.inv.bandages?`<p class="note">${run.inv.bandages} bandage${run.inv.bandages>1?"s":""} in your bag.</p>`:""}`:""}`;
-  else body=`<div class="acts">${travelButtons("go")}</div>`;
+  else body=`<div class="acts as-tiles">${travelButtons("go")}</div>`;
   showOverlay(`<span class="tag">Camp</span><h2>${V?TITLE[V]:"Camp"}</h2>
   <p class="note">  ${spot().name} · ${clock(run.min)}, ${conds().time.toLowerCase()} · ${conds().weather.toLowerCase()}. ${fire?`Fire burning for ${Math.ceil(run.fire/60)} more hours.`:"No fire."} Camping never saves your game.</p>
   ${body}
@@ -1778,7 +1791,7 @@ function kitchen(i,back){
     return opt("r:"+r,nm,why||(R.secret?"Just the shard, a fire and the Skald's song. Eat it, don't sell it.":`Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}. Sells for about ${R.mult}× raw.${R.region?" Regional dish.":""}`),R.feast?"1.5 h":R.how?"1 hour":"30 min",!why);}).join("");
   showOverlay(`<span class="tag">Kitchen</span><h2>${prodName(k)}</h2><p class="note">${lbOz(k.w)} · ${isSpoiled(k)?"spoiled":`good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}${qTag(k)?" · "+qTag(k):""}. Cooking Lv ${L}. ${fire?"The fire's going.":"No fire."}</p>
     ${raw?`<p class="note">Anything you cook starts with gutting and filleting: a d20 roll, better with cooking level. A good job is worth more and feeds you more; a botched one less.</p>`:""}
-    <div class="acts">
+    <div class="acts as-tiles">
     ${raw?opt("eatcook","Cook and eat it now",fire?"Proper food, straight off the fire.":"Needs a fire.","30 min",fire):opt("eat","Eat it",(()=>{const e=eatFx(k);return Object.entries(e).filter(([a])=>a!=="odin").map(([a,v])=>`+${v} ${({food:"food",stam:"energy",warm:"warmth",health:"health"})[a]}`).join(", ");})(),"10 min",true)}
     ${raw?opt("cook","Cook it to keep or sell",fire?"Sells for a little more than raw. Keeps about a day and a half.":"Needs a fire.","30 min",fire):""}
     ${raw?opt("salt","Salt it",L<15?"Needs cooking level 15.":run.inv.salt>0?`Keeps ${keepDays({form:"salted"})} days, sells for 1.5× raw. ${run.inv.salt} salt left.`:"No salt. Buy it at the tackle shop.","20 min",L>=15&&run.inv.salt>0):""}
@@ -2138,7 +2151,7 @@ function newsScreen(msg){
   G.inside=true;showOverlay(`${pubSceneHtml()}<span class="tag">${T.n}</span><h2>News and gossip</h2>
     <p class="note">You only know what's happening in other towns' markets if you hear about it. Read the paper or buy a round and listen in.${T.city?"":" Festival posters for this town are up on the wall."}</p>
     ${msg?`<p class="note" style="color:var(--cream)">${msg}</p>`:""}
-    <div class="acts">
+    <div class="acts as-tiles">
       <button class="act" id="nwPaper" type="button" ${paper||run.bucks<1?"disabled":""}><span>Buy the Kingsbridge Courier · 1 FB<small>${paper?"You've read today's edition.":"Market news from every town and the festival calendar."}</small></span></button>
       <button class="act" id="nwRound" type="button" ${gossip||run.bucks<3?"disabled":""}><span>Buy a round and listen in · 3 FB<small>${gossip?"You've heard all the gossip in here today.":"Fishermen's tips, market rumours and who's paying for what."}</small></span><em>30 min</em></button>
     </div>
@@ -2576,7 +2589,7 @@ function homeMenu(view){
   else if(view==="trophy"){title="Trophy wall";const best={};for(const e of run.log){if(!best[e.id]||e.w>best[e.id].w)best[e.id]=e;}
     const leg=(run.legends||[]).map(id=>`<div class="act" style="cursor:default;border-color:var(--brass)"><span>🏆 ${fishById(id).name}<small>A legend, landed and handed in.</small></span></div>`).join("");
     body=`${leg}<div class="acts">${Object.values(best).sort((a,b)=>b.w-a.w).slice(0,12).map(e=>`<div class="act" style="cursor:default"><span>${e.name} · ${lbOz(e.w)} <span class="stars" style="font-size:12px">${stars(e.stars)}</span><small>${e.spot}, day ${e.day}</small></span></div>`).join("")||'<p class="note">Nothing on the wall yet.</p>'}</div>`;}
-  else if(view==="travel"){title="Travel";body=`<div class="acts">${travelButtons("go")}</div>`;}
+  else if(view==="travel"){title="Travel";body=`<div class="acts as-tiles">${travelButtons("go")}</div>`;}
   else body=`<p class="note">${clock(run.min)}, day ${run.day}. ${H.built.cabin?"Smoke curls from the cabin chimney.":"A tent under the alders, a lock-up box and a lot of potential."}</p>
     <div class="tiles">
       ${H.built.cabin?tileB("hSleep","🛏️","Sleep and save",night?"":"disabled"):tileB("hSleep","⛺","Sleep in the tent",night?"":"disabled")}
@@ -2977,12 +2990,12 @@ function tavernMenu(view){
   const fest=festsHere(t)[0],ready=(run.jobs||[]).filter(j=>j.town===t&&jobReady(j)).length,L=locker(t);
   const head=view==="rest"?`${pubSceneHtml()}<span class="tag">${T.n}</span><h2>${T.inn}</h2>`:`<div class="innpic" style="background-image:url('art/inns/${t}.jpg');background-position:${t==="tavern"?"12% 40%":"center 35%"}" role="img" aria-label="${T.inn}"></div><span class="tag">${T.n}</span><h2>${T.inn}</h2>`;
   let body;
-  if(view==="rest"){G.inside=true;body=`<h3>Rest</h3><div class="acts">
+  if(view==="rest"){G.inside=true;body=`<h3>Rest</h3><div class="acts as-tiles">
     <button class="act" id="tStay" type="button" ${run.bucks>=ROOM?"":"disabled"}><span>Stay the night · ${ROOM} FB<small>Full rest, water skins refilled, illness treated, wounds dressed and injuries well on the mend. <b>Saves your game.</b></small></span><em>to 07:00</em></button>
     <button class="act" id="tBarn" type="button"><span>Sleep in the stable · free<small>A save and a roof, but a cold, rough night. Doesn't treat illness.</small></span><em>to 07:00</em></button>
     <button class="act" id="tMeal" type="button" ${run.bucks>=MEAL?"":"disabled"}><span>Hot meal by the fire · ${MEAL} FB<small>Fills you up and warms you through.</small></span><em>30 min</em></button>
   </div>`;}
-  else if(view==="travel")body=`<h3>Travel</h3><div class="acts">${travelButtons("go")}</div>`;
+  else if(view==="travel")body=`<h3>Travel</h3><div class="acts as-tiles">${travelButtons("go")}</div>`;
   else body=`<p class="note">${clock(run.min)}, day ${run.day}. ${T.blurb}</p>
   ${fest?`<p class="note"><b style="color:var(--brass)">${fest.n} is on!</b> ${fest.desc}</p>`:""}
   <div class="tiles">
