@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.34.0** · experimental build
+**Current version: 0.35.0** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -19,7 +19,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 - **Skills:** fishing, hunting, foraging and cooking each level to 50. Hunt and forage for the pot, and cook your catch into dishes worth far more than raw fish.
 - **Towns and trade:** four towns that each want different fish, sold for Fish Bucks. Request boards, reputation, festivals, gossip and market news.
 - **Getting about:** drive between places, upgrade to a van or campervan, and take boats out from Saltwick to the bay, the wreck and the deep sea.
-- **Looks:** painted day and night scenes for the river, lake and coast, a picture for every inn, and short drive and boat scenes on every trip.
+- **Looks:** painted day and night scenes for the river, lake and coast, a picture for every inn, a film of the open road on every drive, and a sea scene for boat trips.
 - **Online leaderboard:** the heaviest fish of every species, shared between players. No account needed, and you can turn sharing off.
 - **Settings:** four difficulty levels, tilt and flick controls on phones that support them, and switches for events, travel scenes and painted scenes.
 
@@ -66,6 +66,11 @@ Open the link on your Android phone and install it. The first time, Android asks
 ## Changelog
 
 Updates are grouped into big releases. The full in-game list is under **What's new** on the main menu.
+
+### 0.35 · On the road (16 Nov 2026)
+- Road trips now play a real film of the open road: driving through the morning, a sunset stop, or a campfire under the stars at night, depending on the time you set off
+- The clock still ticks on and you can still tap to skip
+- Boat trips keep their sea scene, and if the film can't load the drawn road scene plays instead
 
 ### 0.34 · The spring clean (16 Nov 2026)
 - Inns and camp are now a tidy grid of tiles, and each tile opens a short list. No more giant scrolling screens
