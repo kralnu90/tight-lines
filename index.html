@@ -225,7 +225,7 @@ const lerp=(a,b,t)=>a+(b-a)*t;
 const ALL=["Spring","Summer","Autumn","Winter"];
 
 /* ---------- Data (matches Tight_Lines_Game_Data.xlsx) ---------- */
-const RARITY={Common:100,Uncommon:30,Rare:8,"Very rare":2};
+const RARITY={Common:100,Uncommon:30,Rare:8,"Very rare":2,Legendary:40};
 const SPOTS={
   river:{name:"Willowmere River",water:"River",travel:{tavern:60,lake:60,coast:120,saltwick:120},snagSide:-1,snagName:"snags",snagLose:"Snagged in the tree roots",flow:1},
   lake:{name:"Willowmere Lake",water:"Lake",travel:{tavern:60,river:60,coast:150,saltwick:150},snagSide:1,snagName:"weed",snagLose:"Lost in the weed bed",flow:0},
@@ -284,6 +284,13 @@ const FISH=[
   F_({id:"blueshark",name:"Blue shark",water:"Coast",rarity:"Rare",seasons:["Summer"],times:["Day","Dusk"],methods:["Ledger"],baits:["Deadbait"],min:40,max:150,lenK:36,pull:1.15,stam:3.0,speed:1.5,longRuns:true,roll:true,big:true,strikeWin:1.2,nibbles:[0,1],spots:["deep"],fights:"Long, fast runs and rolls. Chum brings them in"}),
   F_({id:"halibut",name:"Atlantic halibut",water:"Coast",rarity:"Very rare",seasons:["Spring"],times:["Day"],methods:["Ledger"],baits:["Deadbait"],min:50,max:300,lenK:28,pull:1.25,stam:3.6,speed:0.7,longRuns:true,stubborn:true,big:true,strikeWin:1.2,nibbles:[0,1],spots:["deep"],fights:"Huge power, and run after run back to the bottom"}),
   F_({id:"tuna",name:"Bluefin tuna",water:"Coast",rarity:"Very rare",seasons:["Autumn"],times:["Dawn","Day"],methods:["Spinning","Ledger"],baits:["Big lure","Deadbait"],min:100,max:500,lenK:30,pull:1.3,stam:4.0,speed:1.6,longRuns:true,big:true,strikeWin:0.9,nibbles:[0,1],spots:["deep"],fights:"Deep dives and the longest fight in the sea"}),
+  // Legends (only while their hunt is on) and the Serpent's shard (never bites)
+  F_({id:"copperjaw",name:"Old Copperjaw",water:"Lake",rarity:"Legendary",legend:true,seasons:["Winter"],times:["Dawn"],weather:["Fog"],methods:["Ledger","Spinning"],baits:["Deadbait","Big lure"],min:30,max:45,lenK:34,pull:1.3,stam:4,speed:1.2,shaky:true,surges:true,dash:true,strikeWin:1,nibbles:[0,1],spots:["lake"],fights:"Violent head shakes, and surge after surge for the weed"}),
+  F_({id:"silverghost",name:"The Silver Ghost",water:"River",rarity:"Legendary",legend:true,seasons:["Autumn"],times:["Night"],weather:["Rain"],methods:["Fly","Spinning"],baits:["Dry fly","Nymph","Spinner"],min:30,max:45,lenK:31,pull:1.3,stam:4,speed:1.4,jump:0.5,longRuns:true,strikeWin:0.9,nibbles:[0,1],spots:["river"],fights:"Leap after leap, then long runs downstream"}),
+  F_({id:"mothermoss",name:"Mother Moss",water:"Lake",rarity:"Legendary",legend:true,seasons:["Summer"],times:["Night"],weather:["Clear"],methods:["Ledger"],baits:["Boilies"],min:45,max:70,lenK:29,pull:1.35,stam:5,speed:0.9,longRuns:true,stubborn:true,dash:true,strikeWin:1.4,nibbles:[0,1],spots:["lake"],fights:"Endless, heavy pulls into the weed beds"}),
+  F_({id:"ironhide",name:"Ironhide",water:"Coast",rarity:"Legendary",legend:true,seasons:ALL,times:["Night"],weather:["Rain","Windy"],methods:["Ledger"],baits:["Squid","Deadbait"],min:80,max:120,lenK:52,pull:1.45,stam:5,speed:0.8,dash:true,roll:true,eelShape:true,strikeWin:1.3,nibbles:[1,2],spots:["wreck"],fights:"Drags tail-first back into the wreck, again and again"}),
+  F_({id:"kingfin",name:"The Kingfin",water:"Coast",rarity:"Legendary",legend:true,ownBoat:true,seasons:["Autumn"],times:["Dawn","Day"],methods:["Spinning","Ledger"],baits:["Big lure","Deadbait"],min:600,max:900,lenK:30,pull:1.5,stam:6,speed:1.7,longRuns:true,strikeWin:0.9,nibbles:[0,1],spots:["deep"],fights:"The longest fight in the sea. Deep dives, and deeper"}),
+  F_({id:"shard",name:"Shard of the Midgard Serpent",water:"Coast",rarity:"Legendary",legend:true,seasons:[],times:[],methods:["none"],baits:[],min:12,max:12,lenK:20,pull:1,stam:1,spots:["none"],fights:"You don't fight it. You survive it"}),
   F_({id:"lobster",name:"European lobster",water:"Coast",rarity:"Rare",seasons:ALL,times:["Night"],methods:["Pot"],baits:["Pot"],min:1.5,max:8,lenK:22,pull:0.3,stam:0.5,fights:"Tail-flips backwards like a bolt"})
 ];
 const LINES={
@@ -326,8 +333,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.36.0";
+const VERSION="0.37.0";
 const CHANGELOG=[
+  {v: "0.37", date: "16 Nov 2026", title: "Legends, a home and the pub", items: ["Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say", "Land a legend and hand it in for a big reward and a piece of Master gear", "The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it", "Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night", "Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season", "A big wave can damage the boat, and Jory won't go out again until it's repaired"]},
   {v: "0.36", date: "16 Nov 2026", title: "Tiles everywhere and faster levelling", items: ["The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp", "The in-game menu gains Map and What's new tiles", "Shop tabs have icons", "Fish give about five times as much fishing XP, more for bigger fish, and 200 XP for a first catch of a species. Rare and very rare fish pay the most", "Lost fish and pots and traps give more XP too", "Fixed: very rare fish (halibut, bluefin tuna) gave no XP"]},
   {v: "0.35.1", date: "16 Nov 2026", title: "Your own car on the road", items: ["Road trips in the old estate car now show the estate car, with its roof rack, on the open road", "The campervan has its own film, and the fishing van uses the drawn road scene until it gets one"]},
   {v: "0.35", date: "16 Nov 2026", title: "On the road", items: ["Road trips now play a real film of the open road: driving through the morning, a sunset stop, or a campfire under the stars at night, depending on the time you set off", "The clock still ticks on and you can still tap to skip", "Boat trips keep their sea scene, and if the film can't load the drawn road scene plays instead"]},
@@ -376,7 +384,7 @@ function fillLines(){const sel=$("#selLine"),cur=sel.value||(run&&run.equip.line
   const owned=Object.keys(LINES).filter(k=>!run||run.inv.lines[k]);
   sel.innerHTML=owned.map(k=>`<option value="${k}">${LINES[k].short}</option>`).join("");sel.value=owned.includes(cur)?cur:owned[0];if(run)run.equip.line=sel.value;}
 // which fish live at this spot: boat spots can list their own, and some fish only live at certain spots
-function fishHere(f){const S=spot(),k=spotKey();if(f.methods.includes("Pot"))return false;if(f.big&&!lvOk(45))return false;if(S.only)return S.only.includes(f.id);return f.water===S.water&&(!f.spots||f.spots.includes(k));}
+function fishHere(f){const S=spot(),k=spotKey();if(f.methods.includes("Pot"))return false;if(f.legend&&!legendHere(f))return false;if(f.big&&!lvOk(45))return false;if(S.only)return S.only.includes(f.id)||(f.legend&&f.spots.includes(k));return f.water===S.water&&(!f.spots||f.spots.includes(k));}
 const BOAT_BOOST={tope:1.8,cod:1.6,conger:1.5,bass:1.3,pollock:1.4};
 function biteWeights(c,q){return FISH.filter(fishHere).map(f=>{let w=RARITY[f.rarity];if(spot().boat&&BOAT_BOOST[f.id])w*=BOAT_BOOST[f.id];
   w*=f.seasons.includes(c.season)?2:0.1;
@@ -388,7 +396,7 @@ function biteWeights(c,q){return FISH.filter(fishHere).map(f=>{let w=RARITY[f.ra
   if(WX[c.weather]&&WX[c.weather][f.id])w*=WX[c.weather][f.id];
   if(c.weather==="Windy"&&c.method==="Fly")w*=0.6;
   const L=LINES[c.line]||LINES.Medium;if(f.spooky&&L.shy)w*=L.shy;if(L.all)w*=L.all;
-  if(f.rarity!=="Common")w*=diff().rare;
+  if(f.rarity!=="Common")w*=diff().rare*(odinOn()?1.4:1);
   if(q!==undefined&&f.rarity!=="Common")w*=1+0.5*q;
   return {f,w};});}
 function pickFish(c,q){const ws=biteWeights(c,q);const tot=ws.reduce((a,b)=>a+b.w,0);let r=Math.random()*tot;
@@ -562,7 +570,7 @@ function startCast(q,power,aim){
   if(run&&!have(cb)){toast(`You're out of ${cb.toLowerCase()}. Restock at a tackle shop in town.`,true,2400);return;}
   if(run&&LURES[cb]===undefined){run.inv.bait[cb]--;}
   if(run){run.needs.stam=Math.max(0,run.needs.stam-1.5);if(run.needs.stam<20)power*=0.75;}
-  const m=conds().method,[d0,dr]=castRange(m);const D=d0+power*dr;
+  const m=conds().method,[d0,dr]=castRange(m);const D=d0+power*dr*(odinOn()?1.12:1);
   G.cast={q,D,aim,t:0,from:rodTip(),method:m};
   G.state="flight";setCondsEnabled(false);
   $("#panel").innerHTML=`<div class="hint">Casting…</div>`;
@@ -599,6 +607,7 @@ function landFloat(){
   if(c.method==="Spinning")G.float={method:c.method,D:c.D,X:c.aim,t:0,nibbles:nib,take:t,fish:f,dip:0,under:false,win};
   else{const plan=floatPlan(f,wait,c.method);
     G.float={method:c.method,D:c.D,X:c.aim,t:0,moves:plan.moves,take:plan.take,takeType:plan.takeType,fish:f,dip:0,under:false,win:win*(plan.takeType==="lift"?1.25:1)};}
+  if(spot().deep&&q>=0.99&&!odinOn()&&run)G.float.serpent=true;
   G.lastNibble=-9;
   G.state="waiting";panelWaiting();
 }
@@ -610,6 +619,8 @@ function strike(){
   toReady("Nothing on. Recast.");
 }
 function hook(f){
+  if(G.float&&G.float.serpent&&serpentHook())return;
+  if(spot().deep&&odinOn()&&Math.random()<0.1){lose("You feel a tremor down the line... it snaps, and somewhere far below the Serpent laughs");return;}
   const r=Math.random();const w=f.min+(f.max-f.min)*Math.pow(r,2);const s=(w-f.min)/(f.max-f.min);
   const fl=G.float;const side=spot().snagSide;
   G.fish={f,w,s,D:fl.D,X:fl.X,S:1,T:0.3,dir:Math.random()<0.5?-1:1,mode:"rest",modeT:0.4,modePull:0.3,
@@ -666,7 +677,7 @@ function landed(){
   const st=F.s<0.1?1:F.s<0.25?2:F.s<0.45?3:F.s<0.8?4:5;
   const first=!run.log.some(e=>e.id===f.id);
   const prevPB=run.log.filter(e=>e.id===f.id).reduce((m,e)=>Math.max(m,e.w),0);
-  let xp=({Common:60,Uncommon:170,Rare:400,"Very rare":900})[f.rarity]*(0.7+0.9*F.s)+Math.min(400,F.w*4);if(first)xp+=200;xp=Math.max(1,Math.round(xp*diff().xp));
+  let xp=({Common:60,Uncommon:170,Rare:400,"Very rare":900,Legendary:3000})[f.rarity]*(0.7+0.9*F.s)+Math.min(400,F.w*4);if(first)xp+=200;xp=Math.max(1,Math.round(xp*diff().xp));
   const before=levelInfo(run.xp).L;run.xp+=xp;const after=levelInfo(run.xp).L;
   run.log.unshift({id:f.id,name:f.name,w:+F.w.toFixed(3),len,stars:st,season:c.season,time:c.time,weather:c.weather,bait:c.bait,method:c.method,spot:spot().name,day:run.day});
   run.log=run.log.slice(0,300);const item={id:f.id,name:f.name,w:+F.w.toFixed(3),stars:st,caught:absMin()},fits=netFits(item);if(fits)run.keep.push(item);renderLevel();
@@ -674,7 +685,7 @@ function landed(){
   const lbBest=lbOn()&&lb.share&&lbRecord(f,F.w,len,st);
   const unlocked=after>before?Object.keys(METHODS).filter(m=>METHODS[m].lvl>before&&METHODS[m].lvl<=after):[];
   const pb=!first&&F.w>prevPB;
-  showOverlay(`${first?'<span class="tag">New species</span>':pb?'<span class="tag">Personal best</span>':""}
+  showOverlay(`${f.legend?'<span class="tag" style="background:#d9a43a">Legend!</span>':""}${first?'<span class="tag">New species</span>':pb?'<span class="tag">Personal best</span>':""}
   <h2>${f.name}</h2>
   <div class="stars" aria-label="${st} of 5 stars">${stars(st)}</div>
   <div class="stats"><div><small>Weight</small><b>${lbOz(F.w)}</b></div><div><small>Length</small><b>${len} cm</b></div><div><small>XP</small><b>+${xp}</b></div></div>
@@ -1194,7 +1205,7 @@ function advance(mins,opt){
     run.min+=m;if(run.min>=1440){run.min-=1440;run.day++;if((run.day-1)%10===0)toast(`A new season: ${conds().season}`,false,2200);dailyMarket();}
     run.weatherIn-=m;if(run.weatherIn<=0){run.weather=pickWeather(conds().season);if(run.weather==="Windy")run.windDir=Math.random()<0.5?-1:1;run.weatherIn=rand(180,480);}
     run.away+=m;
-    const NM=diff().needs;
+    const NM=run.odin&&absMin()<run.odin.freeze?0:diff().needs;
     if(NM===0){Object.assign(N,{food:100,warm:100,stam:100,health:100,thirst:100});run.water=maxWater();run.ill=0;if(run.inj)run.inj={};
       if(run.fire>0)run.fire=Math.max(0,run.fire-m);for(const id in run.market){run.market[id]=Math.max(0,run.market[id]-m/720);}continue;}
     const c=conds();
@@ -1327,9 +1338,9 @@ function campMenu(v){
   $("#aRest").onclick=()=>{advance(60,{rest:true,camper:camperHere()});renderHud();if(checkDeath())return;if(!maybeEvent("camp",0.12,campMenu))campMenu();};
   $("#aSleep").onclick=()=>{const cv=camperHere(),m=run.min>=18*60?(1440-run.min)+360:360-run.min,half=Math.floor(m/2);
     advance(half,{sleep:true,camper:cv});renderHud();if(checkDeath())return;
-    const finish=()=>{advance(m-half,{sleep:true,camper:cv});renderHud();if(checkDeath())return;
+    const finish=()=>{advance(m-half,{sleep:true,camper:cv});if(hasShard())run.needs.stam=Math.min(run.needs.stam,45);renderHud();if(checkDeath())return;
       toast(run.needs.warm<30?"You wake up frozen and stiff.":"You wake at first light, rested.",run.needs.warm<30,2400);campMenu();};
-    if(!maybeEvent("night",cv?0.1:0.3,finish))finish();};
+    if(hasShard()&&!run.recipes.includes("serpent"))skaldVisit(finish);else if(!maybeEvent("night",cv?0.1:0.3,finish))finish();};
   if($("#aBoil"))$("#aBoil").onclick=()=>act(30,()=>{run.needs.thirst=100;toast("Boiled and safe.");});
   if($("#aDrink"))$("#aDrink").onclick=()=>act(5,()=>{run.needs.thirst=100;if(Math.random()<(skLv("forage")>=30?0.05:0.35)){run.ill=Math.max(run.ill,12*60);toast("That water was bad. You feel ill.",true,2400);}else toast("Cold and clear. You got away with it.");});
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
@@ -1413,6 +1424,8 @@ function fx(list){const out=[];const N=run.needs;
     else if(k==="allfish"){const n=freshFish().length;run.keep=run.keep.filter(x=>isSpoiled(x));if(n)out.push(`lost ${n} fish from the keep net`);}
     else if(k==="meat"){const [id,n]=v;larderAdd(id,n);out.push(`+${n>1?n+" ":""}${FOODS[id].n.toLowerCase()}${n>1?" portions":""}`);}
     else if(k==="arrow"){if(run.inv.arrows>0){run.inv.arrows--;out.push("lost an arrow");}}
+    else if(k==="odin"){odinDream();}
+    else if(k==="boatdmg"){run.boatDmg=1;out.push("the boat needs repairs");}
     else if(k==="xp"){const [s,n]=v;const g=gainSk(s,n);if(g)out.push(`+${g} ${SKILLS[s].n.toLowerCase()} XP`);}
   }
   return out;}
@@ -1692,10 +1705,11 @@ const RECIPES={
   pikejuniper:{n:"Thornmere baked pike with juniper",lv:35,need:["juniper","herb"],fishId:"pike",region:"thornmere",mult:3.6,eat:{warm:20,stam:20}},
   eelpie:{n:"Kingsbridge eel pie",lv:35,need:["veg","herb"],fishId:"eel",region:"city",mult:3.6,eat:{warm:25,stam:20},how:"Dutch oven"},
   pottedtrout:{n:"Kingsbridge potted smoked trout",lv:35,need:["herb"],fishId:"trout",form:"smoked",region:"city",mult:3.6,eat:{stam:20,health:10}},
+  serpent:{n:"The Skald's serpent feast",lv:1,need:[],fishId:"shard",mult:1,eat:{odin:1},how:"Dutch oven",secret:1},
   feast:{n:"Angler's truffle feast",lv:40,need:["truffle","mush","herb"],fish:2,fm:2.2,mult:5,eat:{warm:40,stam:40,health:30},feast:1}
 };
 const COOK_PRICE={buy:20,region:60,feast:80};
-function keepDays(k){const f=k.form||"raw";let d=FORMS[f].keep;if(f==="raw"&&cooled())d*=1.5;if((f==="salted"||f==="smoked")&&skLv("cook")>=45)d*=2;return d;}
+function keepDays(k){if(k.id==="shard")return 9999;const f=k.form||"raw";let d=FORMS[f].keep;if(f==="raw"&&cooled())d*=1.5;if((f==="salted"||f==="smoked")&&skLv("cook")>=45)d*=2;return d;}
 function itemAge(k){return (absMin()-(k.made||k.caught))/1440;}
 function isSpoiled(k){return itemAge(k)>keepDays(k);}
 const capF=t=>t.charAt(0).toUpperCase()+t.slice(1);
@@ -1739,11 +1753,11 @@ function kitchen(i,back){
   const opt=(id,t,sub,time,ok)=>`<button class="act" data-kc="${id}" type="button" ${ok?"":"disabled"}><span>${t}<small>${sub}</small></span><em>${time}</em></button>`;
   const known=Object.keys(RECIPES).filter(r=>run.recipes.includes(r));
   const recs=known.map(r=>{const R=RECIPES[r],why=canCook(R,k,i);const nm=R.n.replace("{F}",capF(k.name.toLowerCase())).replace("{f}",k.name.toLowerCase());
-    return opt("r:"+r,nm,why||`Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}. Sells for about ${R.mult}× raw.${R.region?" Regional dish.":""}`,R.feast?"1.5 h":R.how?"1 hour":"30 min",!why);}).join("");
+    return opt("r:"+r,nm,why||(R.secret?"Just the shard, a fire and the Skald's song. Eat it, don't sell it.":`Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}. Sells for about ${R.mult}× raw.${R.region?" Regional dish.":""}`),R.feast?"1.5 h":R.how?"1 hour":"30 min",!why);}).join("");
   showOverlay(`<span class="tag">Kitchen</span><h2>${prodName(k)}</h2><p class="note">${lbOz(k.w)} · ${isSpoiled(k)?"spoiled":`good for ${Math.max(0,keepDays(k)-itemAge(k)).toFixed(1)} more days`}${qTag(k)?" · "+qTag(k):""}. Cooking Lv ${L}. ${fire?"The fire's going.":"No fire."}</p>
     ${raw?`<p class="note">Anything you cook starts with gutting and filleting: a d20 roll, better with cooking level. A good job is worth more and feeds you more; a botched one less.</p>`:""}
     <div class="acts">
-    ${raw?opt("eatcook","Cook and eat it now",fire?"Proper food, straight off the fire.":"Needs a fire.","30 min",fire):opt("eat","Eat it",(()=>{const e=eatFx(k);return Object.entries(e).map(([a,v])=>`+${v} ${({food:"food",stam:"energy",warm:"warmth",health:"health"})[a]}`).join(", ");})(),"10 min",true)}
+    ${raw?opt("eatcook","Cook and eat it now",fire?"Proper food, straight off the fire.":"Needs a fire.","30 min",fire):opt("eat","Eat it",(()=>{const e=eatFx(k);return Object.entries(e).filter(([a])=>a!=="odin").map(([a,v])=>`+${v} ${({food:"food",stam:"energy",warm:"warmth",health:"health"})[a]}`).join(", ");})(),"10 min",true)}
     ${raw?opt("cook","Cook it to keep or sell",fire?"Sells for a little more than raw. Keeps about a day and a half.":"Needs a fire.","30 min",fire):""}
     ${raw?opt("salt","Salt it",L<15?"Needs cooking level 15.":run.inv.salt>0?`Keeps ${keepDays({form:"salted"})} days, sells for 1.5× raw. ${run.inv.salt} salt left.`:"No salt. Buy it at the tackle shop.","20 min",L>=15&&run.inv.salt>0):""}
     ${raw?opt("smoke","Smoke it",L<25?"Needs cooking level 25.":!run.inv.gear.smoker?"Needs a portable smoker.":!fire?"Needs a fire.":`Keeps ${keepDays({form:"smoked"})} days, sells for 1.8× raw.`,"2 hours",L>=25&&run.inv.gear.smoker&&fire):""}
@@ -1761,7 +1775,7 @@ function kitchen(i,back){
     if(a.startsWith("r:"))return done(cookRecipe(a.slice(2),i));});
   $("#kcBack").onclick=back;
 }
-function learnRecipe(pool){const opts=(pool||Object.keys(RECIPES).filter(r=>!RECIPES[r].region&&!RECIPES[r].feast)).filter(r=>!run.recipes.includes(r));
+function learnRecipe(pool){const opts=(pool||Object.keys(RECIPES).filter(r=>!RECIPES[r].region&&!RECIPES[r].feast&&!RECIPES[r].secret)).filter(r=>!run.recipes.includes(r));
   if(!opts.length)return null;const r=pick(opts);run.recipes.push(r);return r;}
 function recipeTitle(r){return RECIPES[r].n.replace("{F}","Fish").replace("{f}","fish");}
 // The cook at the Willowmere Arms: everyday recipes for coin; regional dishes and the feast for coin or a rare fish
@@ -1769,7 +1783,7 @@ function cookScreen(){
   const L=skLv("cook"),B=run.bucks;
   const rare=run.keep.findIndex(k=>(k.form||"raw")==="raw"&&!isSpoiled(k)&&["Rare","Very rare"].includes(FISH.find(f=>f.id===k.id).rarity));
   const T=town(),tid=townId();
-  const row=r=>{const R=RECIPES[r];if(R.region&&R.region!==tid)return "";const have=run.recipes.includes(r),price=R.feast?COOK_PRICE.feast:R.region?COOK_PRICE.region:COOK_PRICE.buy,lock=(R.region&&L<35)||(R.feast&&L<40);
+  const row=r=>{const R=RECIPES[r];if(R.secret||(R.region&&R.region!==tid))return "";const have=run.recipes.includes(r),price=R.feast?COOK_PRICE.feast:R.region?COOK_PRICE.region:COOK_PRICE.buy,lock=(R.region&&L<35)||(R.feast&&L<40);
     return `<div class="act" style="cursor:default"><span>${recipeTitle(r)}<small>${have?"You know this one.":lock?`${T.cook} will teach you at cooking level ${R.feast?40:35}.`:`Cooking level ${R.lv}. Uses ${R.need.map(ingName).join(" and ")}${(R.fish||1)>1?` and ${R.fish} fish`:""}${R.bbq?", on a camp BBQ":""}.`}</small></span>
       ${have?"<em>Known</em>":lock?"":`<span style="display:flex;gap:6px">${(R.region||R.feast)&&rare>=0?`<button class="iconbtn" data-cf="${r}" type="button">Give a rare fish</button>`:""}<button class="iconbtn" data-cb="${r}" type="button" ${B>=price?"":"disabled"}>${price} FB</button></span>`}</div>`;};
   showOverlay(`<span class="tag">${T.n}</span><h2>${T.cook}, the cook</h2><p class="note">${T.cookText} Recipes cost coin, but bring a rare fish and you'll get ${T.n}'s own dishes for nothing.</p>
@@ -1785,7 +1799,7 @@ function cookScreen(){
 /* ---------- Fish journal: a page per species, built from your own catches ---------- */
 function journalScreen(onBack){
   const L0=run?run.log:[];
-  const tiles=FISH.map(f=>{const c=L0.filter(e=>e.id===f.id);
+  const tiles=FISH.filter(f=>f.id!=="shard").map(f=>{const c=L0.filter(e=>e.id===f.id);
     return `<button class="jtile ${c.length?"":"unk"}" data-sp="${f.id}" type="button"><b>${c.length?f.name:"???"}</b><small>${f.water}${f.methods.includes("Pot")?" · pots":""} · ${c.length?c.length+" caught":f.rarity}</small></button>`;}).join("");
   const n=new Set(L0.map(e=>e.id)).size;
   showOverlay(`<h2>Fish journal</h2><p class="note">${n} of ${FISH.length} species. Each page fills in as you catch them: when, where, in what weather and on what.</p>
@@ -1932,7 +1946,7 @@ function repMul(t){return 1+clamp(repOf(t),-100,100)/500;}
 function repPerks(r){return r<=-20?"They pay you less and hold back their better orders.":r<10?"Do a few jobs and they'll get to know you.":
   r<30?"Harder, better-paid orders on the board.":r<60?"Better rewards on the board.":r<90?"An extra piece of gear in the shop every day.":"The best prices in town, and they'd name a pub after you.";}
 function fishById(id){return FISH.find(f=>f.id===id);}
-function basePrice(f){const b={Common:[4,1.5],Uncommon:[12,2],Rare:[30,3],"Very rare":[60,4]}[f.rarity];return b[0]+b[1]*(f.min+f.max)/2;}
+function basePrice(f){const b={Common:[4,1.5],Uncommon:[12,2],Rare:[30,3],"Very rare":[60,4],Legendary:[200,6]}[f.rarity];return b[0]+b[1]*(f.min+f.max)/2;}
 function due(mins){return absMin()+mins;}
 function fmtDue(m){const left=m-absMin();if(left<=0)return "overdue";const d=Math.floor(m/1440)+1;
   return `by day ${d}, ${clock(m%1440)} · ${left>=120?Math.floor(left/60)+" h":Math.max(1,Math.round(left))+" min"} left`;}
@@ -1978,7 +1992,7 @@ function makeReq(t,tier){
     else if(x==="lures")o.extra={lure:pick(["Big lure","Soft lure","Dry fly","Nymph"]),n:3};
     else o.extra={bait:pick(["Peeler crab","Squid","Boilies","Deadbait"]),n:10};}
   return o;}
-function learnable(){return Object.keys(RECIPES).filter(r=>!RECIPES[r].region&&!RECIPES[r].feast&&!run.recipes.includes(r));}
+function learnable(){return Object.keys(RECIPES).filter(r=>!RECIPES[r].region&&!RECIPES[r].feast&&!RECIPES[r].secret&&!run.recipes.includes(r));}
 function extraText(x){if(!x)return "";return x.recipe?"a recipe":x.kit?GEAR[x.kit].name.toLowerCase():x.lure?`${x.n} ${x.lure.toLowerCase()}s`:`${x.n} ${x.bait.toLowerCase()}`;}
 function board(t){
   if(!run.boards)run.boards={};let B=run.boards[t];
@@ -2032,13 +2046,14 @@ function boardScreen(){
     <p class="note">${repPerks(r)}${nx!==null?` Next standing at ${nx}.`:""}</p>
     ${run.jobs.length?`<h3>Your requests (${run.jobs.length}/${JOB_MAX})</h3><div class="acts">${run.jobs.map(j=>jobRow(j,t)).join("")}</div>`:""}
     <h3>On the board</h3><div class="acts">${reqs||'<p class="note">Nothing pinned up right now. Check back in a day or two.</p>'}
-    <div class="act" style="cursor:default;opacity:.75"><span>Legendary hunt · a sealed notice<small>${L<30?`Only for anglers of fishing level 30 and above. You're level ${L}.`:"The seal's unbroken and the notice is blank for now. Word in the bar is the big hunts start soon."}</small></span></div></div>
+    ${legendRow(t)}</div>
     <div class="controls"><button class="big ghost" id="bdBack" type="button" style="flex:1">Back</button></div>`);
   document.querySelectorAll("[data-take]").forEach(b=>b.onclick=()=>{const i=B.reqs.findIndex(q=>q.id===b.dataset.take);if(i<0||run.jobs.length>=JOB_MAX)return;
     const q=B.reqs.splice(i,1)[0];run.jobs.push(q);toast(q.kind==="deliver"?`You take the parcel for ${TOWNS[q.to].n}.`:"Request accepted.",false,1800);boardScreen();});
   document.querySelectorAll("[data-hand]").forEach(b=>b.onclick=()=>{const j=run.jobs.find(o=>o.id===b.dataset.hand);if(!j)return;const msg=handIn(j);if(msg){renderHud();toast(`Request done! ${msg}`,false,3000);}boardScreen();});
   document.querySelectorAll("[data-drop]").forEach(b=>b.onclick=()=>{const j=run.jobs.find(o=>o.id===b.dataset.drop);if(!j)return;
     run.jobs=run.jobs.filter(o=>o.id!==j.id);addRep(j.town,-REP_DROP[j.tier]);toast("You take the notice down. They'll remember that.",true,2200);boardScreen();});
+  bindLegend(t,boardScreen);
   $("#bdBack").onclick=tavernMenu;}
 
 /* ---------- Market news: seasonal prices, festivals, price events, gossip and the newspaper ---------- */
@@ -2338,6 +2353,10 @@ function harbourScreen(){
   const trip=k=>{const T=TRIPS[k],S=SPOTS[k],ok=lvOk(T.lvl);
     return `<div class="act" style="cursor:default"><span>${S.name}<small>${T.desc}<br>${ok?`${fmtMins(S.travel.saltwick)} out. Hired: Jory gives you ${T.hrs} hours' fishing, then brings you back.${own&&!own.reach.includes(k)?` Your ${own.n.toLowerCase()} can't go this far out.`:""}`:`Needs fishing level ${T.lvl}.`}</small></span>
       <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${own&&own.reach.includes(k)?`<button class="iconbtn" data-own="${k}" type="button" ${ok&&B>=own.fuel?"":"disabled"}>Your boat · ${own.fuel} FB</button>`:""}<button class="iconbtn" data-hire="${k}" type="button" ${ok&&B>=T.hire?"":"disabled"}>Hire · ${T.hire} FB</button></span></div>`;};
+  if(run.boatDmg){showOverlay(`<span class="tag">Saltwick</span><h2>The harbour</h2><p>Jory walks round the boat twice, sucking his teeth. "She took a wave she shouldn't have survived. Nobody's going out until she's patched."</p>
+    <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p><div class="acts"><button class="act" id="hbFix" type="button" ${B>=40?"":"disabled"}><span>Pay for the repairs · 40 FB<small>New planks, new paint, and Jory stops muttering.</small></span></button></div>
+    <div class="controls"><button class="big ghost" id="hbBack" type="button" style="flex:1">Back</button></div>`);
+    $("#hbFix").onclick=()=>{run.bucks-=40;run.boatDmg=0;renderHud();toast("Patched up and seaworthy.",false,1800);harbourScreen();};$("#hbBack").onclick=tavernMenu;return;}
   showOverlay(`<span class="tag">Saltwick</span><h2>The harbour</h2>
     <p class="note">Lobster pots stacked on the quay and a row of boats knocking together on the tide. Jory, the skipper, is leaning on his wheelhouse with a flask of tea.</p>
     <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b> · Fishing Lv ${level()}</p>
@@ -2425,6 +2444,75 @@ function drawTripBoat(c,own,x,y,ph,night){
   c.restore();
   c.strokeStyle="rgba(255,255,255,.6)";c.lineWidth=2;c.beginPath();for(let k=0;k<4;k++){c.moveTo(x-20-k*30,y+2);c.quadraticCurveTo(x-34-k*30,y-4,x-50-k*30,y+2);}c.stroke();}
 
+/* ---------- Legendary hunts, the Midgard Serpent, the Skald and Odin's Favour ---------- */
+// Legends only bite while you've taken their hunt from a tavern board (fishing level 30+), at their spot, when every condition lines up.
+const LEGENDS={
+  copperjaw:{town:"thornmere",reward:900,hint:"A giant pike, older than the inn. He only feeds on winter dawns when the mist lies on Willowmere Lake. Deadbait or a big lure, and strong line."},
+  silverghost:{town:"tavern",reward:1000,hint:"A salmon the size of a child, seen on Willowmere River on autumn nights when the rain's coming down. Fly or spinner."},
+  mothermoss:{town:"thornmere",reward:1100,hint:"A vast carp that lives in the weed beds of Willowmere Lake. She comes out on clear, warm summer nights for boilies on the bottom."},
+  ironhide:{town:"saltwick",reward:1300,hint:"A monster conger in the Marguerite wreck. Only on stormy nights, rain or wind, with squid or deadbait on the bottom."},
+  kingfin:{town:"saltwick",reward:2000,hint:"A colossal bluefin in the Kettle Deeps, in autumn daylight. Jory won't take a hired boat after it: you need your own."}
+};
+const LEGEND_BOARD={tavern:["silverghost"],thornmere:["copperjaw","mothermoss"],saltwick:["ironhide","kingfin"],city:["silverghost","copperjaw","mothermoss","ironhide","kingfin"]};
+function legendHere(f){if(!f.legend||!run||!run.hunt||run.hunt.id!==f.id)return false;
+  if(f.ownBoat&&!(run.trip&&!run.trip.hired))return false;return true;}
+function legendOffer(t){const pool=(LEGEND_BOARD[t]||[]).filter(id=>!(run.legends||[]).includes(id));if(!pool.length)return null;return pool[Math.floor(run.day/2)%pool.length];}
+function legendRow(t){const L=level(),hunt=run.hunt,id=legendOffer(t);
+  if(!lvOk(30))return `<div class="act" style="cursor:default;opacity:.75"><span>🏆 Legendary hunt · a sealed notice<small>Only for anglers of fishing level 30 and above. You're level ${L}.</small></span></div>`;
+  if(hunt){const F=fishById(hunt.id),have=run.keep.some(k=>k.id===hunt.id&&!isSpoiled(k));
+    return `<div class="act" style="cursor:default;border-color:var(--brass)"><span>🏆 Your legendary hunt: ${F.name}<small>${LEGENDS[hunt.id].hint}<br>Reward ${LEGENDS[hunt.id].reward} FB and a piece of Master gear, from ${TOWNS[hunt.town].n}. No time limit.</small></span>
+      <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${have&&t===hunt.town?`<button class="iconbtn" id="lgHand" type="button">Hand it in</button>`:""}<button class="iconbtn" id="lgDrop" type="button">Give up</button></span></div>`;}
+  if(!id)return `<div class="act" style="cursor:default;opacity:.75"><span>🏆 Legendary hunt<small>You've landed every legend this board knows of. They're still talking about it.</small></span></div>`;
+  const F=fishById(id);
+  return `<div class="act" style="cursor:default;border-color:var(--brass)"><span>🏆 Legendary hunt: ${F.name}<small>${LEGENDS[id].hint}<br>Reward ${LEGENDS[id].reward} FB and a piece of Master gear. No time limit, one hunt at a time.</small></span><button class="iconbtn" id="lgTake" type="button">Take it on</button></div>`;}
+function bindLegend(t,again){const id=legendOffer(t);
+  const tk=$("#lgTake");if(tk)tk.onclick=()=>{run.hunt={id,town:t};toast(`You pin the notice for ${fishById(id).name} to your hat.`,false,2200);again();};
+  const dr=$("#lgDrop");if(dr)dr.onclick=()=>{run.hunt=null;toast("You let the legend be, for now.",false,1800);again();};
+  const hd=$("#lgHand");if(hd)hd.onclick=()=>{const h=run.hunt,i=run.keep.findIndex(k=>k.id===h.id&&!isSpoiled(k));if(i<0)return;run.keep.splice(i,1);
+    run.bucks+=LEGENDS[h.id].reward;addRep(t,15);(run.legends=run.legends||[]).push(h.id);
+    const m=["kingfisher","seaforge","splitcane"].filter(g=>!run.inv.gear[g]);let extra="";if(m.length){const g=pick(m);run.inv.gear[g]=1;extra=` and the ${GEAR[g].name}`;}else{run.bucks+=300;extra=" and 300 FB on top";}
+    run.hunt=null;renderHud();showOverlay(`<span class="tag">Legend</span><h2>${fishById(h.id).name}</h2><p>The whole inn turns out to see it. Someone fetches a camera, someone else fetches the landlord, and by closing time the story's already grown a foot.</p>
+      <p class="note">+${LEGENDS[h.id].reward} Fish Bucks${extra}. ${TOWNS[t].n} will never forget it.</p><div class="controls"><button class="big strike" id="lgOk" type="button" style="flex:1">Wonderful</button></div>`);$("#lgOk").onclick=again;};}
+
+// The Skald: a remnant of the old days, drawn to the shard. Only comes to a camp, in the dead of night.
+function skaldVisit(then){
+  showOverlay(`<span class="tag" style="background:#3b1d52">The dead of night</span><h2>The Skald</h2>
+    <p>You can't sleep. The shard hums in your keep net. Then the fire, which you'd swear had died, flares blue, and there's a man sitting across it who wasn't there before. Grey beard, salt in his hair, a harp across his knees.</p>
+    <p>"You carry a piece of Jörmungandr," he says, "and you don't know what to do with it. I'll sing you how it's done."</p>
+    <p>His song is about fire and iron, about salt and the bones of the world, about a feast in a hall where the dead drink with the gods. When it ends you realise you know, exactly, how to cook the shard. You look up and he's gone.</p>
+    <p class="note">Learned: The Skald's serpent feast. Cook it over a fire in the Kitchen. It needs only the shard.</p>
+    <div class="controls"><button class="big strike" id="skOk" type="button" style="flex:1">Lie back down</button></div>`,"event");
+  run.recipes.push("serpent");$("#skOk").onclick=then;}
+// Odin's Favour: after eating the Skald's feast, needs are frozen for a day and rare fish bite more until the season turns.
+function seasonNo(){return run?Math.floor((run.day-1)/10):0;}
+function odinOn(){return !!(run&&run.odin&&run.odin.season===seasonNo());}
+function hasShard(){return !!(run&&run.keep.some(k=>k.id==="shard"));}
+function odinDream(){run.odin={season:seasonNo(),freeze:absMin()+1440};Object.assign(run.needs,{food:100,warm:100,stam:100,health:100,thirst:100});run.ill=0;run.inj={};
+  setTimeout(()=>{showOverlay(`<span class="tag">Odin's Favour</span><h2>A night in Valhalla</h2>
+    <p>You eat by the fire and sleep like the dead. In your dreams the gods are feasting in a hall of shields, and at the high table a one-eyed old man raises his horn to you.</p>
+    <p>You wake fully restored, warm to your bones and strangely sure of yourself.</p>
+    <p class="note">For a whole day you won't get hungry, cold or tired. Until the season turns, rare fish come to you more often and your casts fly further.</p>
+    <div class="controls"><button class="big strike" id="odOk" type="button" style="flex:1">Skål</button></div>`,"event");$("#odOk").onclick=()=>{hideOverlay();if(G.state==="ready")panelReady();else if(G.state==="tavern")tavernMenu();};},300);}
+// a perfect cast in the deeps can wake something enormous
+function serpentHook(){const r=Math.random();
+  if(r<0.05){const it={id:"shard",name:"Shard of the Midgard Serpent",w:12,stars:5,caught:absMin(),form:"raw"};
+    if(netFits(it))run.keep.push(it);else run.keep.unshift(it);
+    G.state="result";G.reeling=false;showOverlay(`<span class="tag" style="background:#3b1d52">The Serpent</span><h2>The weight of the world</h2>
+      <p>Your line sinks deep into the dark and latches on to something. You feel the weight of the world, and your body starts to quake. Then, with a sound like a mountain splitting, it gives.</p>
+      <p>On the end of your line, slick and black and still warm, is a shard of flesh the size of a ham. Something old has lent you a piece of itself.</p>
+      <p class="note">A Shard of the Midgard Serpent is in your keep net. It gives off an ominous aura. Sell it, keep it, or find someone who knows how to cook it.</p>
+      <div class="controls"><button class="big strike" id="sgOk" type="button" style="flex:1">Breathe</button></div>`,"event");$("#sgOk").onclick=()=>toReady();return true;}
+  if(r<0.05+0.95/3){lose("Something vast took it. The line snapped like cotton");return true;}
+  if(r<0.05+0.95*2/3)return false; // a normal fish after all
+  G.state="result";G.reeling=false;
+  runEvent({title:"The Serpent stirs",animal:0,ch:()=>[
+    {t:"Hold on for dear life",sub:"Grip the gunwale and ride it out.",dc:11,skill:"fish",fit:1,ok:()=>["The swell passes under you like a hill moving. You're soaked and shaking, but nothing's lost.",[["stam",-20],["warm",-15]]],
+      bad:()=>["The boat heels over and half your catch slides into the sea.",[["stam",-25],["fish","big"],["fish","random"]]]},
+    {t:"Get the engine going and run",sub:"Back towards the harbour, now.",dc:13,skill:"fish",ok:()=>["You open the throttle and don't look back. Behind you the sea closes over something the size of a street.",[["stam",-10]]],
+      bad:()=>["A wave the size of a barn hits the stern. The boat survives, just. It'll need repairs back in Saltwick.",[["stam",-15],["boatdmg",1]]]}
+  ],text:()=>"The sea heaves. Beneath the boat, a vast eye opens, gold and patient, and looks at you."},{where:"road",dark:false,fire:false},()=>{(run.news.tips=run.news.tips||[]).push("\"You hear about the boat out at the Kettle Deeps? Swears blind the sea opened its eye at him. Jory's not been right since.\"");toReady();});
+  return true;}
+
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
 // tiltRange: degrees of tilt for full rod travel. tiltZero: the "level" angle saved by Calibrate.
@@ -2510,7 +2598,7 @@ function withKit(r){
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
 function fishPrice(k){
-  const f=FISH.find(x=>x.id===k.id);const b={Common:[4,1.5],Uncommon:[12,2],Rare:[30,3],"Very rare":[60,4]}[f.rarity];
+  const f=FISH.find(x=>x.id===k.id);const b={Common:[4,1.5],Uncommon:[12,2],Rare:[30,3],"Very rare":[60,4],Legendary:[200,6]}[f.rarity];
   const form=k.form||"raw",age=itemAge(k),kd=keepDays(k);
   const fr=form==="raw"?(age<1?1:age<2?0.8:age<3?0.55:0):(age>kd?0:age>kd*0.66?0.85:1);
   const R=form==="dish"?RECIPES[k.dish]:null;
@@ -2653,7 +2741,7 @@ function tavernMenu(view){
   <div class="controls">${view?`<button class="big ghost" id="tBack" type="button" style="flex:1">Back</button>`:`<button class="big ghost" id="tKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="tLog" type="button" style="flex:1">Log</button><button class="big ghost" id="tMenu" type="button" style="flex:1">Menu</button>`}</div>`);
   $("#tBack").onclick=()=>tavernMenu();
   $("#tKit").onclick=()=>kitScreen(tavernMenu);$("#tLog").onclick=()=>logBook(tavernMenu);$("#tMenu").onclick=pauseMenu;
-  const night=(fn)=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});fn();run.water=maxWater();run.fire=0;run.away=0;saveTavern();renderHud();};
+  const night=(fn)=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true});fn();if(hasShard()){run.needs.stam=Math.min(run.needs.stam,45);setTimeout(()=>toast("You barely slept. The shard in your net hums all night.",true,2600),400);}run.water=maxWater();run.fire=0;run.away=0;saveTavern();renderHud();};
   $("#tStay").onclick=()=>{run.bucks-=ROOM;night(()=>{Object.assign(run.needs,{food:Math.max(run.needs.food,70),warm:100,stam:100,health:100,thirst:100});run.ill=0;
       for(const k of Object.keys(run.inj)){const o=run.inj[k];if(k==="chill"){delete run.inj[k];continue;}o.treated=true;o.left=Math.round(o.left/2);}});
     toast("Game saved. A new day.",false,2200);tavernMenu();};

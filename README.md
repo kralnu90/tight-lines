@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.36.0** · experimental build
+**Current version: 0.37.0** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -66,6 +66,14 @@ Open the link on your Android phone and install it. The first time, Android asks
 ## Changelog
 
 Updates are grouped into big releases. The full in-game list is under **What's new** on the main menu.
+
+### 0.37 · Legends, a home and the pub (16 Nov 2026)
+- Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say
+- Land a legend and hand it in for a big reward and a piece of Master gear
+- The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it
+- Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night
+- Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season
+- A big wave can damage the boat, and Jory won't go out again until it's repaired
 
 ### 0.36 · Tiles everywhere and faster levelling (16 Nov 2026)
 - The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp
