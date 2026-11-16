@@ -333,9 +333,9 @@ function diff(){return DIFFS[(run&&run.diff)||"medium"]||DIFFS.medium;}
 const GRADES={Basic:"var(--muted)",Good:"var(--safe)",Fine:"#7fb3e0",Master:"var(--brass)"};
 const xpToNext=L=>Math.round(50*Math.pow(L,1.6)/10)*10;
 const SEASONS=["Spring","Summer","Autumn","Winter"];
-const VERSION="0.37.0";
+const VERSION="0.37.1";
 const CHANGELOG=[
-  {v: "0.37", date: "16 Nov 2026", title: "Legends, a home and the pub", items: ["Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say", "Land a legend and hand it in for a big reward and a piece of Master gear", "The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it", "Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night", "Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season", "A big wave can damage the boat, and Jory won't go out again until it's repaired"]},
+  {v: "0.37", date: "16 Nov 2026", title: "Legends, a home and the pub", items: ["Legendary hunts on the tavern boards from fishing level 30: Old Copperjaw, the Silver Ghost, Mother Moss, Ironhide and the Kingfin. Each only bites while you're on its hunt and every condition lines up. The notice tells you what the old-timers say", "Land a legend and hand it in for a big reward and a piece of Master gear", "The Midgard Serpent: a perfect cast in the Kettle Deeps can wake something enormous. Most of the time the line snaps, a normal fish bites, or the Serpent stirs beneath the boat, but very rarely you bring up a shard of it", "Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night", "Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season", "A big wave can damage the boat, and Jory won't go out again until it's repaired", "Your own home: buy Alder Hollow from the land agent in Kingsbridge (300 FB), a plot between Willowmere and the lake. It starts as a tent and a 20-slot store", "Build it up: a timber cabin (sleep and save, 40-slot store), a smokehouse (no portable smoker needed), a fish pond where raw fish never go off, a kitchen garden to pick every day, and a trophy wall for your legends and best fish"]},
   {v: "0.36", date: "16 Nov 2026", title: "Tiles everywhere and faster levelling", items: ["The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp", "The in-game menu gains Map and What's new tiles", "Shop tabs have icons", "Fish give about five times as much fishing XP, more for bigger fish, and 200 XP for a first catch of a species. Rare and very rare fish pay the most", "Lost fish and pots and traps give more XP too", "Fixed: very rare fish (halibut, bluefin tuna) gave no XP"]},
   {v: "0.35.1", date: "16 Nov 2026", title: "Your own car on the road", items: ["Road trips in the old estate car now show the estate car, with its roof rack, on the open road", "The campervan has its own film, and the fishing van uses the drawn road scene until it gets one"]},
   {v: "0.35", date: "16 Nov 2026", title: "On the road", items: ["Road trips now play a real film of the open road: driving through the morning, a sunset stop, or a campfire under the stars at night, depending on the time you set off", "The clock still ticks on and you can still tap to skip", "Boat trips keep their sea scene, and if the film can't load the drawn road scene plays instead"]},
@@ -1238,7 +1238,7 @@ function checkDeath(){if(run&&run.needs.health<=0&&G.state!=="dead"){die();retur
 let warnT=0;
 function renderHud(){
   const c=conds();
-  $("#cSpot").textContent=run&&isTown(run.loc)?TOWNS[run.loc].inn:spot().name;
+  $("#cSpot").textContent=run&&run.loc==="home"?HOME.n:run&&isTown(run.loc)?TOWNS[run.loc].inn:spot().name;
   $("#cDay").textContent=`${c.season} · Day ${run?((run.day-1)%10)+1:1}`;
   $("#cTime").textContent=`${clock(run?run.min:390)} ${c.time}`;
   $("#cWeather").textContent=c.weather;
@@ -1263,7 +1263,7 @@ function travelTo(dest){
   const from=run.loc,mins=travelMins(from,dest),m0=absMin();
   if(netUsed()>netCap()){toast("Your stuff won't all fit in the vehicle. Make some room first.",true,2400);return netManage(G.state==="tavern"?tavernMenu:campMenu);}
   advance(mins);run.fire=0;renderHud();if(checkDeath())return;
-  const arrive=()=>{if(isTown(dest)){goTavern(dest);return;}
+  const arrive=()=>{if(dest==="home"){goHome();return;}if(isTown(dest)){goTavern(dest);return;}
     run.loc=dest;run.lastSpot=dest;hideOverlay();toReady(`${SPOTS[dest].name}. Tight lines.`);};
   const atSea=[from,dest].some(k=>SPOTS[k]&&SPOTS[k].boat);
   const go=()=>{if(atSea||!maybeEvent("road",0.25,arrive))arrive();};
@@ -1272,6 +1272,7 @@ function travelTo(dest){
 }
 function travelButtons(prefix){
   const here=run.loc,opts=[];
+  if(owns()&&here!=="home")opts.push(["home",`Go home to ${HOME.n}`,run.home.built.cabin?"Your cabin: sleep and save, store, pond and more.":"Your plot: a tent, a store and room to build."]);
   for(const k of Object.keys(TOWNS))if(k!==here)opts.push([k,`${isTown(here)?"Head to":"Walk to"} ${innMid(k)}, ${TOWNS[k].n}`,`Bed, a hot meal and a save. ${capF(wantText(TOWNS[k]))}.`]);
   for(const k of Object.keys(SPOTS))if(k!==here&&!SPOTS[k].boat)opts.push([k,`${isTown(here)?"Head to":"Move on to"} ${SPOTS[k].name}`,SPOT_BLURB[k]]);
   return `<button class="act" data-map="1" type="button"><span>Open the map<small>See where everything is and how long it takes.</small></span></button>`+
@@ -1901,14 +1902,15 @@ const isTown=k=>!!TOWNS[k];
 const innMid=k=>TOWNS[k].inn.replace(/^The /,"the "); // "the Lantern and Gull" mid-sentence
 function town(){return TOWNS[run&&run.loc]||TOWNS[run&&run.lastTown]||TOWNS.tavern;}
 function townId(){return isTown(run&&run.loc)?run.loc:(run&&run.lastTown)||"tavern";}
-function placeName(k){return isTown(k)?TOWNS[k].n:SPOTS[k].name;}
-function travelMins(a,b){const t=(TOWNS[a]||SPOTS[a]).travel[b]||(TOWNS[b]||SPOTS[b]).travel[a]||120;return Math.round(t*(hurtBy("sprain")?1.5:1));}
+function placeName(k){return k==="home"?HOME.n:isTown(k)?TOWNS[k].n:SPOTS[k].name;}
+function travelMins(a,b){const P=k=>k==="home"?HOME:(TOWNS[k]||SPOTS[k]);const t=P(a).travel[b]||P(b).travel[a]||120;return Math.round(t*(hurtBy("sprain")?1.5:1));}
 function fmtMins(m){return m>=60?(m%60?(m/60).toFixed(1):m/60)+" h":m+" min";}
 // market saturation is per town; Willowmere keeps its old keys
 function mkKey(id){const t=townId();return t==="tavern"?id:t+":"+id;}
 function mapScreen(onBack){
   const here=run.loc,nodes=[...Object.keys(TOWNS).map(k=>({k,x:TOWNS[k].x,y:TOWNS[k].y,town:1})),...Object.keys(MAP_SPOTS).map(k=>({k,...MAP_SPOTS[k]}))];
-  const P=k=>isTown(k)?TOWNS[k]:MAP_SPOTS[k];
+  if(owns())nodes.push({k:"home",x:HOME.x,y:HOME.y,home:1});
+  const P=k=>k==="home"?HOME:isTown(k)?TOWNS[k]:MAP_SPOTS[k];
   const roads=[["tavern","river"],["tavern","lake"],["river","lake"],["tavern","coast"],["tavern","saltwick"],["coast","saltwick"],["lake","saltwick"],["lake","thornmere"],["river","thornmere"],["river","city"],["tavern","city"],["coast","city"],["saltwick","city"]];
   const svg=`<svg viewBox="0 0 340 300" class="map" role="img" aria-label="Map of the region">
     <rect width="340" height="300" fill="#2e4a2c"/>
@@ -1920,12 +1922,12 @@ function mapScreen(onBack){
     ${roads.map(([a,b])=>{const A=P(a),B=P(b),mx=(A.x+B.x)/2,my=(A.y+B.y)/2;
       return `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="#d9c79a" stroke-width="1.5" stroke-dasharray="4 4" opacity=".75"/><text x="${mx}" y="${my-3}" class="mt">${fmtMins(travelMins(a,b))}</text>`;}).join("")}
     ${nodes.map(n=>{const cur=n.k===here;return `<g data-go="${n.k}" class="mnode ${cur?"cur":""}" tabindex="0" role="button" aria-label="${placeName(n.k)}">
-      ${n.town?(TOWNS[n.k].city?`<rect x="${n.x-13}" y="${n.y-11}" width="26" height="22" rx="3" fill="#e8d9a8" stroke="#3a2a14" stroke-width="2"/><path d="M${n.x-10} ${n.y+5} v-8 l4 -4 l4 4 v8 M${n.x} ${n.y+5} v-11 l4 -4 l4 4 v11" fill="#8a3b26"/>`:`<rect x="${n.x-9}" y="${n.y-9}" width="18" height="18" rx="3" fill="#e8d9a8" stroke="#3a2a14" stroke-width="2"/><path d="M${n.x-6} ${n.y+2} l6 -7 l6 7 z" fill="#8a3b26"/>`):
+      ${n.home?`<circle cx="${n.x}" cy="${n.y}" r="11" fill="#e8d9a8" stroke="#3a2a14" stroke-width="2"/><text x="${n.x}" y="${n.y+5}" text-anchor="middle" font-size="13">🏡</text>`:n.town?(TOWNS[n.k].city?`<rect x="${n.x-13}" y="${n.y-11}" width="26" height="22" rx="3" fill="#e8d9a8" stroke="#3a2a14" stroke-width="2"/><path d="M${n.x-10} ${n.y+5} v-8 l4 -4 l4 4 v8 M${n.x} ${n.y+5} v-11 l4 -4 l4 4 v11" fill="#8a3b26"/>`:`<rect x="${n.x-9}" y="${n.y-9}" width="18" height="18" rx="3" fill="#e8d9a8" stroke="#3a2a14" stroke-width="2"/><path d="M${n.x-6} ${n.y+2} l6 -7 l6 7 z" fill="#8a3b26"/>`):
         `<circle cx="${n.x}" cy="${n.y}" r="9" fill="#e3593c" stroke="#3a2a14" stroke-width="2"/><circle cx="${n.x}" cy="${n.y-2}" r="3" fill="#fff"/>`}
       ${cur?`<circle cx="${n.x}" cy="${n.y}" r="15" fill="none" stroke="#f1c75b" stroke-width="2.5"/>`:""}
       <text x="${n.x}" y="${["saltwick","river","thornmere"].includes(n.k)?n.y-16:n.y+24}" class="ml">${placeName(n.k)}</text></g>`;}).join("")}
   </svg>`;
-  const list=nodes.filter(n=>n.k!==here).map(n=>`<button class="act" data-go="${n.k}" type="button"><span>${isTown(n.k)?TOWNS[n.k].inn+", "+TOWNS[n.k].n:placeName(n.k)}<small>${isTown(n.k)?`${capF(TOWNS[n.k].kind)}: ${wantText(TOWNS[n.k])}.`:SPOT_BLURB[n.k]}</small></span><em>${fmtMins(travelMins(here,n.k))}</em></button>`).join("");
+  const list=nodes.filter(n=>n.k!==here).map(n=>`<button class="act" data-go="${n.k}" type="button"><span>${isTown(n.k)?TOWNS[n.k].inn+", "+TOWNS[n.k].n:placeName(n.k)}<small>${isTown(n.k)?`${capF(TOWNS[n.k].kind)}: ${wantText(TOWNS[n.k])}.`:n.k==="home"?"Your own place.":SPOT_BLURB[n.k]}</small></span><em>${fmtMins(travelMins(here,n.k))}</em></button>`).join("");
   showOverlay(`<h2>Map</h2><p class="note">You're at ${isTown(here)?innMid(here):placeName(here)}. Tap a place to travel there.${hurtBy("sprain")?" Your sprained ankle slows you down.":""}</p>${svg}
     <div class="acts">${list}</div><div class="controls"><button class="big ghost" id="mapBack" type="button" style="flex:1">Back</button></div>`);
   document.querySelectorAll("[data-go]").forEach(b=>{if(b.dataset.go===here)return;const go=()=>travelTo(b.dataset.go);b.onclick=go;b.onkeydown=e=>{if(e.key==="Enter")go();};});
@@ -2513,6 +2515,82 @@ function serpentHook(){const r=Math.random();
   ],text:()=>"The sea heaves. Beneath the boat, a vast eye opens, gold and patient, and looks at you."},{where:"road",dark:false,fire:false},()=>{(run.news.tips=run.news.tips||[]).push("\"You hear about the boat out at the Kettle Deeps? Swears blind the sea opened its eye at him. Jory's not been right since.\"");toReady();});
   return true;}
 
+/* ---------- Home: Alder Hollow, a plot of your own to build up over time ---------- */
+// Bought from the land agent in Kingsbridge. Starts as a tent pitch with a store; build a cabin (sleep and save),
+// a smokehouse, a fish pond that keeps fish fresh, a kitchen garden and a trophy wall.
+const HOME={n:"Alder Hollow",price:300,x:140,y:112,travel:{tavern:30,river:45,lake:30,thornmere:90,coast:150,saltwick:150,city:120}};
+const BUILDS={
+  cabin:{n:"Timber cabin",icon:"🛖",price:600,desc:"A bed, a stove and four walls. Sleeping here saves your game, and the store holds 40 slots."},
+  smokehouse:{n:"Smokehouse",icon:"🏭",price:350,desc:"Smoke fish here without a portable smoker (cooking level 25)."},
+  pond:{n:"Fish pond",icon:"🪷",price:300,desc:"A spring-fed pond for 12 slots of raw fish. Fish in the pond don't go off."},
+  garden:{n:"Kitchen garden",icon:"🌱",price:200,desc:"Herbs and veg to pick once a day."},
+  trophy:{n:"Trophy wall",icon:"🏆",price:150,desc:"Your legends and best fish, mounted for visitors."}
+};
+function owns(){return !!(run&&run.home);}
+function homeSlots(){return run.home.built.cabin?40:20;}
+function goHome(){run.loc="home";run.trip=null;G.state="home";G.fish=null;G.float=null;G.cast=null;G.reeling=false;setCondsEnabled(false);headerButtons(true);
+  $("#panel").innerHTML=`<div class="hint">You're home at ${HOME.n}.</div>`;renderHud();homeMenu();}
+function landAgent(){
+  const B=run.bucks;
+  showOverlay(`<span class="tag">Kingsbridge</span><h2>The land agent</h2>
+    <p class="note">A tidy office over the bank, all maps and pipe smoke. "Alder Hollow," says the agent, tapping a plot between Willowmere and the lake. "Half an hour from the Arms, half an hour from the water, and nobody's built on it for a hundred years."</p>
+    <p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p>
+    <div class="acts"><div class="act" style="cursor:default"><span>🏡 ${HOME.n} · ${HOME.price} FB<small>A plot of your own with a tent pitch and a lock-up store (20 slots). Build on it over time: a cabin, a smokehouse, a fish pond, a garden and a trophy wall. It goes on the map.</small></span>${owns()?"<em>Yours</em>":`<button class="iconbtn" id="laBuy" type="button" ${B>=HOME.price?"":"disabled"}>Buy</button>`}</div></div>
+    <div class="controls"><button class="big ghost" id="laBack" type="button" style="flex:1">Back</button></div>`);
+  if($("#laBuy"))$("#laBuy").onclick=()=>{run.bucks-=HOME.price;run.home={built:{},store:[],pond:[],garden:0};renderHud();toast(`${HOME.n} is yours. It's on the map.`,false,2600);landAgent();};
+  $("#laBack").onclick=tavernMenu;}
+function homeMenu(view){
+  const H=run.home,B=run.bucks,$=q=>document.querySelector(q)||{},night=run.min>=18*60||run.min<5*60;
+  const items=(list,btn)=>list.map((k,i)=>itemRow(k,i,btn)).join("")||'<p class="note">Empty.</p>';
+  let body,title=HOME.n;
+  if(view==="build"){title="Build";body=`<div class="acts">${Object.keys(BUILDS).map(k=>{const X=BUILDS[k];return `<div class="act" style="cursor:default"><span>${X.icon} ${X.n} · ${X.price} FB<small>${X.desc}</small></span>${H.built[k]?"<em>Built</em>":`<button class="iconbtn" data-build="${k}" type="button" ${B>=X.price?"":"disabled"}>Build</button>`}</div>`;}).join("")}</div>`;}
+  else if(view==="store"){title=`Store (${used(H.store)}/${homeSlots()} slots)`;
+    body=`<h3>In the store</h3><div class="acts">${items(H.store,(k,i)=>`<button class="iconbtn" data-out="${i}" type="button" ${netFits(k)?"":"disabled"}>Take</button>`)}</div>
+    <h3>Keep net (${netLabel()})</h3><div class="acts">${items(run.keep,(k,i)=>`<button class="iconbtn" data-in="${i}" type="button" ${used(H.store)+slotsOf(k)<=homeSlots()?"":"disabled"}>Store</button>`)}</div>`;}
+  else if(view==="pond"){title=`Fish pond (${used(H.pond)}/12 slots)`;
+    body=`<p class="note">Raw fish in the pond stay as fresh as the day you put them in.</p><h3>In the pond</h3><div class="acts">${items(H.pond,(k,i)=>`<button class="iconbtn" data-pout="${i}" type="button" ${netFits(k)?"":"disabled"}>Net it</button>`)}</div>
+    <h3>Keep net</h3><div class="acts">${items(run.keep.filter(k=>(k.form||"raw")==="raw"),(k)=>{const i=run.keep.indexOf(k);return `<button class="iconbtn" data-pin="${i}" type="button" ${used(H.pond)+slotsOf(k)<=12&&!isSpoiled(k)?"":"disabled"}>Release in</button>`;})}</div>`;}
+  else if(view==="smoke"){title="Smokehouse";const L=skLv("cook");
+    body=`<p class="note">${L<25?`You need cooking level 25 to smoke fish. You're level ${L}.`:"Oak smoke, two hours a fish. Smoked fish keeps 10 days and sells for 1.8× raw."}</p><div class="acts">${items(run.keep.filter(k=>(k.form||"raw")==="raw"&&!isSpoiled(k)),(k)=>{const i=run.keep.indexOf(k);return `<button class="iconbtn" data-smoke="${i}" type="button" ${L>=25?"":"disabled"}>Smoke · 2 h</button>`;})}</div>`;}
+  else if(view==="trophy"){title="Trophy wall";const best={};for(const e of run.log){if(!best[e.id]||e.w>best[e.id].w)best[e.id]=e;}
+    const leg=(run.legends||[]).map(id=>`<div class="act" style="cursor:default;border-color:var(--brass)"><span>🏆 ${fishById(id).name}<small>A legend, landed and handed in.</small></span></div>`).join("");
+    body=`${leg}<div class="acts">${Object.values(best).sort((a,b)=>b.w-a.w).slice(0,12).map(e=>`<div class="act" style="cursor:default"><span>${e.name} · ${lbOz(e.w)} <span class="stars" style="font-size:12px">${stars(e.stars)}</span><small>${e.spot}, day ${e.day}</small></span></div>`).join("")||'<p class="note">Nothing on the wall yet.</p>'}</div>`;}
+  else if(view==="travel"){title="Travel";body=`<div class="acts">${travelButtons("go")}</div>`;}
+  else body=`<p class="note">${clock(run.min)}, day ${run.day}. ${H.built.cabin?"Smoke curls from the cabin chimney.":"A tent under the alders, a lock-up box and a lot of potential."}</p>
+    <div class="tiles">
+      ${H.built.cabin?tileB("hSleep","🛏️","Sleep and save",night?"":"disabled"):tileB("hSleep","⛺","Sleep in the tent",night?"":"disabled")}
+      ${tileB("hRest","😴","Rest an hour")}
+      ${tile("store","📦","Store",H.store.length||"")}
+      ${H.built.pond?tile("pond","🪷","Fish pond",H.pond.length||""):""}
+      ${H.built.smokehouse?tile("smoke","🏭","Smokehouse",""):""}
+      ${H.built.garden?tileB("hGarden","🌱","Pick the garden",H.garden===run.day?"disabled":""):""}
+      ${H.built.trophy?tile("trophy","🏆","Trophy wall",""):""}
+      ${tile("build","🔨","Build","")}
+      ${tile("travel","🗺️","Travel","")}
+    </div>`;
+  showOverlay(`<span class="tag">Home</span><h2>${title}</h2><p class="note"><b style="color:var(--brass)">${B} Fish Bucks</b></p>${body}
+    <div class="controls">${view?`<button class="big ghost" id="hBack" type="button" style="flex:1">Back</button>`:`<button class="big ghost" id="hKit" type="button" style="flex:1">Kit</button><button class="big ghost" id="hLog" type="button" style="flex:1">Log</button><button class="big ghost" id="hMenu" type="button" style="flex:1">Menu</button>`}</div>`);
+  const again=()=>homeMenu(view);
+  $("#hBack").onclick=()=>homeMenu();$("#hKit").onclick=()=>kitScreen(()=>homeMenu());$("#hLog").onclick=()=>logBook(()=>homeMenu());$("#hMenu").onclick=pauseMenu;
+  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>homeMenu(b.dataset.tile));
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
+  document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(()=>homeMenu("travel")));
+  $("#hRest").onclick=()=>{advance(60,{rest:true,camper:true});renderHud();if(checkDeath())return;homeMenu();};
+  $("#hSleep").onclick=()=>{const m=run.min<5*60?(7*60-run.min):(1440-run.min)+7*60;advance(m,{sleep:true,camper:true});
+    const N=run.needs;if(H.built.cabin){Object.assign(N,{warm:100,stam:100,thirst:100});N.health=Math.min(100,N.health+30);delete run.inj.chill;run.water=maxWater();run.away=0;saveTavern();toast("Home, sweet home. Game saved.",false,2200);}
+    else{N.warm=Math.max(N.warm,70);N.stam=Math.max(N.stam,85);N.thirst=100;run.water=maxWater();toast("A good night under canvas. (Build a cabin to save here.)",false,2600);}
+    if(hasShard())N.stam=Math.min(N.stam,45);renderHud();if(checkDeath())return;homeMenu();};
+  $("#hGarden").onclick=()=>{H.garden=run.day;const got=[];for(let i=0;i<3;i++){const id=pick(["thyme","garlic","sorrel","nettles","fieldmush"]);larderAdd(id,1);got.push(FOODS[id].n.toLowerCase());}
+    toast(`From the garden: ${got.join(", ")}.`,false,2400);homeMenu();};
+  document.querySelectorAll("[data-build]").forEach(b=>b.onclick=()=>{const k=b.dataset.build,X=BUILDS[k];if(run.bucks<X.price)return;run.bucks-=X.price;H.built[k]=1;renderHud();toast(`${X.n} built!`,false,2000);again();});
+  document.querySelectorAll("[data-in]").forEach(b=>b.onclick=()=>{H.store.push(run.keep.splice(+b.dataset.in,1)[0]);again();});
+  document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>{run.keep.push(H.store.splice(+b.dataset.out,1)[0]);again();});
+  // pond: remember when it went in, and push its clock forward by the time it spent there when it comes out
+  document.querySelectorAll("[data-pin]").forEach(b=>b.onclick=()=>{const k=run.keep.splice(+b.dataset.pin,1)[0];k.pondAt=absMin();H.pond.push(k);again();});
+  document.querySelectorAll("[data-pout]").forEach(b=>b.onclick=()=>{const k=H.pond.splice(+b.dataset.pout,1)[0];const d=absMin()-(k.pondAt||absMin());k.caught+=d;if(k.made)k.made+=d;delete k.pondAt;run.keep.push(k);again();});
+  document.querySelectorAll("[data-smoke]").forEach(b=>b.onclick=()=>{const k=run.keep[+b.dataset.smoke];if(!k)return;const n=prepRoll(k);k.form="smoked";k.made=absMin();advance(120);const g=gainSk("cook",20+Math.round(k.w*3));renderHud();toast(`${n}Smoked in the smokehouse. +${g} cooking XP`,false,2400);again();});
+}
+
 /* ---------- Tilt controls: tilt the phone left and right to move the rod in a fight ---------- */
 // Uses the phone's orientation sensor (works in the browser over https and in the app).
 // tiltRange: degrees of tilt for full rod travel. tiltZero: the "level" angle saved by Calibrate.
@@ -2594,7 +2672,7 @@ function withKit(r){
   if(!r.larder)r.larder=[];if(!r.snares)r.snares=[];if(!r.pots)r.pots=[];if(r.inv.pots===undefined)r.inv.pots=0;
   if(!r.recipes)r.recipes=["thyme","garlic"];if(r.inv.salt===undefined)r.inv.salt=0;if(r.inv.chum===undefined)r.inv.chum=0;
   if(r.inv.snares===undefined)r.inv.snares=2;if(r.inv.arrows===undefined)r.inv.arrows=0;
-  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};if(!r.car)r.car={kind:"estate",cool:false};if(!r.mkt)r.mkt=[];if(!r.news)r.news={};if(!r.lockers)r.lockers={};
+  if(!r.rep)r.rep={};if(!r.jobs)r.jobs=[];if(!r.boards)r.boards={};if(!r.car)r.car={kind:"estate",cool:false};if(r.home&&!r.home.pond)r.home.pond=[];if(!r.mkt)r.mkt=[];if(!r.news)r.news={};if(!r.lockers)r.lockers={};
   return r;}
 function maxWater(){return 3+(run&&run.inv.gear.waterskin?1.5:0);}
 function fishPrice(k){
@@ -2733,6 +2811,7 @@ function tavernMenu(view){
     ${tile("locker","📦","Locker",L&&L.items.length?L.items.length:"")}
     ${t==="saltwick"?tile("harbour","⚓","Harbour",""):""}
     ${T.city?tile("garage","🚐","Motors",""):""}
+    ${T.city?tile("land","🏡","Land agent",""):""}
     ${tile("memory","🕯️","Memory board",store.memorial.length||"")}
   </div>
   <button class="act" data-tile="travel" type="button" style="margin-top:8px"><span>🗺️ Travel<small>The map, the fishing spots and the other towns.</small></span></button>
@@ -2748,7 +2827,7 @@ function tavernMenu(view){
   $("#tBarn").onclick=()=>{night(()=>{const N=run.needs;delete run.inj.chill;N.warm=Math.max(N.warm,65);N.stam=Math.max(N.stam,75);N.thirst=100;N.health=Math.min(100,N.health+15);});
     toast("Game saved. Straw in your hair, but alive.",false,2400);tavernMenu();};
   $("#tMeal").onclick=()=>{run.bucks-=MEAL;advance(30);run.needs.food=100;run.needs.warm=100;renderHud();tavernMenu("rest");};
-  const go={sell:sellScreen,shop:()=>shopScreen("bait"),cook:cookScreen,board:boardScreen,news:()=>newsScreen(),locker:lockerScreen,harbour:harbourScreen,garage:garageScreen,memory:()=>memorialView(tavernMenu),rest:()=>tavernMenu("rest"),travel:()=>tavernMenu("travel")};
+  const go={sell:sellScreen,shop:()=>shopScreen("bait"),cook:cookScreen,board:boardScreen,news:()=>newsScreen(),locker:lockerScreen,harbour:harbourScreen,garage:garageScreen,land:landAgent,memory:()=>memorialView(tavernMenu),rest:()=>tavernMenu("rest"),travel:()=>tavernMenu("travel")};
   document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>go[b.dataset.tile]());
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>travelTo(b.dataset.go));
   document.querySelectorAll("[data-map]").forEach(b=>b.onclick=()=>mapScreen(G.state==="tavern"?()=>tavernMenu("travel"):campMenu));
@@ -2769,13 +2848,13 @@ function die(){
   }else{
     if(sl)sl.suspend=null;saveStore();
     showOverlay(`<h2>You collapse</h2><p>${r.cause==="the cold"?"The cold got into your bones.":r.cause==="thirst"?"Your throat burns and the world tilts.":r.cause==="hunger"?"You haven't eaten in too long.":"The sickness wins."}</p>
-    <p class="note">You wake at ${innMid(TOWNS[sl&&sl.tavern&&sl.tavern.loc]?sl.tavern.loc:"tavern")}. Everything since your last stay is lost: a lesson learned, and a second chance.</p>
+    <p class="note">You wake at ${sl&&sl.tavern&&sl.tavern.loc==="home"?HOME.n:innMid(TOWNS[sl&&sl.tavern&&sl.tavern.loc]?sl.tavern.loc:"tavern")}. Everything since your last stay is lost: a lesson learned, and a second chance.</p>
     <div class="controls"><button class="big strike" id="dWake" type="button">Wake up</button></div>`);
     $("#dWake").onclick=()=>loadRun(JSON.parse(JSON.stringify(sl.tavern)));
   }
 }
 function loadRun(snap){run=withKit(snap);if(!run.lastSpot)run.lastSpot="river";G.reeling=false;renderLevel();renderHud();
-  if(isTown(run.loc)||!SPOTS[run.loc])goTavern();else toReady();}
+  if(run.loc==="home"&&run.home)goHome();else if(isTown(run.loc)||!SPOTS[run.loc])goTavern();else toReady();}
 
 /* ---------- Menus ---------- */
 function memorialView(onBack){
@@ -2968,7 +3047,7 @@ function newGameScreen(i){
 function pauseMenu(){
   if(["fight","waiting","flight"].includes(G.state))return toast("Not while fishing!",true,900);
   if(G.state==="result")toReady();
-  const back=()=>{if(G.state==="tavern")tavernMenu();else{hideOverlay();if(G.state==="ready"){fillMethods();panelReady();}}};
+  const back=()=>{if(G.state==="tavern")tavernMenu();else if(G.state==="home")homeMenu();else{hideOverlay();if(G.state==="ready"){fillMethods();panelReady();}}};
   showOverlay(`<h2>Menu</h2><p class="note">${run.name} · ${isTown(run.loc)?TOWNS[run.loc].inn:spot().name} · day ${run.day}, ${clock(run.min)}. Time is paused.</p>
   <div class="menu"><button class="primary" id="pmRes" type="button">Resume</button></div>
   <div class="tiles" style="margin-top:10px">

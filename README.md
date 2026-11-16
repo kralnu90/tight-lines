@@ -6,7 +6,7 @@ Fish the rivers, lakes and seas of a busy, trading world. Read the conditions, f
 
 ▶ **Play it:** https://kralnugames.com/tight-lines/ · 📱 **[Android app (APK)](https://github.com/kralnu90/tight-lines/releases/download/android-latest/tight-lines.apk)**
 
-**Current version: 0.37.0** · experimental build
+**Current version: 0.37.1** · experimental build
 
 > Tight Lines is still experimental. Expect bugs and changes between updates, and saves may occasionally need clearing.
 
@@ -74,6 +74,8 @@ Updates are grouped into big releases. The full in-game list is under **What's n
 - Carry the shard and you won't sleep well. Camp out with it and the Skald may come to your fire in the dead of night
 - Eat the Skald's feast for a night in Valhalla and Odin's Favour: a day without hunger, cold or tiredness, then more rare fish and longer casts until the season turns. Only once a season
 - A big wave can damage the boat, and Jory won't go out again until it's repaired
+- Your own home: buy Alder Hollow from the land agent in Kingsbridge (300 FB), a plot between Willowmere and the lake. It starts as a tent and a 20-slot store
+- Build it up: a timber cabin (sleep and save, 40-slot store), a smokehouse (no portable smoker needed), a fish pond where raw fish never go off, a kitchen garden to pick every day, and a trophy wall for your legends and best fish
 
 ### 0.36 · Tiles everywhere and faster levelling (16 Nov 2026)
 - The title screen, the in-game menu and the boat menu are icon tiles now, like the inns and camp
